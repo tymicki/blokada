@@ -1,27 +1,26 @@
 package adblocker
 
 import android.app.Activity
-import android.appwidget.AppWidgetManager
-import android.content.Intent
-import android.appwidget.AppWidgetProvider
-import android.content.Context
-import com.github.salomonbrys.kodein.instance
-import gs.environment.inject
-import org.blokada.R
-import tunnel.Events
-import android.content.ComponentName
+import android.app.PendingIntent
 import android.app.Service
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
 import android.widget.*
 import android.widget.LinearLayout
-import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
+import com.github.salomonbrys.kodein.instance
 import core.*
+import gs.environment.inject
 import gs.property.I18n
 import gs.property.IWhen
-import android.app.PendingIntent
+import org.blokada.R
+import tunnel.Events
 
 
 val NEW_WIDGET = "NEW_WIDGET".newEventOf<WidgetData>()
@@ -51,7 +50,7 @@ class ActiveWidgetProvider : AppWidgetProvider() {
                     }
                     if (extras.containsKey("changeBlokadaState")){
                         val t: Tunnel = context!!.inject().instance()
-                        t.enabled %= !t.enabled.invoke()
+                        t.enabled %= !t.enabled()
                     }
                 }
             }
@@ -318,7 +317,7 @@ class UpdateWidgetService : Service() { //TODO: kill Service if device is locked
         intent.putExtra("changeBlokadaState", true)
         val pendingIntent = PendingIntent.getBroadcast(this.applicationContext,
                 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        views.setOnClickPendingIntent(R.id.widget_okay, pendingIntent)
+        views.setOnClickPendingIntent(R.id.widget_active, pendingIntent)
 
         appWidgetManager.updateAppWidget(data.id, views)
     }
