@@ -16,6 +16,8 @@ import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import com.github.salomonbrys.kodein.instance
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
+import core.bits.AdsDashboardSectionVB
+import core.bits.HomeDashboardSectionVB
 import core.bits.menu.MENU_CLICK
 import core.bits.menu.MENU_CLICK_BY_NAME
 import core.bits.menu.MenuItemVB
@@ -154,6 +156,16 @@ class DashboardView(
             sliding.panelState = PanelState.ANCHORED
             true
         }.sendEmptyMessage(0)
+    }
+
+    fun createDashboardSections(ktx: AndroidKontext): List<NamedViewBinder> {
+        val di = ktx.di()
+        val pages: Pages = di.instance()
+
+        return listOf(
+                HomeDashboardSectionVB(ktx),
+                AdsDashboardSectionVB(ktx)
+        )
     }
 
     private fun listenToEvents() {

@@ -118,58 +118,6 @@ abstract class ListViewBinder : LayoutViewBinder(R.layout.vblistview), ListSecti
 
 }
 
-@Deprecated("old dashboard going away")
-abstract class IconDash(
-        val onClick: () -> Unit = {},
-        val iconRes: Int? = null
-) : LayoutViewBinder(R.layout.dash_icon) {
-
-    open fun attachIcon(v: IconDashView) {}
-    open fun detachIcon(v: IconDashView) {}
-
-    override fun attach(view: View) {
-        view as IconDashView
-        view.onClick = onClick
-        if (iconRes != null) view.iconRes = iconRes
-        attachIcon(view)
-    }
-
-    override fun detach(view: View) {
-        val v = view as IconDashView
-        v.onClick = {}
-        detachIcon(v)
-    }
-
-}
-
-class DashCache {
-
-    private val views = mutableMapOf<ViewBinder, View>()
-    private val parents = mutableMapOf<ViewGroup, ViewBinder>()
-
-    fun use(dash: ViewBinder, ctx: Context, parent: ViewGroup) = {
-        val view = views.getOrPut(dash,
-                { dash.createView(ctx, parent)} )
-        val current = parents.getOrPut(parent, { dash })
-        if (current != dash) {
-            views[current]?.apply { current.detach(this) }
-        }
-        parent.removeAllViews()
-        parents[parent] = dash
-        parent.addView(view)
-        dash.attach(view)
-    }()
-
-    fun detach(dash: ViewBinder, parent: ViewGroup) = {
-        parents[parent]?.apply {
-            views[dash]?.apply { dash.detach(this) }
-            parent.removeAllViews()
-            parents.remove(parent)
-        }
-    }()
-
-}
-
 object ViewTypeGenerator {
     fun get(instance: Any, payload: Any? = null) = when {
         payload == null -> instance.hashCode()
