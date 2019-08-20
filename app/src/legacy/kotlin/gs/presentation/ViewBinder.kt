@@ -29,8 +29,6 @@ interface NamedViewBinder : ViewBinder {
     val name: Resource
 }
 
-typealias On = Boolean
-
 class ViewBinderHolder {
     private val binders = mutableListOf<Pair<ViewBinder, WeakReference<View>>>()
 
