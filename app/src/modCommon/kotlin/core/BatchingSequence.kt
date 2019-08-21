@@ -1,5 +1,7 @@
 package core
 
+// TODO: move closer to the source where its used, it has only one use
+
 fun <T> Sequence<T>.batch(n: Int): Sequence<List<T>> {
     return BatchingSequence(this, n)
 }

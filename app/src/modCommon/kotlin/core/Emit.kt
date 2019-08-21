@@ -8,30 +8,9 @@ import kotlinx.coroutines.experimental.launch
 
 private val commonEmit = CommonEmit()
 
-class EventType<T>(val name: String) {
-    override fun toString() = name
-}
-
-typealias SimpleEvent = EventType<Unit>
-typealias Callback<T> = (T) -> Unit
 private data class TypedEvent<T>(val type: EventType<T>, val value: T)
 
-fun String.newEvent() = SimpleEvent(this)
-fun <T> String.newEventOf() = EventType<T>(this)
-
-interface Emit {
-    fun <T> emit(event: EventType<T>, value: T): Job
-    fun <T> on(event: EventType<T>, callback: Callback<T>): Job
-    fun <T> on(event: EventType<T>, callback: Callback<T>, recentValue: Boolean = true): Job
-    fun <T> cancel(event: EventType<T>, callback: Callback<T>): Job
-    suspend fun <T> getMostRecent(event: EventType<T>): T?
-    fun emit(event: SimpleEvent): Job
-    fun on(event: SimpleEvent, callback: () -> Unit, recentValue: Boolean = true): Job
-    fun cancel(event: SimpleEvent, callback: () -> Unit): Job
-}
-
-
-class CommonEmit(
+internal class CommonEmit(
         private val ktx: () -> Kontext = { Kontext.forCoroutine(UI + newEmitExceptionLogger(), "emit") }
 ) : Emit {
 
@@ -85,7 +64,7 @@ internal fun newEmitExceptionLogger(ktx: Kontext = "emit:exception".ktx())
         = CoroutineExceptionHandler { _, throwable -> ktx.e(throwable)
 }
 
-class DefaultEmit(id: String, val common: Emit = commonEmit, val log: Log = DefaultLog(id)) : Emit {
+internal class DefaultEmit(id: String, val common: Emit = commonEmit, val log: Log = DefaultLog(id)) : Emit {
 
     override fun <T> emit(event: EventType<T>, value: T): Job {
         log.v("event:emit", event, value.toString())

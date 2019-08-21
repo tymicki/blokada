@@ -1,5 +1,7 @@
 package core
 
+// TODO: move it somewhere or delete
+
 /**
  * Models used for persistence in 3.5.
  */

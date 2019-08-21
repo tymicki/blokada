@@ -7,9 +7,9 @@ import android.os.Build
 import androidx.core.content.ContextCompat.checkSelfPermission
 import kotlinx.coroutines.experimental.CompletableDeferred
 
-private var deferred = CompletableDeferred<Boolean>()
+internal var deferred = CompletableDeferred<Boolean>()
 
-private const val REQUEST_STORAGE = 2
+internal const val REQUEST_STORAGE = 2
 
 fun askStoragePermission(ktx: Kontext, act: Activity) = {
     ktx.v("asking for storage permissions")

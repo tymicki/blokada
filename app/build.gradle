@@ -110,18 +110,18 @@ android {
     flavorDimensions("model")
 
     productFlavors {
-        flavorFull {
-            // flavorFull lands on blokada.org.
+        appFull {
+            // appFull lands on blokada.org.
             applicationId "org.blokada.origin.alarm"
         }
 
-        flavorCommunity {
-            // flavorCommunity lands on F-Droid and XDA Labs.
+        appCommunity {
+            // appCommunity lands on F-Droid and XDA Labs.
             applicationId "org.blokada.alarm"
         }
 
-        flavorGoogle {
-            // flavorGoogle build lands on Google Play.
+        appGoogle {
+            // appGoogle build lands on Google Play.
             applicationId "org.blokada.alarm.dnschanger"
         }
 
@@ -131,115 +131,101 @@ android {
          * as apps. It is meant to help improve code separation as well as speed up development.
          */
 
-        moduleCore {
-            // moduleCore is included by all other Kotlin modules.
+        modCommon {
+            // modCommon is included by all other Kotlin mods.
         }
 
-        moduleG11n {
+        modG11n {
             /**
-             * moduleG11n (Globalization) provides all i18n (internationalization) and l10n
+             * modG11n (Globalization) provides all i18n (internationalization) and l10n
              * (localization) functionality on top of what Android SDK provides.
               */
         }
 
-        moduleVpn {
-            // moduleVpn provides Wireguard client native library and JNI bindings.
+        modWireguard {
+            // modWireguard provides Wireguard client native library and JNI bindings.
         }
 
-        moduleTunnel {
+        modTunnel {
             /**
-             * Tunnel module implements TUN/TAP tunneling (either with Wireguard or fake VPN) in
+             * Tunnel mod implements TUN/TAP tunneling (either with Wireguard or fake VPN) in
              * Kotlin. It also provides hosts lists filtering and has too much responsibility.
               */
         }
 
-        moduleLegacy {
+        modLegacy {
             // A catch all that is going away.
         }
     }
 
     sourceSets {
-        /**
-         * Source sets for modules. Note how they depend on each other.
-          */
+        def srcCommonKotlin = 'src/modCommon/kotlin'
+        def srcCommonMock = 'src/modCommon/mock'
+        def srcCommonTest = 'src/modCommon/test'
 
-        moduleCore.java.srcDirs += 'src/core/kotlin'
-        testModuleCore.java.srcDirs += 'src/test-core/kotlin'
+        def srcWireguardKotlin = 'src/modWireguard/kotlin'
+        def srcWireguardJni = 'src/modWireguard/jniLibs'
 
-        moduleTunnel.java.srcDirs += 'src/core/kotlin'
-        moduleTunnel.java.srcDirs += 'src/tunnel/kotlin'
-        testModuleTunnel.java.srcDirs += 'src/test-core/kotlin'
-        testModuleTunnel.java.srcDirs += 'src/test-tunnel/kotlin'
+        def srcG11nKotlin = 'src/modG11n/kotlin'
+        def srcG11nTest = 'src/modG11n/test'
 
-        moduleG11n.java.srcDirs += 'src/core/kotlin'
-        moduleG11n.java.srcDirs += 'src/g11n/kotlin'
-        testModuleG11n.java.srcDirs += 'src/test-core/kotlin'
-        testModuleG11n.java.srcDirs += 'src/test-g11n/kotlin'
+        def srcTunnelKotlin = 'src/modTunnel/kotlin'
+        def srcTunnelTest = 'src/modTunnel/test'
 
-        moduleVpn.java.srcDirs += 'src/core/kotlin'
-        moduleVpn.java.srcDirs += 'src/vpn/kotlin'
-        moduleVpn.jniLibs.srcDirs += 'src/vpn/jniLibs'
-        testModuleVpn.java.srcDirs += 'src/test-core/kotlin'
-        testModuleVpn.java.srcDirs += 'src/test-vpn/kotlin'
+        def srcLegacyKotlin = 'src/modLegacy/kotlin'
+        def srcLegacyRes = 'src/modLegacy/res'
+        def srcLegacyTest = 'src/modLegacy/test'
 
-        moduleLegacy.java.srcDirs += 'src/core/kotlin'
-        moduleLegacy.java.srcDirs += 'src/tunnel/kotlin'
-        moduleLegacy.java.srcDirs += 'src/legacy/kotlin'
-        moduleLegacy.res.srcDirs += 'src/legacy/res'
-        testModuleLegacy.java.srcDirs += 'src/test-core/kotlin'
-        testModuleLegacy.java.srcDirs += 'src/test-tunnel/kotlin'
-        testModuleLegacy.java.srcDirs += 'src/test-legacy/kotlin'
+        modCommon.java.srcDirs += srcCommonKotlin
+        testModCommon.java.srcDirs += srcCommonTest
 
-        /**
-         * Source sets for flavors. Note how they put modules and flavor config together.
-         */
+        appFull.manifest.srcFile 'src/modLegacy/AndroidManifest.xml'
+        appFull.java.srcDirs += srcCommonKotlin
+        appFull.java.srcDirs += srcTunnelKotlin
+        appFull.java.srcDirs += srcG11nKotlin
+        appFull.java.srcDirs += srcWireguardKotlin
+        appFull.java.srcDirs += srcLegacyKotlin
+        appFull.java.srcDirs += 'src/appFull/kotlin'
+        appFull.jniLibs.srcDirs += srcWireguardJni
+        appFull.res.srcDirs += srcLegacyRes
+        appFull.res.srcDirs += 'src/appFull/res'
+//        testAppFull.java.srcDirs += testModTunnel.java.srcDirs
+//        testAppFull.java.srcDirs += testModG11n.java.srcDirs
+//        testAppFull.java.srcDirs += testModWireguard.java.srcDirs
 
-        flavorFull.manifest.srcFile 'src/legacy/AndroidManifest.xml'
-        flavorFull.java.srcDirs += 'src/core/kotlin'
-        flavorFull.java.srcDirs += 'src/tunnel/kotlin'
-        flavorFull.java.srcDirs += 'src/g11n/kotlin'
-        flavorFull.java.srcDirs += 'src/vpn/kotlin'
-        flavorFull.java.srcDirs += 'src/legacy/kotlin'
-        flavorFull.java.srcDirs += 'src/flavor-adblocker/kotlin'
-        flavorFull.jniLibs.srcDirs += 'src/vpn/jniLibs'
-        flavorFull.res.srcDirs += 'src/legacy/res'
-        flavorFull.res.srcDirs += 'src/flavor-adblocker/res'
-        testFlavorFull.java.srcDirs += 'src/test-core/kotlin'
-        testFlavorFull.java.srcDirs += 'src/test-tunnel/kotlin'
-        testFlavorFull.java.srcDirs += 'src/test-g11n/kotlin'
-        testFlavorFull.java.srcDirs += 'src/test-vpn/kotlin'
+        appCommunity.manifest.srcFile 'src/modLegacy/AndroidManifest.xml'
+        appCommunity.java.srcDirs += srcCommonKotlin
+        appCommunity.java.srcDirs += srcTunnelKotlin
+        appCommunity.java.srcDirs += srcG11nKotlin
+        appCommunity.java.srcDirs += srcWireguardKotlin
+        appCommunity.java.srcDirs += srcLegacyKotlin
+        appCommunity.java.srcDirs += 'src/appFull/kotlin'
+        appCommunity.jniLibs.srcDirs += srcWireguardJni
+        appCommunity.res.srcDirs += srcLegacyRes
+        appCommunity.res.srcDirs += 'src/appFull/res'
 
-        flavorCommunity.manifest.srcFile 'src/legacy/AndroidManifest.xml'
-        flavorCommunity.java.srcDirs += 'src/core/kotlin'
-        flavorCommunity.java.srcDirs += 'src/tunnel/kotlin'
-        flavorCommunity.java.srcDirs += 'src/g11n/kotlin'
-        flavorCommunity.java.srcDirs += 'src/vpn/kotlin'
-        flavorCommunity.java.srcDirs += 'src/legacy/kotlin'
-        flavorCommunity.java.srcDirs += 'src/flavor-adblocker/kotlin'
-        flavorCommunity.jniLibs.srcDirs += 'src/vpn/jniLibs'
-        flavorCommunity.res.srcDirs += 'src/legacy/res'
-        flavorCommunity.res.srcDirs += 'src/flavor-adblocker/res'
-
-        flavorGoogle.manifest.srcFile 'src/legacy/AndroidManifest.xml'
-        flavorGoogle.java.srcDirs += 'src/core/kotlin'
-        flavorGoogle.java.srcDirs += 'src/tunnel/kotlin'
-        flavorGoogle.java.srcDirs += 'src/g11n/kotlin'
-        flavorGoogle.java.srcDirs += 'src/legacy/kotlin'
-        flavorGoogle.java.srcDirs += 'src/flavor-dns/kotlin'
-        flavorGoogle.res.srcDirs += 'src/legacy/res'
-        flavorGoogle.res.srcDirs += 'src/flavor-dns/res'
+        appGoogle.manifest.srcFile 'src/modLegacy/AndroidManifest.xml'
+        appGoogle.java.srcDirs += srcCommonKotlin
+        appGoogle.java.srcDirs += srcTunnelKotlin
+        appGoogle.java.srcDirs += srcG11nKotlin
+        appGoogle.java.srcDirs += srcWireguardKotlin
+        appGoogle.java.srcDirs += srcLegacyKotlin
+        appGoogle.java.srcDirs += 'src/appGoogle/kotlin'
+        appGoogle.jniLibs.srcDirs += srcWireguardJni
+        appGoogle.res.srcDirs += srcLegacyRes
+        appGoogle.res.srcDirs += 'src/appGoogle/res'
 
         /**
          * Build types are cross combined with flavors to make a final release
           */
 
-        debug.java.srcDirs += 'src/build-unofficial/kotlin'
-        release.java.srcDirs += 'src/build-official/kotlin'
-        release.res.srcDirs += 'src/build-official/res'
-        official.java.srcDirs += 'src/build-official/kotlin'
-        official.res.srcDirs += 'src/build-official/res'
-        beta.java.srcDirs += 'src/build-official/kotlin'
-        beta.res.srcDirs += 'src/build-official/res'
+        debug.java.srcDirs += 'src/buildUnofficial/kotlin'
+        release.java.srcDirs += 'src/buildOfficial/kotlin'
+        release.res.srcDirs += 'src/buildOfficial/res'
+        official.java.srcDirs += 'src/buildOfficial/kotlin'
+        official.res.srcDirs += 'src/buildOfficial/res'
+        beta.java.srcDirs += 'src/buildOfficial/kotlin'
+        beta.res.srcDirs += 'src/buildOfficial/res'
     }
 }
 

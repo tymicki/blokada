@@ -1,9 +1,6 @@
 package core
 
-import android.content.Context
-import com.github.salomonbrys.kodein.Kodein
 import kotlinx.coroutines.experimental.Unconfined
-import java.util.*
 import kotlin.coroutines.experimental.CoroutineContext
 
 open class Kontext internal constructor(
@@ -14,10 +11,9 @@ open class Kontext internal constructor(
 ): Log by log, Emit by emit {
 
     companion object {
-        fun new(vararg id: Any)
-                = Kontext(id.joinToString(":") { it.toString() })
+        fun new(id: Any) = Kontext(id)
 
-        fun forCoroutine(coroutineContext: CoroutineContext, id: Any,
+        fun forCoroutine(coroutineContext: CoroutineContext, id: String,
                          log: Log = DefaultLog(id.toString())) = Kontext(
                 id = id,
                 log = log,
@@ -35,20 +31,5 @@ open class Kontext internal constructor(
         )
     }
 }
-
-private val kontexts = WeakHashMap<Any, AndroidKontext>()
-
-class AndroidKontext(
-        id: Any,
-        val ctx: Context,
-        val di: () -> Kodein = {
-            val c = ctx.applicationContext
-            if (c is MainApplication) c.kodein
-            else throw Exception("app does not use kodein")
-        }
-): Kontext(id)
-
-fun Context.ktx(id: String = "ctx") = kontexts.getOrPut(id, {
-    AndroidKontext(id, this) } ) as AndroidKontext
 
 fun String.ktx() = Kontext.new(this)

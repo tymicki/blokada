@@ -1,6 +1,8 @@
 package core
 
-import android.os.Environment
+import android.content.Context
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.newFixedThreadPoolContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -9,6 +11,42 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
 import java.util.zip.GZIPInputStream
+
+val COMMON = newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors(), "common")
+
+interface Log {
+    fun e(vararg msgs: Any)
+    fun w(vararg msgs: Any)
+    fun v(vararg msgs: Any)
+}
+
+typealias Result<T> = com.github.michaelbull.result.Result<T, Exception>
+typealias Time = Long
+typealias Url = String
+
+class EventType<T>(val name: String) {
+    override fun toString() = name
+}
+
+typealias SimpleEvent = EventType<Unit>
+typealias Callback<T> = (T) -> Unit
+
+fun String.newEvent() = SimpleEvent(this)
+fun <T> String.newEventOf() = EventType<T>(this)
+
+interface Emit {
+    fun <T> emit(event: EventType<T>, value: T): Job
+    fun <T> on(event: EventType<T>, callback: Callback<T>): Job
+    fun <T> on(event: EventType<T>, callback: Callback<T>, recentValue: Boolean = true): Job
+    fun <T> cancel(event: EventType<T>, callback: Callback<T>): Job
+    suspend fun <T> getMostRecent(event: EventType<T>): T?
+    fun emit(event: SimpleEvent): Job
+    fun on(event: SimpleEvent, callback: () -> Unit, recentValue: Boolean = true): Job
+    fun cancel(event: SimpleEvent, callback: () -> Unit): Job
+}
+
+lateinit var defaultWriter: (Int, String, String) -> Any
+lateinit var defaultExceptionWriter: (Int, String, Throwable) -> Any
 
 fun load(opener: () -> InputStream, lineProcessor: (String) -> String? = { it }): List<String> {
     val input = BufferedReader(InputStreamReader(opener()))
@@ -70,13 +108,14 @@ fun openUrl(url: URL, timeoutMillis: Int) = {
     c
 }
 
-internal fun openFile(file: File): InputStream {
+fun openFile(file: File): InputStream {
     return file.inputStream()
 }
 
-fun getExternalPath(): String {
-    var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-    path = File(path, "blokada")
-    path.mkdirs()
-    return path.canonicalPath
+fun setContext(context: Context) {
+
+}
+
+fun unsetContext() {
+
 }
