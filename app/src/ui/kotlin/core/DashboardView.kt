@@ -8,7 +8,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.content.ContextCompat.getColorStateList
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.github.michaelbull.result.onFailure
@@ -212,12 +211,6 @@ class DashboardView(
         lp.topMargin = 0
         fg_label.requestLayout()
     }
-
-    private val advanced by lazy { getColorStateList(ctx, R.color.dashboard_menu_advanced) }
-    private val tintAdvanced = resources.getColor(R.color.gradient4_c3)
-    private val adblocking by lazy { getColorStateList(ctx, R.color.dashboard_menu_adblocking) }
-    private val tintAdblocking = resources.getColor(R.color.gradient3_c3)
-    private val tintNormal = resources.getColor(R.color.colorText)
 
     private fun setMainSectionLabelAndMenuIcon(section: NamedViewBinder) {
         bg_nav.section = i18n.getString(section.name)

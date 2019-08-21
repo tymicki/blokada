@@ -187,7 +187,7 @@ android {
         modCore.java.srcDirs += srcCoreKotlin
         testModCore.java.srcDirs += srcCoreTest
 
-        appFull.manifest.srcFile 'src/legacy/AndroidManifest.xml'
+        appFull.manifest.srcFile 'src/ui/AndroidManifest.xml'
         appFull.java.srcDirs += srcCoreKotlin
         appFull.java.srcDirs += srcTunnelKotlin
         appFull.java.srcDirs += srcG11nKotlin
@@ -207,7 +207,7 @@ android {
 //        testAppFull.java.srcDirs += testModG11n.java.srcDirs
 //        testAppFull.java.srcDirs += testModWireguard.java.srcDirs
 
-        appCommunity.manifest.srcFile 'src/legacy/AndroidManifest.xml'
+        appCommunity.manifest.srcFile 'src/ui/AndroidManifest.xml'
         appCommunity.java.srcDirs += srcCoreKotlin
         appCommunity.java.srcDirs += srcTunnelKotlin
         appCommunity.java.srcDirs += srcG11nKotlin
@@ -218,7 +218,7 @@ android {
         appCommunity.res.srcDirs += srcUiRes
         appCommunity.res.srcDirs += 'src/full/res'
 
-        appGoogle.manifest.srcFile 'src/legacy/AndroidManifest.xml'
+        appGoogle.manifest.srcFile 'src/ui/AndroidManifest.xml'
         appGoogle.java.srcDirs += srcCoreKotlin
         appGoogle.java.srcDirs += srcTunnelKotlin
         appGoogle.java.srcDirs += srcG11nKotlin
