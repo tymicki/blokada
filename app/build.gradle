@@ -131,8 +131,8 @@ android {
          * as apps. It is meant to help improve code separation as well as speed up development.
          */
 
-        modCommon {
-            // modCommon is included by all other Kotlin mods.
+        modCore {
+            // modCore is included by all other Kotlin modules.
         }
 
         modG11n {
@@ -142,90 +142,106 @@ android {
               */
         }
 
-        modWireguard {
-            // modWireguard provides Wireguard client native library and JNI bindings.
-        }
-
         modTunnel {
             /**
              * Tunnel mod implements TUN/TAP tunneling (either with Wireguard or fake VPN) in
              * Kotlin. It also provides hosts lists filtering and has too much responsibility.
               */
         }
-
-        modLegacy {
-            // A catch all that is going away.
-        }
     }
 
     sourceSets {
-        def srcCommonKotlin = 'src/modCommon/kotlin'
-        def srcCommonMock = 'src/modCommon/mock'
-        def srcCommonTest = 'src/modCommon/test'
+        def srcCoreKotlin = 'src/core/kotlin'
+        def srcCoreMock = 'src/core/mock'
+        def srcCoreTest = 'src/core/test'
 
-        def srcWireguardKotlin = 'src/modWireguard/kotlin'
-        def srcWireguardJni = 'src/modWireguard/jniLibs'
+        def srcWireguardKotlin = 'src/wireguard/kotlin'
+        def srcWireguardJni = 'src/wireguard/jniLibs'
 
-        def srcG11nKotlin = 'src/modG11n/kotlin'
-        def srcG11nTest = 'src/modG11n/test'
+        def srcG11nKotlin = 'src/g11n/kotlin'
+        def srcG11nTest = 'src/g11n/test'
 
-        def srcTunnelKotlin = 'src/modTunnel/kotlin'
-        def srcTunnelTest = 'src/modTunnel/test'
+        def srcTunnelKotlin = 'src/tunnel/kotlin'
+        def srcTunnelTest = 'src/tunnel/test'
 
-        def srcLegacyKotlin = 'src/modLegacy/kotlin'
-        def srcLegacyRes = 'src/modLegacy/res'
-        def srcLegacyTest = 'src/modLegacy/test'
+        def srcAdblockingKotlin = 'src/adblocking/kotlin'
+        def srcAdblockingTest = 'src/adblocking/test'
 
-        modCommon.java.srcDirs += srcCommonKotlin
-        testModCommon.java.srcDirs += srcCommonTest
+        def srcDnsKotlin = 'src/dns/kotlin'
+        def srcDnsTest = 'src/dns/test'
 
-        appFull.manifest.srcFile 'src/modLegacy/AndroidManifest.xml'
-        appFull.java.srcDirs += srcCommonKotlin
+        def srcUiKotlin = 'src/ui/kotlin'
+        def srcUiTest = 'src/ui/test'
+
+        def srcStateKotlin = 'src/state/kotlin'
+        def srcStateTest = 'src/state/test'
+
+        def srcUpdateKotlin = 'src/update/kotlin'
+        def srcUpdateTest = 'src/update/test'
+
+        def srcBlockaKotlin = 'src/blocka/kotlin'
+        def srcBlockaTest = 'src/blocka/test'
+
+        def srcLegacyKotlin = 'src/legacy/kotlin'
+        def srcLegacyRes = 'src/legacy/res'
+        def srcLegacyTest = 'src/legacy/test'
+
+        modCore.java.srcDirs += srcCoreKotlin
+        testModCore.java.srcDirs += srcCoreTest
+
+        appFull.manifest.srcFile 'src/legacy/AndroidManifest.xml'
+        appFull.java.srcDirs += srcCoreKotlin
         appFull.java.srcDirs += srcTunnelKotlin
         appFull.java.srcDirs += srcG11nKotlin
         appFull.java.srcDirs += srcWireguardKotlin
         appFull.java.srcDirs += srcLegacyKotlin
-        appFull.java.srcDirs += 'src/appFull/kotlin'
+        appFull.java.srcDirs += srcAdblockingKotlin
+        appFull.java.srcDirs += srcDnsKotlin
+        appFull.java.srcDirs += srcUiKotlin
+        appFull.java.srcDirs += srcStateKotlin
+        appFull.java.srcDirs += srcUpdateKotlin
+        appFull.java.srcDirs += srcBlockaKotlin
+        appFull.java.srcDirs += 'src/full/kotlin'
         appFull.jniLibs.srcDirs += srcWireguardJni
         appFull.res.srcDirs += srcLegacyRes
-        appFull.res.srcDirs += 'src/appFull/res'
+        appFull.res.srcDirs += 'src/full/res'
 //        testAppFull.java.srcDirs += testModTunnel.java.srcDirs
 //        testAppFull.java.srcDirs += testModG11n.java.srcDirs
 //        testAppFull.java.srcDirs += testModWireguard.java.srcDirs
 
-        appCommunity.manifest.srcFile 'src/modLegacy/AndroidManifest.xml'
-        appCommunity.java.srcDirs += srcCommonKotlin
+        appCommunity.manifest.srcFile 'src/legacy/AndroidManifest.xml'
+        appCommunity.java.srcDirs += srcCoreKotlin
         appCommunity.java.srcDirs += srcTunnelKotlin
         appCommunity.java.srcDirs += srcG11nKotlin
         appCommunity.java.srcDirs += srcWireguardKotlin
         appCommunity.java.srcDirs += srcLegacyKotlin
-        appCommunity.java.srcDirs += 'src/appFull/kotlin'
+        appCommunity.java.srcDirs += 'src/full/kotlin'
         appCommunity.jniLibs.srcDirs += srcWireguardJni
         appCommunity.res.srcDirs += srcLegacyRes
-        appCommunity.res.srcDirs += 'src/appFull/res'
+        appCommunity.res.srcDirs += 'src/full/res'
 
-        appGoogle.manifest.srcFile 'src/modLegacy/AndroidManifest.xml'
-        appGoogle.java.srcDirs += srcCommonKotlin
+        appGoogle.manifest.srcFile 'src/legacy/AndroidManifest.xml'
+        appGoogle.java.srcDirs += srcCoreKotlin
         appGoogle.java.srcDirs += srcTunnelKotlin
         appGoogle.java.srcDirs += srcG11nKotlin
         appGoogle.java.srcDirs += srcWireguardKotlin
         appGoogle.java.srcDirs += srcLegacyKotlin
-        appGoogle.java.srcDirs += 'src/appGoogle/kotlin'
+        appGoogle.java.srcDirs += 'src/google/kotlin'
         appGoogle.jniLibs.srcDirs += srcWireguardJni
         appGoogle.res.srcDirs += srcLegacyRes
-        appGoogle.res.srcDirs += 'src/appGoogle/res'
+        appGoogle.res.srcDirs += 'src/google/res'
 
         /**
          * Build types are cross combined with flavors to make a final release
           */
 
-        debug.java.srcDirs += 'src/buildUnofficial/kotlin'
-        release.java.srcDirs += 'src/buildOfficial/kotlin'
-        release.res.srcDirs += 'src/buildOfficial/res'
-        official.java.srcDirs += 'src/buildOfficial/kotlin'
-        official.res.srcDirs += 'src/buildOfficial/res'
-        beta.java.srcDirs += 'src/buildOfficial/kotlin'
-        beta.res.srcDirs += 'src/buildOfficial/res'
+        debug.java.srcDirs += 'src/unofficial/kotlin'
+        release.java.srcDirs += 'src/official/kotlin'
+        release.res.srcDirs += 'src/official/res'
+        official.java.srcDirs += 'src/official/kotlin'
+        official.res.srcDirs += 'src/official/res'
+        beta.java.srcDirs += 'src/official/kotlin'
+        beta.res.srcDirs += 'src/official/res'
     }
 }
 
