@@ -46,7 +46,7 @@ class GatewaysDashboardSectionVB(
     private fun populateGateways(retry: Int = 0) {
         api.getGateways().enqueue(object : retrofit2.Callback<RestModel.Gateways> {
             override fun onFailure(call: Call<RestModel.Gateways>?, t: Throwable?) {
-                ktx.e("gateways api call error", t ?: "null")
+                e("gateways api call error", t ?: "null")
                 if (retry < MAX_RETRIES) populateGateways(retry + 1)
                 else gatewaysRequest.sendEmptyMessageDelayed(0, 5 * 1000)
             }
@@ -66,7 +66,7 @@ class GatewaysDashboardSectionVB(
                             }
                         }
                         else -> {
-                            ktx.e("gateways api call response ${code()}")
+                            e("gateways api call response ${code()}")
                             if (retry < MAX_RETRIES) populateGateways(retry + 1)
                             else gatewaysRequest.sendEmptyMessageDelayed(0, 30 * 1000)
                             Unit

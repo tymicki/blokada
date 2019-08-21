@@ -40,27 +40,27 @@ internal class FilterManager(
     fun load(ktx: AndroidKontext) {
         doLoadFilterStore(ktx).mapBoth(
                 success = {
-                    ktx.v("loaded FilterStore from persistence", it.url, it.cache.size)
+                    v("loaded FilterStore from persistence", it.url, it.cache.size)
                     ktx.emit(Events.FILTERS_CHANGED, it.cache)
                     store = it
                 },
                 failure = {
-                    ktx.e("failed loading FilterStore from persistence", it)
+                    e("failed loading FilterStore from persistence", it)
                 }
         )
     }
 
     fun save(ktx: Kontext) {
         doSaveFilterStore(store).mapBoth(
-                success = { ktx.v("saved FilterStore to persistence", store.cache.size, store.url) },
-                failure = { ktx.e("failed saving FilterStore to persistence", it) }
+                success = { v("saved FilterStore to persistence", store.cache.size, store.url) },
+                failure = { e("failed saving FilterStore to persistence", it) }
         )
     }
 
     fun setUrl(ktx: Kontext, url: String) {
         if (store.url != url) {
             store = store.copy(lastFetch = 0, url = url)
-            ktx.v("changed FilterStore url", url)
+            v("changed FilterStore url", url)
         }
     }
 
@@ -71,11 +71,11 @@ internal class FilterManager(
     fun put(ktx: Kontext, new: Filter) {
         val old = store.cache.firstOrNull { it == new }
         store = if (old == null) {
-            ktx.v("adding filter", new.id)
+            v("adding filter", new.id)
             val lastPriority = store.cache.maxBy { it.priority }?.priority ?: 0
             store.copy(cache = store.cache.plus(new.copy(priority = lastPriority + 1)))
         } else {
-            ktx.v("updating filter", new.id)
+            v("updating filter", new.id)
             val newWithPreservedFields = new.copy(
                     whitelist = old.whitelist,
                     priority = old.priority,
@@ -87,19 +87,19 @@ internal class FilterManager(
     }
 
     fun remove(ktx: Kontext, old: Filter) {
-        ktx.v("removing filter", old.id)
+        v("removing filter", old.id)
         store = store.copy(cache = store.cache.minus(old))
         ktx.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
     fun removeAll(ktx: Kontext) {
-        ktx.v("removing all filters")
+        v("removing all filters")
         store = store.copy(cache = emptySet())
         ktx.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
     fun invalidateCache(ktx: Kontext) {
-        ktx.v("invalidating filters cache")
+        v("invalidating filters cache")
         val invalidatedFilters = store.cache.map { it.copy(lastFetch = 0) }.toSet()
         store = store.copy(cache = invalidatedFilters, lastFetch = 0)
     }
@@ -120,22 +120,22 @@ internal class FilterManager(
 
     private fun syncFiltersWithRepo(ktx: Kontext): Boolean {
         if (store.url.isEmpty()) {
-            ktx.w("trying to sync without url set, ignoring")
+            w("trying to sync without url set, ignoring")
             return false
         }
 
         if (!doValidateFilterStoreCache(store)) {
-            ktx.v("syncing filters", store.url)
+            v("syncing filters", store.url)
             ktx.emit(Events.FILTERS_CHANGING)
             doFetchFiltersFromRepo(store.url).mapBoth(
                     success = { builtinFilters ->
-                        ktx.v("fetched. size:", builtinFilters.size)
+                        v("fetched. size:", builtinFilters.size)
 
                         val new = if (store.cache.isEmpty()) {
-                            ktx.v("no local filters found, setting default configuration")
+                            v("no local filters found, setting default configuration")
                             builtinFilters
                         } else {
-                            ktx.v("combining with existing filters")
+                            v("combining with existing filters")
                             store.cache.map { existing ->
                                 val f = builtinFilters.find { it == existing }
                                 f?.copy(
@@ -150,11 +150,11 @@ internal class FilterManager(
 
                         store = store.copy(cache = doProcessFetchedFilters(new).prioritised(),
                                 lastFetch = doGetNow())
-                        ktx.v("synced", store.cache.size)
+                        v("synced", store.cache.size)
                         ktx.emit(Events.FILTERS_CHANGED, store.cache)
                     },
                     failure = {
-                        ktx.e("failed syncing filters", it)
+                        e("failed syncing filters", it)
                     }
             )
         }
@@ -167,16 +167,16 @@ internal class FilterManager(
         val downloaded = mutableSetOf<Filter>()
         active.forEach { filter ->
             if (!doValidateRulesetCache(filter)) {
-                ktx.v("fetching ruleset", filter.id)
+                v("fetching ruleset", filter.id)
                 ktx.emit(Events.FILTERS_CHANGING)
                 doFetchRuleset(doResolveFilterSource(filter), doGetMemoryLimit()).mapBoth(
                         success = {
                             blockade.set(ktx, filter.id, it)
                             downloaded.add(filter.copy(lastFetch = System.currentTimeMillis()))
-                            ktx.v("saved", filter.id, it.size)
+                            v("saved", filter.id, it.size)
                         },
                         failure = {
-                            ktx.e("failed fetching ruleset", filter.id, it)
+                            e("failed fetching ruleset", filter.id, it)
                         }
                 )
             }
@@ -187,7 +187,7 @@ internal class FilterManager(
         val allowed = store.cache.filter { it.whitelist && it.active }.map { it.id }
         val denied = store.cache.filter { !it.whitelist && it.active }.map { it.id }
 
-        ktx.v("attempting to build rules, denied/allowed", denied.size, allowed.size)
+        v("attempting to build rules, denied/allowed", denied.size, allowed.size)
         blockade.build(ktx, denied, allowed)
         allowed.size > 0 || denied.size > 0
     }()

@@ -46,7 +46,7 @@ class RepoImpl(
 
     private val repoRefresh = {
         val ktx = "repo:refresh".ktx()
-        ktx.v("repo refresh start")
+        v("repo refresh start")
         val repoURL = java.net.URL(url())
         val fetchTimeout = 10 * 10000
 
@@ -61,7 +61,7 @@ class RepoImpl(
                     else -> Locale(parts[0])
                 }
             }
-            ktx.v("repo downloaded")
+            v("repo downloaded")
 
             lastRefreshMillis %= time.now()
             RepoContent(
@@ -73,9 +73,9 @@ class RepoImpl(
                     fetchedUrl = url()
             )
         } catch (e: Exception) {
-            ktx.e("repo refresh fail", e)
+            e("repo refresh fail", e)
             if (e is java.io.FileNotFoundException) {
-                ktx.w("app version is obsolete", e)
+                w("app version is obsolete", e)
                 version.obsolete %= true
             }
             throw e

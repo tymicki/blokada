@@ -48,7 +48,7 @@ internal class DnsVpnConfigurator(
                 val address = Inet6Address.getByAddress(ipv6Template)
                 builder.addAddress(address, 120)
             } catch (e: Exception) {
-                ktx.e("failed adding ipv6 address", e)
+                e("failed adding ipv6 address", e)
                 ipv6Template = null
             }
         } else {
@@ -60,7 +60,7 @@ internal class DnsVpnConfigurator(
             try {
                 builder.addDnsServer(format, ipv6Template, address)
             } catch (e: Exception) {
-                ktx.e("failed adding dns server", e)
+                e("failed adding dns server", e)
             }
         }
 
@@ -105,7 +105,7 @@ internal class PausedVpnConfigurator(
             try {
                 builder.addDnsServer(address.getAddress())
             } catch (e: Exception) {
-                ktx.e("failed adding dns server", e)
+                e("failed adding dns server", e)
             }
         }
 
@@ -147,11 +147,11 @@ internal class BlockaVpnConfigurator(
         dnsIndex = 0
         for (address in dnsServers) {
             try {
-                ktx.v("adding dns server $address")
+                v("adding dns server $address")
                 if (blockaConfig.adblocking) builder.addMappedDnsServer(address)
                 else builder.addDnsServer(address.address)
             } catch (e: Exception) {
-                ktx.e("failed adding dns server $address", e)
+                e("failed adding dns server $address", e)
             }
         }
 
@@ -164,7 +164,7 @@ internal class BlockaVpnConfigurator(
             builder.addDisallowedApplication(it)
         }
 
-        ktx.v("vpn addresses: ${blockaConfig.vip4}, ${blockaConfig.vip6}")
+        v("vpn addresses: ${blockaConfig.vip4}, ${blockaConfig.vip6}")
         builder.addAddress(blockaConfig.vip4, 32)
         builder.addAddress(blockaConfig.vip6, 128)
 

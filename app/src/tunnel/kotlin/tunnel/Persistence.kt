@@ -35,11 +35,11 @@ class FiltersPersistence {
         loadLegacy34(ktx)
                 .or { loadLegacy35(ktx) }
                 .or {
-                    ktx.v("loading from the persistence", core.Persistence.paper().path)
+                    v("loading from the persistence", core.Persistence.paper().path)
                     Result.of { core.Persistence.paper().read("filters2", FilterStore()) }
                             .orElse { ex ->
                                 if (core.Persistence.global.loadPath() != core.Persistence.DEFAULT_PATH) {
-                                    ktx.w("failed loading from a custom path, resetting")
+                                    w("failed loading from a custom path, resetting")
                                     core.Persistence.global.savePath(core.Persistence.DEFAULT_PATH)
                                     Result.of { core.Persistence.paper().read("filters2", FilterStore()) }
                                 } else Err(Exception("failed loading from default path", ex))
@@ -60,7 +60,7 @@ class FiltersPersistence {
             prefs.edit().putString("filters", "").apply()
             val old = FilterSerializer().deserialise(legacy)
             if (old.isNotEmpty()) {
-                ktx.v("loaded from legacy 3.4 persistence", old.size)
+                v("loaded from legacy 3.4 persistence", old.size)
                 Result.of { FilterStore(old, lastFetch = 0) }
             } else Err(Exception("no legacy found"))
         }
@@ -71,7 +71,7 @@ class FiltersPersistence {
                 .andThen {
                     if (it.cache.isEmpty()) Err(Exception("no 3.5 legacy persistence found"))
                     else {
-                        ktx.v("loaded from legacy 3.5 persistence")
+                        v("loaded from legacy 3.5 persistence")
                         Ok(FilterStore(
                                 cache = it.cache.map {
                                     Filter(
@@ -98,7 +98,7 @@ class TunnelConfigPersistence {
                 .mapBoth(
                         success = { it },
                         failure = { ex ->
-                            ktx.w("failed loading TunnelConfig, reverting to defaults", ex)
+                            w("failed loading TunnelConfig, reverting to defaults", ex)
                             TunnelConfig()
                         }
                 )
@@ -164,7 +164,7 @@ class BlockaConfigPersistence {
                 .mapBoth(
                         success = { it },
                         failure = { ex ->
-                            ktx.w("failed loading BlockaConfig, reverting to empty", ex)
+                            w("failed loading BlockaConfig, reverting to empty", ex)
                             BlockaConfig()
                         }
                 )

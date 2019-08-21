@@ -31,50 +31,50 @@ internal class TranslationsFetcher(
     @Synchronized fun load(ktx: Kontext) {
         doLoadTranslationStore().mapBoth(
                 success = {
-                    ktx.v("loaded TranslationStore from persistence", it.cache.size)
+                    v("loaded TranslationStore from persistence", it.cache.size)
 //                    ktx.emit(Events.FILTERS_CHANGED, it.cache)
                     store = it
                 },
                 failure = {
-                    ktx.e("failed loading TranslationStore from persistence", it)
+                    e("failed loading TranslationStore from persistence", it)
                 }
         )
     }
 
     @Synchronized fun save(ktx: Kontext) {
         doSaveTranslationStore(store).mapBoth(
-                success = { ktx.v("saved TranslationStore to persistence") },
-                failure = { ktx.e("failed saving TranslationStore to persistence", it) }
+                success = { v("saved TranslationStore to persistence") },
+                failure = { e("failed saving TranslationStore to persistence", it) }
         )
     }
 
     @Synchronized fun sync(ktx: Kontext) {
         val invalid = urls().filter { !doValidateCacheForUrl(store, it.key) }
-        ktx.v("attempting to fetch ${invalid.size} translation urls")
+        v("attempting to fetch ${invalid.size} translation urls")
 
         var failed = 0
         invalid.map { (url, prefix) -> doFetchTranslations(url, prefix).mapBoth(
                 success = {
-                    ktx.v("translation fetched", url, it.size)
+                    v("translation fetched", url, it.size)
                     url to it
                 },
                 failure = { ex ->
-                    ktx.e("failed fetching translation", url, ex)
+                    e("failed fetching translation", url, ex)
                     ++failed
                     url to emptyTranslations()
                 }
         ) }.filter { it.second.isNotEmpty() }.forEach { (url, translations) ->
             store = store.put(url)
             translations.forEach { (key, value) ->
-                doPutTranslation(key, value).mapError { ex -> ktx.e("failed putting translation", ex) }
+                doPutTranslation(key, value).mapError { ex -> e("failed putting translation", ex) }
             }
         }
 
-        ktx.v("finished fetching translations; $failed failed")
+        v("finished fetching translations; $failed failed")
     }
 
     @Synchronized fun invalidateCache(ktx: Kontext) {
-        ktx.v("invalidating translations cache")
+        v("invalidating translations cache")
         store = TranslationStore()
     }
 }

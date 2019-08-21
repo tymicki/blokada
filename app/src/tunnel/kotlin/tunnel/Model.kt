@@ -150,9 +150,9 @@ val BLOCKA_CONFIG = "BLOCKA_CONFIG".newEventOf<BlockaConfig>()
 fun registerBlockaConfigEvent(ktx: AndroidKontext) {
     val config = Persistence.blocka.load(ktx)
 
-    ktx.v("loading boringtun")
+    v("loading boringtun")
     System.loadLibrary("boringtun")
-    ktx.v("boringtun loaded")
+    v("boringtun loaded")
 
     checkAccountInfo(ktx, config)
 
@@ -163,7 +163,7 @@ fun registerBlockaConfigEvent(ktx: AndroidKontext) {
         if (d.screenOn()) async {
             ktx.getMostRecent(BLOCKA_CONFIG)?.run {
                 if (!DateUtils.isToday(lastDaily)) {
-                    ktx.v("daily check account")
+                    v("daily check account")
                     checkAccountInfo(ktx, copy(lastDaily = System.currentTimeMillis()))
                 }
             }
@@ -177,7 +177,7 @@ private fun newAccount(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0
 
     api.newAccount().enqueue(object: retrofit2.Callback<RestModel.Account> {
         override fun onFailure(call: Call<RestModel.Account>?, t: Throwable?) {
-            ktx.e("new account api call error", t ?: "null")
+            e("new account api call error", t ?: "null")
             if (retry < MAX_RETRIES) newAccount(ktx, config, retry + 1)
             else clearConnectedGateway(ktx, config)
         }
@@ -195,11 +195,11 @@ private fun newAccount(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0
                                     publicKey = BoringTunJNI.x25519_key_to_base64(public)
                             )
                             ktx.emit(BLOCKA_CONFIG, newCfg)
-                            ktx.v("new user. public key: ${newCfg.publicKey}")
+                            v("new user. public key: ${newCfg.publicKey}")
                         }
                     }
                     else -> {
-                        ktx.e("new account api call response ${code()}")
+                        e("new account api call response ${code()}")
                         if (retry < MAX_RETRIES) newAccount(ktx, config, retry + 1)
                         else clearConnectedGateway(ktx, config)
                     }
@@ -221,25 +221,25 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
     }
 
     if (++requests > 10) {
-        ktx.e("too many check account requests recently, disabling vpn")
+        e("too many check account requests recently, disabling vpn")
         clearConnectedGateway(ktx, config)
         requests = 0
         return
     }
 
     if (config.accountId.isBlank()) {
-        ktx.v("accountId not set, creating new account")
+        v("accountId not set, creating new account")
         newAccount(ktx, config)
         return
     }
 
-    ktx.v("check account api call")
+    v("check account api call")
 
     val api: RestApi = ktx.di().instance()
     val accountId = if (config.restoredAccountId.isBlank()) config.accountId else config.restoredAccountId
     api.getAccountInfo(accountId).enqueue(object: retrofit2.Callback<RestModel.Account> {
         override fun onFailure(call: Call<RestModel.Account>?, t: Throwable?) {
-            ktx.e("check account api call error", t ?: "null")
+            e("check account api call error", t ?: "null")
             if (retry < MAX_RETRIES) checkAccountInfo(ktx, config, retry + 1, showError)
             else {
                 if (showError) showSnack(R.string.slot_account_name_api_error)
@@ -255,7 +255,7 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
                             val newCfg = if (config.restoredAccountId.isBlank()) config.copy(
                                     activeUntil = account.activeUntil
                             ) else {
-                                ktx.v("restored account id")
+                                v("restored account id")
                                 config.copy(
                                     activeUntil = account.activeUntil,
                                     accountId = config.restoredAccountId,
@@ -263,10 +263,10 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
                                 )
                             }
                             if (!account.expiresSoon()) {
-                                ktx.v("current account active until: ${newCfg.activeUntil}")
+                                v("current account active until: ${newCfg.activeUntil}")
                                 checkGateways(ktx, newCfg)
                             } else {
-                                ktx.v("current account inactive")
+                                v("current account inactive")
                                 if (newCfg.blockaVpn) {
                                     displayAccountExpiredNotification(ktx.ctx)
                                     showSnack(R.string.account_inactive)
@@ -276,7 +276,7 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
                         }
                     }
                     else -> {
-                        ktx.e("check account api call response ${code()}")
+                        e("check account api call response ${code()}")
                         if (retry < MAX_RETRIES) checkAccountInfo(ktx, config, retry + 1, showError)
                         else {
                             if (showError) showSnack(R.string.slot_account_name_api_error)
@@ -314,7 +314,7 @@ fun showSnack(resource: Resource) {
 }
 
 fun clearConnectedGateway(ktx: AndroidKontext, config: BlockaConfig, showError: Boolean = true) {
-    ktx.v("clearing connected gateway")
+    v("clearing connected gateway")
     if (config.blockaVpn && showError) {
         displayLeaseExpiredNotification(ktx.ctx)
         showSnack(R.string.slot_lease_cant_connect)
@@ -333,11 +333,11 @@ fun clearConnectedGateway(ktx: AndroidKontext, config: BlockaConfig, showError: 
 }
 
 fun checkGateways(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
-    ktx.v("check gateway api call")
+    v("check gateway api call")
     val api: RestApi = ktx.di().instance()
     api.getGateways().enqueue(object: retrofit2.Callback<RestModel.Gateways> {
         override fun onFailure(call: Call<RestModel.Gateways>?, t: Throwable?) {
-            ktx.e("gateways api call error", t ?: "null")
+            e("gateways api call error", t ?: "null")
             if (retry < MAX_RETRIES) checkGateways(ktx, config, retry + 1)
             else clearConnectedGateway(ktx, config)
         }
@@ -355,16 +355,16 @@ fun checkGateways(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
                                         gatewayPort = gateway.port,
                                         gatewayNiceName = gateway.niceName()
                                 )
-                                ktx.v("found gateway, chosen: ${newCfg.gatewayId}")
+                                v("found gateway, chosen: ${newCfg.gatewayId}")
                                 checkLease(ktx, newCfg)
                             } else {
-                                ktx.v("found no matching gateway")
+                                v("found no matching gateway")
                                 clearConnectedGateway(ktx, config)
                             }
                         }
                     }
                     else -> {
-                        ktx.e("gateways api call response ${code()}")
+                        e("gateways api call response ${code()}")
                         if (retry < MAX_RETRIES) checkGateways(ktx, config, retry + 1)
                         else clearConnectedGateway(ktx, config)
                         Unit
@@ -384,11 +384,11 @@ fun checkLeaseIfNeeded(ktx: AndroidKontext) {
 }
 
 private fun checkLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
-    ktx.v("check lease api call")
+    v("check lease api call")
     val api: RestApi = ktx.di().instance()
     api.getLeases(config.accountId).enqueue(object: retrofit2.Callback<RestModel.Leases> {
         override fun onFailure(call: Call<RestModel.Leases>?, t: Throwable?) {
-            ktx.e("leases api call error", t ?: "null")
+            e("leases api call error", t ?: "null")
             if (retry < MAX_RETRIES) checkLease(ktx, config, retry + 1)
             else clearConnectedGateway(ktx, config)
         }
@@ -416,17 +416,17 @@ private fun checkLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0
                                         leaseActiveUntil = lease.expires,
                                         blockaVpn = true
                                 )
-                                ktx.v("found active lease until: ${lease.expires}")
+                                v("found active lease until: ${lease.expires}")
                                 ktx.emit(BLOCKA_CONFIG, newCfg)
                                 scheduleRecheck(ktx, newCfg)
                             } else {
-                                ktx.v("no active lease, or expires soon")
+                                v("no active lease, or expires soon")
                                 newLease(ktx, config)
                             }
                         }
                     }
                     else -> {
-                        ktx.e("leases api call response ${code()}")
+                        e("leases api call response ${code()}")
                         if (retry < MAX_RETRIES) checkLease(ktx, config, retry + 1)
                         else clearConnectedGateway(ktx, config)
                         Unit
@@ -445,24 +445,24 @@ private fun deleteLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 
     api.deleteLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<Void> {
 
         override fun onFailure(call: Call<Void>?, t: Throwable?) {
-            ktx.e("delete lease api call error", t ?: "null")
+            e("delete lease api call error", t ?: "null")
             if (retry < MAX_RETRIES) deleteLease(ktx, config, retry + 1)
         }
 
         override fun onResponse(call: Call<Void>?, response: Response<Void>?) {
-            ktx.e("obsolete lease deleted")
+            e("obsolete lease deleted")
         }
 
     })
 }
 
 private fun newLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
-    ktx.v("new lease api call")
+    v("new lease api call")
     val api: RestApi = ktx.di().instance()
 
     api.newLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<RestModel.Lease> {
         override fun onFailure(call: Call<RestModel.Lease>?, t: Throwable?) {
-            ktx.e("new lease api call error", t ?: "null")
+            e("new lease api call error", t ?: "null")
             if (retry < MAX_RETRIES) newLease(ktx, config, retry + 1)
             else clearConnectedGateway(ktx, config)
         }
@@ -478,13 +478,13 @@ private fun newLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) 
                                     leaseActiveUntil = lease.expires,
                                     blockaVpn = true
                             )
-                            ktx.v("new active lease, until: ${lease.expires}")
+                            v("new active lease, until: ${lease.expires}")
                             ktx.emit(BLOCKA_CONFIG, newCfg)
                             scheduleRecheck(ktx, newCfg)
                         }
                     }
                     else -> {
-                        ktx.e("new lease api call response ${code()}")
+                        e("new lease api call response ${code()}")
                         if (retry < MAX_RETRIES) newLease(ktx, config, retry + 1)
                         else clearConnectedGateway(ktx, config)
                         Unit
@@ -514,7 +514,7 @@ private fun scheduleRecheck(ktx: AndroidKontext, config: BlockaConfig) {
         }
     } else {
         alarm.set(AlarmManager.RTC, sooner.time, operation)
-        ktx.v("scheduled account / lease recheck for $sooner")
+        v("scheduled account / lease recheck for $sooner")
     }
 }
 
@@ -522,7 +522,7 @@ class RenewLicenseReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, p1: Intent) {
         async {
             val ktx = ctx.ktx("recheck")
-            ktx.v("recheck account / lease task executing")
+            v("recheck account / lease task executing")
             val config = ktx.getMostRecent(BLOCKA_CONFIG)!!
             checkAccountInfo(ktx, config)
         }

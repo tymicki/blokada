@@ -152,7 +152,7 @@ class VpnStatusVB(
 
     private fun activateVpnAutomatically(cfg: BlockaConfig) {
         if (!cfg.blockaVpn && !wasActive && cfg.activeUntil.after(Date()) && cfg.hasGateway()) {
-            ktx.v("automatically enabling vpn on new subscription")
+            v("automatically enabling vpn on new subscription")
             ktx.emit(BLOCKA_CONFIG, cfg.copy(blockaVpn = true))
         }
     }

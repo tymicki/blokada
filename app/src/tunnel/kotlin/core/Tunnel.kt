@@ -156,7 +156,7 @@ fun newTunnelModule(ctx: Context): Module {
                     engine.setup(ctx.ktx("blocka:vpn:switched"), dns.dnsServers(), cfg)
 
 //                    if (cfg.blockaVpn && !s.enabled()) {
-//                        ktx.v("auto activating on vpn gateway selected")
+//                        v("auto activating on vpn gateway selected")
 //                        s.enabled %= true
 //                    }
                 }
@@ -167,10 +167,10 @@ fun newTunnelModule(ctx: Context): Module {
                     if (!restartedRecently) restarts = 0
                     if (restarts++ > 9 && device.watchdogOn()) {
                         restarts = 0
-                        ktx.e("Too many tunnel restarts. Stopping...")
+                        e("Too many tunnel restarts. Stopping...")
                         s.error %= true
                         s.enabled %= false
-                    } else ktx.w("tunnel restarted for $restarts time in a row")
+                    } else w("tunnel restarted for $restarts time in a row")
                 }
             }
 
@@ -191,7 +191,7 @@ fun newTunnelModule(ctx: Context): Module {
 
             // React to device power saving blocking our tunnel
             ktx.on(tunnel.Events.TUNNEL_POWER_SAVING) {
-                ktx.w("power saving detected")
+                w("power saving detected")
                 ctx.startActivity(Intent(ctx, PowersaveActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 })
@@ -199,7 +199,7 @@ fun newTunnelModule(ctx: Context): Module {
 
             // The tunnel setup routine (with permissions request)
             s.active.doWhenSet().then {
-                ktx.e("enabled: ${s.enabled()}")
+                e("enabled: ${s.enabled()}")
                 if (s.enabled() && s.active() && s.tunnelState(TunnelState.INACTIVE)) {
                     s.retries %= s.retries() - 1
                     s.tunnelState %= TunnelState.ACTIVATING
@@ -219,7 +219,7 @@ fun newTunnelModule(ctx: Context): Module {
                         if (completed) {
                             s.tunnelState %= TunnelState.ACTIVE
                         } else {
-                            ktx.e("could not start tunnel", err ?: "no exception")
+                            e("could not start tunnel", err ?: "no exception")
                         }
                     }
 
@@ -248,7 +248,7 @@ fun newTunnelModule(ctx: Context): Module {
                     resetRetriesTask = task(retryKctx) {
                         if (s.tunnelState(TunnelState.ACTIVE)) {
                             Thread.sleep(15 * 1000)
-                            ktx.v("tunnel stable")
+                            v("tunnel stable")
                             if (s.tunnelState(TunnelState.ACTIVE)) s.retries.refresh()
                         }
                     }
@@ -271,7 +271,7 @@ fun newTunnelModule(ctx: Context): Module {
                         if (s.enabled() && s.retries(0) && !s.tunnelState(TunnelState.ACTIVE)) {
                             Thread.sleep(5 * 1000)
                             if (s.enabled() && !s.tunnelState(TunnelState.ACTIVE)) {
-                                ktx.v("tunnel restart after wait")
+                                v("tunnel restart after wait")
                                 s.retries.refresh()
                                 s.restart %= true
                                 s.tunnelState %= TunnelState.INACTIVE
@@ -298,18 +298,18 @@ fun newTunnelModule(ctx: Context): Module {
             d.connected.doWhenChanged(withInit = true).then {
                 when {
                     !d.connected() && s.active() -> {
-                        ktx.v("no connectivity, deactivating")
+                        v("no connectivity, deactivating")
                         s.restart %= true
                         s.active %= false
                     }
                     d.connected() && s.restart() && !s.updating() && s.enabled() -> {
-                        ktx.v("connectivity back, activating")
+                        v("connectivity back, activating")
                         s.restart %= false
                         s.error %= false
                         s.active %= true
                     }
                     d.connected() && s.error() && !s.updating() && !s.enabled() -> {
-                        ktx.v("connectivity back, auto recover from error")
+                        v("connectivity back, auto recover from error")
                         s.error %= false
                         s.enabled %= true
                     }
@@ -321,7 +321,7 @@ fun newTunnelModule(ctx: Context): Module {
                 s.tunnelState(TunnelState.INACTIVE) && s.enabled() && s.restart() && s.updating(false)
                         && !d.isWaiting() && s.retries() > 0
             }.then {
-                ktx.v("tunnel auto restart")
+                v("tunnel auto restart")
                 s.restart %= false
                 s.active %= true
             }

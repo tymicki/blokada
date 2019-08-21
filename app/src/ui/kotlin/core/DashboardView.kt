@@ -83,19 +83,19 @@ class DashboardView(
                 createDashboardSections(ktx),
                 mainMenu,
                 onChangeSection = { section, sectionIndex ->
-                    ktx.v("onChangeSection")
+                    v("onChangeSection")
                     setMainSectionLabelAndMenuIcon(section)
                     bg_pager.currentItem = sectionIndex
                 },
                 onChangeMenu = { submenu, secondarySubmenu ->
-                    ktx.v("onChangeMenu")
+                    v("onChangeMenu")
                     setMenu()
                     setMenuNav(submenu, secondarySubmenu)
                     bg_pager.lock = true
                     onOpenSection { }
                 },
                 onMenuClosed = { sectionIndex ->
-                    ktx.v("onMenuClosed")
+                    v("onMenuClosed")
                     setOn(sectionIndex + 1)
                     bg_pager.lock = false
                     updateMenuHeader(null, closed = true)
@@ -173,7 +173,7 @@ class DashboardView(
     }
 
     private fun setOn(toColorIndex: Int) {
-        ktx.v("setOn")
+        v("setOn")
         //bg_colors.onScroll(1f, 0, toColorIndex)
         bg_nav.alpha = 1f
         bg_logo.alpha = 1.0f
@@ -189,7 +189,7 @@ class DashboardView(
     }
 
     private fun setMenu() {
-        ktx.v("setMenu")
+        v("setMenu")
 //        bg_colors.onScroll(1f, 0, toColorIndex)
         bg_logo.alpha = 1f
         bg_packets.alpha = 1f
@@ -328,28 +328,28 @@ class DashboardView(
                 override fun onPanelStateChanged(panel: View, previousState: PanelState, newState: PanelState) {
                     when (newState) {
                         PanelState.DRAGGING -> {
-                            ktx.v("panel dragging")
+                            v("panel dragging")
                             setDragging()
                         }
                         PanelState.ANCHORED -> {
-                            ktx.v("panel anchored")
+                            v("panel anchored")
                             model.menuClosed()
                             if (previousMeaningfulState == PanelState.COLLAPSED && !tun.enabled()) {
-                                ktx.v("enabling app as panel got anchored from collapsed state")
+                                v("enabling app as panel got anchored from collapsed state")
                                 tun.error %= false
                                 tun.enabled %= true
                             }
                             previousMeaningfulState = PanelState.ANCHORED
                         }
                         PanelState.COLLAPSED -> {
-                            ktx.v("panel collapsed")
+                            v("panel collapsed")
                             sliding.panelState = PanelState.ANCHORED
                         }
                         PanelState.EXPANDED -> {
-                            ktx.v("panel expanded")
+                            v("panel expanded")
                             model.menuOpened()
                             if (previousMeaningfulState == PanelState.COLLAPSED && !tun.enabled()) {
-                                ktx.v("enabling app as panel got expanded from collapsed state")
+                                v("enabling app as panel got expanded from collapsed state")
                                 tun.error %= false
                                 tun.enabled %= true
                             }
@@ -420,7 +420,7 @@ class DashboardView(
     private fun resize() {
         if (adjusted) return
         adjusted = true
-        ktx.v("resize")
+        v("resize")
         val percentHeight = (
                 resources.getDimensionPixelSize(R.dimen.dashboard_panel_anchor_size)
                         + navigationBarPx
@@ -471,7 +471,7 @@ class DashboardView(
     }
 
     private fun onOpenSection(after: () -> Unit) {
-        ktx.v("onopensection")
+        v("onopensection")
         bg_nav.viewPager = fg_pager
         bg_nav.sleeping = false
         fg_pager.visibility = View.VISIBLE
@@ -479,7 +479,7 @@ class DashboardView(
     }
 
     private fun onCloseSection() {
-        ktx.v("onclosesection")
+        v("onclosesection")
 
         model.getOpenedSection().run {
             bg_nav.section = i18n.getString(name)

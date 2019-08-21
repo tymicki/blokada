@@ -13,6 +13,6 @@ class Sync<T>(private var value: T) {
 }
 
 fun hasCompleted(ktx: Kontext, f: () -> Unit): Pair<Boolean, Exception?> {
-    return try { f(); true to null } catch (e: Exception) { ktx.w(e); false to e }
+    return try { f(); true to null } catch (e: Exception) { w(e); false to e }
 }
 

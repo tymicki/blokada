@@ -75,7 +75,7 @@ class MainApplication: Application(), KodeinAware {
     private fun setRestartAppOnCrash() {
         Thread.setDefaultUncaughtExceptionHandler { _, ex ->
             try {
-                "fatal".ktx().e(ex)
+                e(ex)
             } catch (e: Exception) {}
             startThroughJobScheduler(this)
             System.exit(2)
@@ -85,7 +85,7 @@ class MainApplication: Application(), KodeinAware {
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
-        "boot".ktx().v("received boot event")
+        v("received boot event")
         startThroughJobScheduler(ctx)
     }
 }
@@ -97,7 +97,7 @@ class BootJobService : JobService() {
     private val ktx by lazy { "boot:service".ktx() }
 
     override fun onStartJob(params: JobParameters?): Boolean {
-        ktx.v("boot job start")
+        v("boot job start")
         d.connected.refresh()
         d.onWifi.refresh()
         return scheduleJobFinish(params)
@@ -107,19 +107,19 @@ class BootJobService : JobService() {
         return try {
             when {
                 t.active() -> {
-                    ktx.v("boot job finnish immediately, already active")
+                    v("boot job finnish immediately, already active")
                     false
                 }
                 !t.enabled() -> {
-                    ktx.v("boot job finnish immediately, not enabled")
+                    v("boot job finnish immediately, not enabled")
                     false
                 }
                 listener != null -> {
-                    ktx.v("boot job finnish immediately, service waiting")
+                    v("boot job finnish immediately, service waiting")
                     false
                 }
                 else -> {
-                    ktx.v("boot job scheduling to stop when tunnel active")
+                    v("boot job scheduling to stop when tunnel active")
                     listener = t.active.doOnUiWhenChanged().then {
                         t.active.cancel(listener)
                         listener = null
@@ -129,7 +129,7 @@ class BootJobService : JobService() {
                 }
             }
         } catch (e: Exception) {
-            ktx.e("boot job fail", e)
+            e("boot job fail", e)
             false
         }
     }

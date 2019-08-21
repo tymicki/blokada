@@ -79,7 +79,7 @@ class DnsImpl(
 
     private val refresh = { it: List<DnsChoice> ->
         val ktx = "dns:refresh".ktx()
-        ktx.v("refresh start", pages.dns())
+        v("refresh start", pages.dns())
         var builtInDns = listOf(DnsChoice("default", emptyList(), active = false))
         builtInDns += try {
             serialiser.deserialise(loadGzip(openUrl(pages.dns(), 10000)))
@@ -89,11 +89,11 @@ class DnsImpl(
                 Thread.sleep(3000)
                 serialiser.deserialise(loadGzip(openUrl(pages.dns(), 10000)))
             } catch (e: Exception) {
-                ktx.e("failed to refresh dns", e)
+                e("failed to refresh dns", e)
                 emptyList<DnsChoice>()
             }
         }
-        ktx.v("got ${builtInDns.size} dns server entries")
+        v("got ${builtInDns.size} dns server entries")
 
         val newDns = if (it.isEmpty()) {
             builtInDns
@@ -115,7 +115,7 @@ class DnsImpl(
             newDns.first().active = true
         }
 
-        ktx.v("refresh done")
+        v("refresh done")
         fetcher.fetch()
         newDns
     }

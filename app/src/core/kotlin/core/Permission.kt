@@ -12,7 +12,7 @@ internal var deferred = CompletableDeferred<Boolean>()
 internal const val REQUEST_STORAGE = 2
 
 fun askStoragePermission(ktx: Kontext, act: Activity) = {
-    ktx.v("asking for storage permissions")
+    v("asking for storage permissions")
     if (Build.VERSION.SDK_INT >= 23) {
         deferred.completeExceptionally(Exception("new permission request"))
         deferred = CompletableDeferred()
@@ -26,7 +26,7 @@ fun askStoragePermission(ktx: Kontext, act: Activity) = {
 }()
 
 fun storagePermissionResult(ktx: Kontext, code: Int) = {
-    ktx.v("received storage permissions response", code)
+    v("received storage permissions response", code)
     when {
         deferred.isCompleted -> Unit
         code == PackageManager.PERMISSION_GRANTED -> deferred.complete(true)

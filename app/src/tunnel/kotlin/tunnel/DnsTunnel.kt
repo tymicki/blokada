@@ -43,7 +43,7 @@ internal class DnsTunnel(
     private var datagramBuffer = ByteArray(1024)
 
     override fun run(ktx: AndroidKontext, tunnel: FileDescriptor) {
-        ktx.v("running tunnel thread", this)
+        v("running tunnel thread", this)
 
         val input = FileInputStream(tunnel)
         val output = FileOutputStream(tunnel)
@@ -67,7 +67,7 @@ internal class DnsTunnel(
                 cleanup()
             }
         } catch (ex: InterruptedException) {
-            ktx.v("tunnel thread interrupted", this, ex.toString())
+            v("tunnel thread interrupted", this, ex.toString())
             Thread.currentThread().interrupt()
             throw ex
         } catch (ex: Exception) {
@@ -79,11 +79,11 @@ internal class DnsTunnel(
                 }
             } else {
                 epermCounter = 0
-                ktx.e("failed tunnel thread", this, ex)
+                e("failed tunnel thread", this, ex)
             }
             throw ex
         } finally {
-            ktx.v("cleaning up resources", this)
+            v("cleaning up resources", this)
             Result.of { Os.close(error) }
             Result.of { input.close() }
             Result.of { output.close() }
@@ -97,18 +97,18 @@ internal class DnsTunnel(
                 if (it is InterruptedException || threadInterrupted()) interrupted = true
                 else {
                     val cooldown = min(cooldownTtl * cooldownCounter++, cooldownMax)
-                    ktx.e("tunnel thread error, will restart after $cooldown ms", this, it.toString())
+                    e("tunnel thread error, will restart after $cooldown ms", this, it.toString())
                     Result.of { Thread.sleep(cooldown) }.mapError {
                         if (it is InterruptedException || threadInterrupted()) interrupted = true
                     }
                 }
             }
         } while (!interrupted)
-        ktx.v("tunnel thread shutdown", this)
+        v("tunnel thread shutdown", this)
     }
 
     override fun stop(ktx: Kontext) {
-        ktx.v("stopping poll, if any")
+        v("stopping poll, if any")
         Result.of { Os.close(error) }
         error = null
     }
@@ -168,8 +168,8 @@ internal class DnsTunnel(
                 Result.of {
                     rule.socket.receive(responsePacket)
                     proxy.toDevice(ktx, datagramBuffer, responsePacket.length, rule.originEnvelope)
-                }.onFailure { ktx.w("failed receiving socket", it) }
-                Result.of { rule.socket.close() }.onFailure { ktx.w("failed closing socket") }
+                }.onFailure { w("failed receiving socket", it) }
+                Result.of { rule.socket.close() }.onFailure { w("failed closing socket") }
             }
         }
     }

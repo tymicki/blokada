@@ -47,7 +47,7 @@ class LoggerConfigPersistence {
                 .mapBoth(
                         success = { it },
                         failure = { ex ->
-                            ktx.w("failed loading LoggerConfig, reverting to defaults", ex)
+                            w("failed loading LoggerConfig, reverting to defaults", ex)
                             LoggerConfig()
                         }
                 )

@@ -1223,7 +1223,7 @@ class StorageLocationVB(
 ) : SlotVB(onTap) {
 
     private val actionExternal = Slot.Action(i18n.getString(R.string.slot_action_external), {
-        ktx.v("set persistence path", getExternalPath())
+        v("set persistence path", getExternalPath())
         core.Persistence.global.savePath(getExternalPath())
 
         if (!checkStoragePermissions(ktx)) {
@@ -1235,7 +1235,7 @@ class StorageLocationVB(
     })
 
     private val actionInternal = Slot.Action(i18n.getString(R.string.slot_action_internal), {
-        ktx.v("resetting persistence path")
+        v("resetting persistence path")
         core.Persistence.global.savePath(core.Persistence.DEFAULT_PATH)
         view?.apply { attach(this) }
     })
@@ -1638,7 +1638,7 @@ class CleanupVB(
             intent.data = Uri.parse("package:" + appId)
             ctx.startActivity(intent)
         } catch (e: Exception) {
-            ktx.e(e)
+            e(e)
         }
     }
 }

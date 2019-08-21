@@ -171,16 +171,16 @@ class AWatchdog(
 
     override fun test(): Boolean {
         if (!d.watchdogOn()) return true
-        ktx.v("watchdog ping")
+        v("watchdog ping")
         val socket = Socket()
         socket.soTimeout = 3000
         return try {
             socket.connect(InetSocketAddress("cloudflare.com", 80), 3000);
-            ktx.v("watchdog ping ok")
+            v("watchdog ping ok")
             true
         }
         catch (e: Exception) {
-            ktx.v("watchdog ping fail")
+            v("watchdog ping fail")
             false
         } finally {
             try { socket.close() } catch (e: Exception) {}
@@ -217,7 +217,7 @@ class AWatchdog(
                 wait *= 2
                 if (d.connected() != connected) {
                     // Connection state change will cause reactivating (and restarting watchdog)
-                    ktx.v("watchdog change: connected: $connected")
+                    v("watchdog change: connected: $connected")
                     d.connected %= connected
                     stop()
                 } else {

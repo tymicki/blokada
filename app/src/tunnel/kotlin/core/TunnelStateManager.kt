@@ -45,14 +45,14 @@ class TunnelStateManager(
                             dns = d.enabled()
                     ))
 
-                    ktx.v("pausing features.")
+                    v("pausing features.")
                     ktx.emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
                     d.enabled %= false
                 }
                 else -> {
                     // Restore the state
                     val pause = loadPersistence().getOrElse {
-                        ktx.e("could not load persistence for TunnelPause", it)
+                        e("could not load persistence for TunnelPause", it)
                         TunnelPause()
                     }
 
@@ -60,14 +60,14 @@ class TunnelStateManager(
                     var adblocking = pause.adblocking && Product.current(ktx.ctx) != Product.DNS
                     var dns = pause.dns
 
-                    ktx.v("restoring features, is (vpn, adblocking, dns): $vpn $adblocking $dns")
+                    v("restoring features, is (vpn, adblocking, dns): $vpn $adblocking $dns")
 
                     if (!adblocking && !vpn && !dns) {
                         if (Product.current(ktx.ctx) != Product.DNS) {
-                            ktx.v("all features disabled, activating adblocking")
+                            v("all features disabled, activating adblocking")
                             adblocking = true
                         } else {
-                            ktx.v("all features disabled, activating dns")
+                            v("all features disabled, activating dns")
                             dns = true
                         }
                     }
@@ -83,16 +83,16 @@ class TunnelStateManager(
         when {
             !s.enabled() -> Unit
             !it.adblocking && !it.blockaVpn && !d.enabled() -> {
-                ktx.v("turning off because no features enabled")
+                v("turning off because no features enabled")
                 s.enabled %= false
             }
             !it.adblocking && it.blockaVpn && !it.hasGateway() -> {
-                ktx.v("turning off everything because no gateway selected")
+                v("turning off everything because no gateway selected")
                 ktx.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
                 s.enabled %= false
             }
             (it.adblocking || d.enabled()) && it.blockaVpn && !it.hasGateway() -> {
-                ktx.v("turning off vpn because no gateway selected")
+                v("turning off vpn because no gateway selected")
                 ktx.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
             }
         }

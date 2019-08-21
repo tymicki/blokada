@@ -9,7 +9,7 @@ import kotlinx.coroutines.experimental.CompletableDeferred
 private var deferred = CompletableDeferred<Boolean>()
 
 fun askTunnelPermission(ktx: Kontext, act: Activity) = {
-    ktx.v("asking for tunnel permissions")
+    v("asking for tunnel permissions")
     deferred.completeExceptionally(Exception("new permission request"))
     deferred = CompletableDeferred()
     val intent = VpnService.prepare(act)
@@ -21,7 +21,7 @@ fun askTunnelPermission(ktx: Kontext, act: Activity) = {
 }()
 
 fun tunnelPermissionResult(ktx: Kontext, code: Int) = {
-    ktx.v("received tunnel permissions response", code)
+    v("received tunnel permissions response", code)
     when {
         deferred.isCompleted -> Unit
         code == -1 -> deferred.complete(true)

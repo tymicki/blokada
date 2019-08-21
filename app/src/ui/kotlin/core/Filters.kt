@@ -36,7 +36,7 @@ class FiltersImpl(
 
     private val appsRefresh = {
         val ktx = "filters:apps:refresh".ktx()
-        ktx.v("apps refresh start")
+        v("apps refresh start")
 
         val installed = ctx.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
                 .filter { it.packageName != ctx.packageName }
@@ -47,7 +47,7 @@ class FiltersImpl(
                     system = (it.flags and ApplicationInfo.FLAG_SYSTEM) != 0
             )
         }.sortedBy { it.label }
-        ktx.v("found ${a.size} apps")
+        v("found ${a.size} apps")
         a
     }
 

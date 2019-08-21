@@ -112,9 +112,9 @@ class Service : VpnService() {
         tunDescriptor = establishTunnel(ktx)
         if (tunDescriptor != null) {
             tunFd = tunDescriptor?.fd ?: -1
-            ktx.v("vpn established")
+            v("vpn established")
         } else {
-            ktx.e("failed establishing vpn, no permissions?")
+            e("failed establishing vpn, no permissions?")
             tunFd = -1
         }
         return tunDescriptor?.fileDescriptor!!
@@ -130,7 +130,7 @@ class Service : VpnService() {
             lastReleasedMillis = 0
             Thread.sleep(0 - timeSinceLastReleased)
         }
-        ktx.v("asking system for vpn")
+        v("asking system for vpn")
         return tunnel.establish()
     }
 
@@ -144,7 +144,7 @@ class Service : VpnService() {
             lastReleasedMillis = SystemClock.uptimeMillis()
             tunDescriptor = null
             tunFd = -1
-            ktx.v("closed vpn")
+            v("closed vpn")
         }
     }
 

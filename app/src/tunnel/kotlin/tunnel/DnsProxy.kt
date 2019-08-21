@@ -31,7 +31,7 @@ internal class DnsProxy(
         val originEnvelope = try {
             IpSelector.newPacket(packetBytes, 0, packetBytes.size) as IpPacket
         } catch (e: Exception) {
-            ktx.w("failed reading origin packet", e)
+            w("failed reading origin packet", e)
             return
         }
 
@@ -53,7 +53,7 @@ internal class DnsProxy(
         val dnsMessage = try {
             Message(udpRaw)
         } catch (e: IOException) {
-            ktx.w("failed reading DNS message", e)
+            w("failed reading DNS message", e)
             return
         }
         if (dnsMessage.question == null) return
@@ -112,7 +112,7 @@ internal class DnsProxy(
             if (originEnvelope != null) forwarder.add(ktx, socket, originEnvelope)
             else Result.of { socket.close() }
         }.mapError { ex ->
-            ktx.w("failed sending forwarded udp", ex.message ?: "")
+            w("failed sending forwarded udp", ex.message ?: "")
             Result.of { socket.close() }
             val cause = ex.cause
             if (cause is ErrnoException && cause.errno == OsConstants.EPERM) throw ex

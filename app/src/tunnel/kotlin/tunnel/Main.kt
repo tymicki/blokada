@@ -77,11 +77,11 @@ class Main(
     fun setup(ktx: AndroidKontext, servers: List<InetSocketAddress>, config: BlockaConfig? = null, start: Boolean = false) = async(CTRL) {
         val cfg = config ?: blockaConfig
         val processedServers = processServers(ktx, servers, cfg, ktx.di().instance() )
-        ktx.v("setup tunnel, start = $start, enabled = $enabled", processedServers, config ?: "no blocka config")
+        v("setup tunnel, start = $start, enabled = $enabled", processedServers, config ?: "no blocka config")
         enabled = start or enabled
         when {
             processedServers.isEmpty() -> {
-                ktx.v("empty dns servers, will disable tunnel")
+                v("empty dns servers, will disable tunnel")
                 currentServers = emptyList()
                 maybeStopVpn(ktx)
                 maybeStopTunnelThread(ktx)
@@ -91,7 +91,7 @@ class Main(
                     blockaConfig.blockaVpn == config.blockaVpn
                     && blockaConfig.gatewayId == config.gatewayId
                     && blockaConfig.adblocking == config.adblocking) -> {
-                ktx.v("no changes in configuration, ignoring")
+                v("no changes in configuration, ignoring")
             }
             else -> {
                 currentServers = processedServers
@@ -110,17 +110,17 @@ class Main(
                     5000L
                 })
 
-                ktx.v("will sync filters")
+                v("will sync filters")
                 if (filters.sync(ktx)) {
                     filters.save(ktx)
 
-                    ktx.v("will restart vpn and tunnel")
+                    v("will restart vpn and tunnel")
                     maybeStopTunnelThread(ktx)
                     maybeStopVpn(ktx)
-                    ktx.v("done stopping vpn and tunnel")
+                    v("done stopping vpn and tunnel")
 
                     if (enabled) {
-                        ktx.v("will start vpn")
+                        v("will start vpn")
                         startVpn(ktx)
                         startTunnelThread(ktx)
                     }
@@ -134,14 +134,14 @@ class Main(
         // Dont do anything other than it used to be, in non-vpn mode
         config?.blockaVpn != true -> servers
         servers.isEmpty() || !dns.hasCustomDnsSelected() -> {
-            ktx.w("no dns set, using fallback")
+            w("no dns set, using fallback")
             FALLBACK_DNS
         }
         else -> servers
     }
 
     fun reloadConfig(ktx: AndroidKontext, onWifi: Boolean) = async(CTRL) {
-        ktx.v("reloading config")
+        v("reloading config")
         createComponents(ktx, onWifi)
         filters.setUrl(ktx, currentUrl)
         if (filters.sync(ktx)) {
@@ -155,21 +155,21 @@ class Main(
             currentUrl = url
 
             val cfg = Persistence.config.load(ktx)
-            ktx.v("setting url, firstLoad: ${cfg.firstLoad}", url)
+            v("setting url, firstLoad: ${cfg.firstLoad}", url)
             createComponents(ktx, onWifi)
             filters.setUrl(ktx, url)
             if (filters.sync(ktx)) {
-                ktx.v("first fetch successful, unsetting firstLoad flag")
+                v("first fetch successful, unsetting firstLoad flag")
                 Persistence.config.save(cfg.copy(firstLoad = false))
             }
             filters.save(ktx)
             restartTunnelThread(ktx)
-        } else ktx.w("ignoring setUrl, same url already set")
+        } else w("ignoring setUrl, same url already set")
     }
 
 
     fun stop(ktx: AndroidKontext) = async(CTRL) {
-        ktx.v("stopping tunnel")
+        v("stopping tunnel")
         maybeStopTunnelThread(ktx)
         maybeStopVpn(ktx)
         currentServers = emptyList()
@@ -182,7 +182,7 @@ class Main(
     }
 
     fun sync(ktx: AndroidKontext, restartVpn: Boolean = false) = async(CTRL) {
-        ktx.v("syncing on request")
+        v("syncing on request")
         if (filters.sync(ktx)) {
             filters.save(ktx)
             if (restartVpn) restartVpn(ktx)
@@ -195,13 +195,13 @@ class Main(
     }
 
     fun putFilter(ktx: AndroidKontext, filter: Filter, sync: Boolean = true) = async(CTRL) {
-        ktx.v("putting filter", filter.id)
+        v("putting filter", filter.id)
         filters.put(ktx, filter)
         if (sync) sync(ktx, restartVpn = filter.source.id == "app")
     }
 
     fun putFilters(ktx: AndroidKontext, newFilters: Collection<Filter>) = async(CTRL) {
-        ktx.v("batch putting filters", newFilters.size)
+        v("batch putting filters", newFilters.size)
         newFilters.forEach { filters.put(ktx, it) }
         if (filters.sync(ktx)) {
             filters.save(ktx)
@@ -219,7 +219,7 @@ class Main(
     }
 
     fun invalidateFilters(ktx: AndroidKontext) = async(CTRL) {
-        ktx.v("invalidating filters")
+        v("invalidating filters")
         filters.invalidateCache(ktx)
         if(filters.sync(ktx)) {
             filters.save(ktx)
@@ -242,7 +242,7 @@ class Main(
     private fun createComponents(ktx: AndroidKontext, onWifi: Boolean) {
         config = Persistence.config.load(ktx)
         blockaConfig = Persistence.blocka.load(ktx)
-        ktx.v("create components, onWifi: $onWifi, firstLoad: ${config.firstLoad}", config)
+        v("create components, onWifi: $onWifi, firstLoad: ${config.firstLoad}", config)
         filters = FilterManager(
                 blockade = blockade,
                 doResolveFilterSource = doResolveFilterSource,
@@ -268,9 +268,9 @@ class Main(
             binder = binding.getCompleted()
             fd = binder!!.service.turnOn(ktx)
             ktx.on(Events.REQUEST, onRequest)
-            ktx.v("vpn started")
+            v("vpn started")
         }.onFailure { ex ->
-            ktx.e("failed starting vpn", ex)
+            e("failed starting vpn", ex)
             onVpnClose(ktx)
         }
     }
@@ -282,30 +282,30 @@ class Main(
         if (f != null) {
             tunnelThread = Thread({ tunnel.runWithRetry(ktx, f) }, "tunnel-${threadCounter++}")
             tunnelThread?.start()
-            ktx.v("tunnel thread started", tunnelThread!!)
-        } else ktx.w("attempting to start tunnel thread with no fd")
+            v("tunnel thread started", tunnelThread!!)
+        } else w("attempting to start tunnel thread with no fd")
     }
 
     private fun stopTunnelThread(ktx: Kontext) {
-        ktx.v("stopping tunnel thread", tunnelThread!!)
+        v("stopping tunnel thread", tunnelThread!!)
         tunnel.stop(ktx)
         Result.of { tunnelThread?.interrupt() }.onFailure { ex ->
-            ktx.w("could not interrupt tunnel thread", ex)
+            w("could not interrupt tunnel thread", ex)
         }
         Result.of { tunnelThread?.join(5000); true }.onFailure { ex ->
-            ktx.w("could not join tunnel thread", ex)
+            w("could not join tunnel thread", ex)
         }
         tunnelThread = null
-        ktx.v("tunnel thread stopped")
+        v("tunnel thread stopped")
     }
 
     private fun stopVpn(ktx: AndroidKontext) {
         ktx.cancel(Events.REQUEST, onRequest)
         binder?.service?.turnOff(ktx)
-        connector.unbind(ktx)//.mapError { ex -> ktx.w("failed unbinding connector", ex) }
+        connector.unbind(ktx)//.mapError { ex -> w("failed unbinding connector", ex) }
         binder = null
         fd = null
-        ktx.v("vpn stopped")
+        v("vpn stopped")
     }
 
     private fun restartTunnelThread(ktx: AndroidKontext) {

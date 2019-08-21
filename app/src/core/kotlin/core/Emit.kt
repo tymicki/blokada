@@ -61,7 +61,7 @@ internal class CommonEmit(
 }
 
 internal fun newEmitExceptionLogger(ktx: Kontext = "emit:exception".ktx())
-        = CoroutineExceptionHandler { _, throwable -> ktx.e(throwable)
+        = CoroutineExceptionHandler { _, throwable -> e(throwable)
 }
 
 internal class DefaultEmit(id: String, val common: Emit = commonEmit, val log: Log = DefaultLog(id)) : Emit {

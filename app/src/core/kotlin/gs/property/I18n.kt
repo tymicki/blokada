@@ -52,7 +52,7 @@ class I18nImpl (
                 val ktx = "i18n:locale:refresh".ktx()
                 val preferred = getPreferredLocales()
                 val available = repo.content().locales
-                ktx.v("locale preferred/available", preferred, available)
+                v("locale preferred/available", preferred, available)
 
                 /**
                  * Try matching exactly, if not, try matching by language tag. Use order of preferred
@@ -70,7 +70,7 @@ class I18nImpl (
                         else -> null
                     }
                 }.filterNotNull()
-                ktx.v("locale matches", matches)
+                v("locale matches", matches)
                 (matches.firstOrNull() ?: Locale("en")).toString()
             })
 
