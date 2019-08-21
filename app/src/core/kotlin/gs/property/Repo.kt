@@ -1,9 +1,7 @@
 package gs.property
 
 import com.github.salomonbrys.kodein.instance
-import core.ktx
-import core.loadGzip
-import core.openUrl
+import core.*
 import gs.environment.Environment
 import gs.environment.Time
 import gs.environment.Worker
@@ -37,7 +35,7 @@ class RepoImpl(
 
     init {
         url.doWhenSet().then {
-            "repo:url".ktx().v("url set", url())
+            v("url set", url())
             content.refresh(force = true)
         }
     }
@@ -45,7 +43,6 @@ class RepoImpl(
     override val lastRefreshMillis = newPersistedProperty(kctx, BasicPersistence(xx, "repo_refresh"), zeroValue = { 0L })
 
     private val repoRefresh = {
-        val ktx = "repo:refresh".ktx()
         v("repo refresh start")
         val repoURL = java.net.URL(url())
         val fetchTimeout = 10 * 10000
@@ -72,13 +69,13 @@ class RepoImpl(
                     downloadLinks = repo.subList(4, repo.size).map { URL(it) },
                     fetchedUrl = url()
             )
-        } catch (e: Exception) {
-            e("repo refresh fail", e)
-            if (e is java.io.FileNotFoundException) {
-                w("app version is obsolete", e)
+        } catch (ex: Exception) {
+            e("repo refresh fail", ex)
+            if (ex is java.io.FileNotFoundException) {
+                w("app version is obsolete", ex)
                 version.obsolete %= true
             }
-            throw e
+            throw ex
         }
     }
 

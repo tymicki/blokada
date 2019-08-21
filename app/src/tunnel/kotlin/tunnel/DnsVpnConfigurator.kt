@@ -3,6 +3,8 @@ package tunnel
 import android.net.VpnService
 import core.Kontext
 import core.Result
+import core.e
+import core.v
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetSocketAddress
@@ -47,8 +49,8 @@ internal class DnsVpnConfigurator(
             try {
                 val address = Inet6Address.getByAddress(ipv6Template)
                 builder.addAddress(address, 120)
-            } catch (e: Exception) {
-                e("failed adding ipv6 address", e)
+            } catch (ex: Exception) {
+                e("failed adding ipv6 address", ex)
                 ipv6Template = null
             }
         } else {
@@ -59,8 +61,8 @@ internal class DnsVpnConfigurator(
         for (address in dnsServers) {
             try {
                 builder.addDnsServer(format, ipv6Template, address)
-            } catch (e: Exception) {
-                e("failed adding dns server", e)
+            } catch (ex: Exception) {
+                e("failed adding dns server", ex)
             }
         }
 
@@ -104,8 +106,8 @@ internal class PausedVpnConfigurator(
         for (address in dnsServers) {
             try {
                 builder.addDnsServer(address.getAddress())
-            } catch (e: Exception) {
-                e("failed adding dns server", e)
+            } catch (ex: Exception) {
+                e("failed adding dns server", ex)
             }
         }
 

@@ -7,9 +7,7 @@ import android.system.OsConstants
 import android.system.StructPollfd
 import com.cloudflare.app.boringtun.BoringTunJNI
 import com.github.michaelbull.result.mapError
-import core.AndroidKontext
-import core.Kontext
-import core.Result
+import core.*
 import org.pcap4j.packet.*
 import org.pcap4j.packet.factory.PacketFactoryPropertiesLoader
 import org.pcap4j.util.PropertiesLoader

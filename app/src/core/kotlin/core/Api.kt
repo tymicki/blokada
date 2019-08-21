@@ -14,12 +14,6 @@ import java.util.zip.GZIPInputStream
 
 val COMMON = newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors(), "common")
 
-interface Log {
-    fun e(vararg msgs: Any)
-    fun w(vararg msgs: Any)
-    fun v(vararg msgs: Any)
-}
-
 typealias Result<T> = com.github.michaelbull.result.Result<T, Exception>
 typealias Time = Long
 typealias Url = String
@@ -88,7 +82,7 @@ fun loadGzip(opener: () -> URLConnection, lineProcessor: (String) -> String? = {
 fun createStream(con: URLConnection) = {
     val charset = "UTF-8"
     if (con.contentEncoding == "gzip" || con.url.file.endsWith(".gz")) {
-        "http".ktx().v("using gzip download", con.url)
+        v("using gzip download", con.url)
         BufferedReader(InputStreamReader(GZIPInputStream(con.getInputStream()), charset))
     } else {
         BufferedReader(InputStreamReader(con.getInputStream(), charset))

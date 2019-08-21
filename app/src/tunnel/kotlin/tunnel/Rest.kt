@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 import core.ProductType
 import core.ktx
+import core.v
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.blokada.BuildConfig
@@ -115,7 +116,7 @@ fun newRestApiModule(ctx: Context): Kodein.Module {
                     .addNetworkInterceptor { chain ->
                         val request = chain.request()
                         chain.connection()?.socket()?.let {
-                            ctx.ktx("okhttp").v("protecting okhttp socket")
+                            v("protecting okhttp socket")
                             tun.protect(it)
                         }
                         chain.proceed(request)

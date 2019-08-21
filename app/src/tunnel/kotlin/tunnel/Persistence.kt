@@ -2,9 +2,7 @@ package tunnel
 
 import android.content.Context
 import com.github.michaelbull.result.*
-import core.AndroidKontext
-import core.FiltersCache
-import core.Kontext
+import core.*
 import core.Result
 
 class Persistence {

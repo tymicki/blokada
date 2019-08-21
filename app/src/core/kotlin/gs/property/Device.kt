@@ -9,6 +9,7 @@ import android.net.wifi.WifiManager
 import android.os.PowerManager
 import com.github.salomonbrys.kodein.*
 import core.ktx
+import core.v
 import gs.environment.*
 import nl.komponents.kovenant.Kovenant
 import nl.komponents.kovenant.Promise
@@ -46,7 +47,7 @@ class DeviceImpl (
         // With watchdog off always returning true, we basically disable detection.
         // Because isConnected sometimes returns false when we are actually online.
         val c = isConnected(ctx) or watchdog.test()
-        "device".ktx().v("connected", c)
+        v("connected", c)
         c
     } )
     override val tethering = newProperty(kctx, { isTethering(ctx)} )
@@ -67,7 +68,7 @@ class ConnectivityReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
         task(ctx.inject().with("ConnectivityReceiver").instance()) {
             // Do it async so that Android can refresh the current network info before we access it
-            "device:connectivity".ktx().v("connectivity receiver ping")
+            v("connectivity receiver ping")
             val s: Device = ctx.inject().instance()
             s.connected.refresh()
             s.onWifi.refresh()
@@ -112,7 +113,7 @@ class ScreenOnReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
         task(ctx.inject().with("ScreenOnReceiver").instance()) {
             // This causes everything to load
-            "device:screenOn".ktx().v("screen receiver ping")
+            v("screen receiver ping")
             val s: Device = ctx.inject().instance()
             s.screenOn.refresh()
         }
@@ -133,7 +134,7 @@ class ScreenOnReceiver : BroadcastReceiver() {
 class LocaleReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
         task(ctx.inject().with("LocaleReceiver").instance()) {
-            "device:locale".ktx().v("locale receiver ping")
+            v("locale receiver ping")
             val i18n: I18n = ctx.inject().instance()
             i18n.locale.refresh(force = true)
         }

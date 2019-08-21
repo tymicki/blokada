@@ -96,7 +96,7 @@ class AppInstallReceiver : BroadcastReceiver() {
 
     override fun onReceive(ctx: Context, intent: Intent?) {
         task(ctx.inject().with("AppInstallReceiver").instance()) {
-            "filters:app".ktx().v("app install receiver ping")
+            v("app install receiver ping")
             val f: Filters = ctx.inject().instance()
             f.apps.refresh(force = true)
         }

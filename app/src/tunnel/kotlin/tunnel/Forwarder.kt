@@ -3,6 +3,7 @@ package tunnel
 import core.Kontext
 import core.Result
 import core.Time
+import core.w
 import org.pcap4j.packet.Packet
 import java.net.DatagramSocket
 import java.util.*

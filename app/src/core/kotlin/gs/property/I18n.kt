@@ -7,6 +7,7 @@ import com.github.salomonbrys.kodein.with
 import core.Format
 import core.Resource
 import core.ktx
+import core.v
 import gs.environment.Environment
 import gs.environment.Worker
 import gs.main.getPreferredLocales
@@ -132,7 +133,7 @@ class I18nImpl (
 
     init {
         repo.content.doWhenSet().then {
-            "i18n".ktx().v("refreshing locale")
+            v("refreshing locale")
             locale.refresh(force = true)
         }
         locale.doWhenSet().then {

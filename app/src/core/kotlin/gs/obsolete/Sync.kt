@@ -1,6 +1,7 @@
 package gs.obsolete
 
 import core.Kontext
+import core.w
 
 class Sync<T>(private var value: T) {
     @Synchronized fun get(): T {

@@ -39,7 +39,7 @@ class Main(
     private var filters = FilterManager(blockade = blockade, doResolveFilterSource =
     doResolveFilterSource, doProcessFetchedFilters = doProcessFetchedFilters)
     private var socketCreator = {
-        "socketCreator".ktx().w("using not protected socket")
+        w("using not protected socket")
         DatagramSocket()
     }
     private var config = TunnelConfig()
@@ -99,7 +99,7 @@ class Main(
                 socketCreator = {
                     val socket = DatagramSocket()
                     val protected = binder?.service?.protect(socket) ?: false
-                    if (!protected) "socketCreator".ktx().e("could not protect")
+                    if (!protected) e("could not protect")
                     socket
                 }
                 val configurator = createConfigurator(ktx)
@@ -236,7 +236,7 @@ class Main(
 
     fun protect(socket: Socket) {
         val protected = binder?.service?.protect(socket) ?: false
-        if (!protected && isVpnOn()) "socketCreator".ktx().e("could not protect", socket)
+        if (!protected && isVpnOn()) e("could not protect", socket)
     }
 
     private fun createComponents(ktx: AndroidKontext, onWifi: Boolean) {

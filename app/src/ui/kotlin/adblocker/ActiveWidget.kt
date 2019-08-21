@@ -80,7 +80,7 @@ class ActiveWidgetProvider : AppWidgetProvider() {
                     }
                     if (extras.containsKey("changeBlokadaState")) {
                         val t: Tunnel = context!!.inject().instance()
-                        context.ktx("activewidget").v("toggling enabled")
+                        v("toggling enabled")
                         t.error %= false
                         t.enabled %= !t.enabled()
                     }
@@ -143,7 +143,7 @@ class UpdateWidgetService : Service() {
                     widgetList.add(data)
                     setWidget(data)
                 } else {
-                    this.ktx().v("widget not found!")
+                    v("widget not found!")
                     val remoteViews = RemoteViews(this.packageName, R.layout.widget_active)
                     remoteViews.setTextViewText(R.id.widget_counter, "ERROR")
                     remoteViews.setTextViewText(R.id.widget_host, "ERROR")
@@ -234,7 +234,7 @@ class UpdateWidgetService : Service() {
                 prefEdit.putInt("widget-" + restoreData.newWidgetIds[index], widgetConf)
                 (widgetList.find { wd -> wd.id == oldId })?.id = restoreData.newWidgetIds[index]
             } else {
-                this.ktx().v("old widget id not found!")
+                v("old widget id not found!")
             }
         }
         prefEdit.apply()

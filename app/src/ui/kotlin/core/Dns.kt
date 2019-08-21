@@ -152,7 +152,7 @@ class DnsImpl(
             val current = dnsServers()
             if (tunnel.Persistence.config.load(ctx.ktx()).dnsFallback && isLocalServers(current)) {
                 dnsServers %= FALLBACK_DNS
-                "dns".ktx().w("local DNS detected, setting CloudFlare as workaround")
+                w("local DNS detected, setting CloudFlare as workaround")
             }
         }
     }

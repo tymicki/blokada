@@ -7,9 +7,7 @@ import android.system.OsConstants
 import android.system.StructPollfd
 import com.github.michaelbull.result.mapError
 import com.github.michaelbull.result.onFailure
-import core.AndroidKontext
-import core.Kontext
-import core.Result
+import core.*
 import org.pcap4j.packet.factory.PacketFactoryPropertiesLoader
 import org.pcap4j.util.PropertiesLoader
 import java.io.*

@@ -45,7 +45,7 @@ class PagesImpl (
         i18n.locale.doWhenSet().then {
             val c = i18n.contentUrl()
             if (!c.startsWith("http://localhost")) {
-                "pages:onLocaleSet".ktx().v("setting content url", c)
+                v("setting content url", c)
                 intro %= URL("$c/intro_vpn.html")
                 updated %= URL("$c/updated.html")
                 cleanup %= URL("$c/cleanup.html")

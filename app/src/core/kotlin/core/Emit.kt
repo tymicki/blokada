@@ -64,39 +64,39 @@ internal fun newEmitExceptionLogger(ktx: Kontext = "emit:exception".ktx())
         = CoroutineExceptionHandler { _, throwable -> e(throwable)
 }
 
-internal class DefaultEmit(id: String, val common: Emit = commonEmit, val log: Log = DefaultLog(id)) : Emit {
+internal class DefaultEmit(id: String, val common: Emit = commonEmit) : Emit {
 
     override fun <T> emit(event: EventType<T>, value: T): Job {
-        log.v("event:emit", event, value.toString())
+        v("event:emit", event, value.toString())
         return common.emit(event, value)
     }
 
     override fun <T> on(event: EventType<T>, callback: Callback<T>) = on(event, callback, true)
 
     override fun <T> on(event: EventType<T>, callback: Callback<T>, recentValue: Boolean): Job {
-        log.v("event:subscriber:on", event, callback)
+        v("event:subscriber:on", event, callback)
         return common.on(event, callback, recentValue)
     }
 
     override fun <T> cancel(event: EventType<T>, callback: Callback<T>): Job {
-        log.v("event:subscriber:cancel", event, callback)
+        v("event:subscriber:cancel", event, callback)
         return common.cancel(event, callback)
     }
 
     override suspend fun <T> getMostRecent(event: EventType<T>) = common.getMostRecent(event)
 
     override fun emit(event: SimpleEvent): Job {
-        log.v("event emit", event)
+        v("event emit", event)
         return common.emit(event)
     }
 
     override fun on(event: SimpleEvent, callback: () -> Unit, recentValue: Boolean): Job {
-        log.v("event:subscriber:on", event, callback)
+        v("event:subscriber:on", event, callback)
         return common.on(event, callback)
     }
 
     override fun cancel(event: SimpleEvent, callback: () -> Unit): Job {
-        log.v("event:subscriber:cancel", event, callback)
+        v("event:subscriber:cancel", event, callback)
         return common.cancel(event, callback)
     }
 }

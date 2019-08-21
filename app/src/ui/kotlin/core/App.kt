@@ -93,7 +93,7 @@ fun newAppModule(ctx: Context): Kodein.Module {
 
             val i18n: I18n = instance()
             i18n.locale.doWhenChanged().then {
-                "app:onLocaleSet".ktx().v("refresh filters on locale set")
+                v("refresh filters on locale set")
                 g11.sync("translations:sync:locale".ktx())
             }
 
