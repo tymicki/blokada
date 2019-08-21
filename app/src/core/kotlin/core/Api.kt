@@ -45,9 +45,6 @@ interface Emit {
     fun cancel(event: SimpleEvent, callback: () -> Unit): Job
 }
 
-lateinit var defaultWriter: (Int, String, String) -> Any
-lateinit var defaultExceptionWriter: (Int, String, Throwable) -> Any
-
 fun load(opener: () -> InputStream, lineProcessor: (String) -> String? = { it }): List<String> {
     val input = BufferedReader(InputStreamReader(opener()))
 
@@ -114,6 +111,10 @@ fun openFile(file: File): InputStream {
 
 fun setContext(context: Context) {
 
+}
+
+fun getContext(): Context {
+    throw Exception("Not yet")
 }
 
 fun unsetContext() {

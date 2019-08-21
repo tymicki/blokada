@@ -1,5 +1,12 @@
 package core
 
+import android.content.Context
+import java.io.File
+import java.io.FileOutputStream
+import java.io.PrintWriter
+import java.text.SimpleDateFormat
+import java.util.*
+
 internal const val LOG_DEFAULT_TAG = "b4"
 internal const val LOG_ERROR = 6
 internal const val LOG_WARNING = 5
@@ -24,8 +31,8 @@ private fun indent(priority: Int, level: Int = 0): String {
 
 internal class DefaultLog(
         private val tag: String,
-        private val writer: (Int, String, String) -> Any = defaultWriter,
-        private val exceptionWriter: (Int, String, Throwable) -> Any = defaultExceptionWriter
+        private val writer: (Int, String, String) -> Any = logcatWriter,
+        private val exceptionWriter: (Int, String, Throwable) -> Any = logcatExceptionWriter
 ) : Log {
 
     override fun e(vararg msgs: Any) {
@@ -54,5 +61,51 @@ internal val systemWriter = { priority: Int, tag: String, line: String ->
 
 internal val systemExceptionWriter = { priority: Int, tag: String, ex: Throwable ->
     ex.printStackTrace(if (priority == LOG_ERROR) System.err else System.out)
+}
+
+private val logcatWriter = { priority: Int, tag: String, line: String ->
+    android.util.Log.println(priority, tag, line)
+}
+
+private val logcatExceptionWriter = { priority: Int, tag: String, ex: Throwable ->
+    android.util.Log.println(priority, tag, android.util.Log.getStackTraceString(ex))
+}
+
+
+class FileLogWriter {
+
+    lateinit var ctx: Context
+
+    private val file by lazy {
+        try {
+            val path = File(ctx.filesDir, "blokada.log")
+            val writer = PrintWriter(FileOutputStream(path, true), true)
+            if (path.length() > 4 * 1024 * 1024) path.delete()
+            logcatWriter(LOG_VERBOSE, LOG_DEFAULT_TAG, "writing logs to file: ${path.canonicalPath}")
+            writer
+        } catch (ex: Exception) {
+            logcatWriter(LOG_WARNING, LOG_DEFAULT_TAG, "fail opening log file: ${ex.message}")
+            null
+        }
+    }
+
+    @Synchronized internal fun writer(priority: Int, tag: String, line: String) {
+        Result.of { file!!.println(time() + priority(priority) + tag + line) }
+        logcatWriter(priority, tag, line)
+    }
+
+    @Synchronized internal fun exceptionWriter(priority: Int, tag: String, ex: Throwable) {
+        Result.of { ex.printStackTrace(file) }
+        logcatExceptionWriter(priority, tag, ex)
+    }
+
+    private val formatter = SimpleDateFormat("MM-dd HH:mm:ss.SSS")
+    private fun time() = formatter.format(Date())
+
+    private fun priority(priority: Int) = when(priority) {
+        6 -> " E "
+        5 -> " W "
+        else -> " V "
+    }
 }
 

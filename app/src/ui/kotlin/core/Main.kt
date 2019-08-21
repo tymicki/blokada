@@ -62,9 +62,8 @@ class MainApplication: Application(), KodeinAware {
         super.onCreate()
         Paper.init(this)
         setContext(this)
-        val ktx = "boot".ktx()
-        repeat(10) { ktx.v("BLOKADA", "*".repeat(it * 2)) }
-        ktx.v(blokadaUserAgent(this))
+        repeat(10) { v("BLOKADA", "*".repeat(it * 2)) }
+        v(blokadaUserAgent(this))
         setRestartAppOnCrash()
     }
 
