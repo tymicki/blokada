@@ -152,6 +152,7 @@ android {
 
     sourceSets {
         def srcCoreKotlin = 'src/core/kotlin'
+        def srcCoreRes = 'src/core/res'
         def srcCoreMock = 'src/core/mock'
         def srcCoreTest = 'src/core/test'
 
@@ -170,9 +171,6 @@ android {
         def srcDnsKotlin = 'src/dns/kotlin'
         def srcDnsTest = 'src/dns/test'
 
-        def srcUiKotlin = 'src/ui/kotlin'
-        def srcUiTest = 'src/ui/test'
-
         def srcStateKotlin = 'src/state/kotlin'
         def srcStateTest = 'src/state/test'
 
@@ -182,9 +180,9 @@ android {
         def srcBlockaKotlin = 'src/blocka/kotlin'
         def srcBlockaTest = 'src/blocka/test'
 
-        def srcLegacyKotlin = 'src/legacy/kotlin'
-        def srcLegacyRes = 'src/legacy/res'
-        def srcLegacyTest = 'src/legacy/test'
+        def srcUiKotlin = 'src/ui/kotlin'
+        def srcUiRes = 'src/ui/res'
+        def srcUiTest = 'src/ui/test'
 
         modCore.java.srcDirs += srcCoreKotlin
         testModCore.java.srcDirs += srcCoreTest
@@ -194,7 +192,6 @@ android {
         appFull.java.srcDirs += srcTunnelKotlin
         appFull.java.srcDirs += srcG11nKotlin
         appFull.java.srcDirs += srcWireguardKotlin
-        appFull.java.srcDirs += srcLegacyKotlin
         appFull.java.srcDirs += srcAdblockingKotlin
         appFull.java.srcDirs += srcDnsKotlin
         appFull.java.srcDirs += srcUiKotlin
@@ -203,7 +200,8 @@ android {
         appFull.java.srcDirs += srcBlockaKotlin
         appFull.java.srcDirs += 'src/full/kotlin'
         appFull.jniLibs.srcDirs += srcWireguardJni
-        appFull.res.srcDirs += srcLegacyRes
+        appFull.res.srcDirs += srcUiRes
+        appFull.res.srcDirs += srcCoreRes
         appFull.res.srcDirs += 'src/full/res'
 //        testAppFull.java.srcDirs += testModTunnel.java.srcDirs
 //        testAppFull.java.srcDirs += testModG11n.java.srcDirs
@@ -214,10 +212,10 @@ android {
         appCommunity.java.srcDirs += srcTunnelKotlin
         appCommunity.java.srcDirs += srcG11nKotlin
         appCommunity.java.srcDirs += srcWireguardKotlin
-        appCommunity.java.srcDirs += srcLegacyKotlin
+        appCommunity.java.srcDirs += srcUiKotlin
         appCommunity.java.srcDirs += 'src/full/kotlin'
         appCommunity.jniLibs.srcDirs += srcWireguardJni
-        appCommunity.res.srcDirs += srcLegacyRes
+        appCommunity.res.srcDirs += srcUiRes
         appCommunity.res.srcDirs += 'src/full/res'
 
         appGoogle.manifest.srcFile 'src/legacy/AndroidManifest.xml'
@@ -225,10 +223,10 @@ android {
         appGoogle.java.srcDirs += srcTunnelKotlin
         appGoogle.java.srcDirs += srcG11nKotlin
         appGoogle.java.srcDirs += srcWireguardKotlin
-        appGoogle.java.srcDirs += srcLegacyKotlin
+        appGoogle.java.srcDirs += srcUiKotlin
         appGoogle.java.srcDirs += 'src/google/kotlin'
         appGoogle.jniLibs.srcDirs += srcWireguardJni
-        appGoogle.res.srcDirs += srcLegacyRes
+        appGoogle.res.srcDirs += srcUiRes
         appGoogle.res.srcDirs += 'src/google/res'
 
         /**
