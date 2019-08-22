@@ -21,6 +21,7 @@ import gs.property.Device
 import gs.property.IWhen
 import gs.property.newDeviceModule
 import io.paperdb.Paper
+import kotlinx.coroutines.runBlocking
 import tunnel.blokadaUserAgent
 import tunnel.newRestApiModule
 
@@ -61,7 +62,7 @@ class MainApplication: Application(), KodeinAware {
     override fun onCreate() {
         super.onCreate()
         Paper.init(this)
-        setContext(this)
+        runBlocking { setActiveContext(activity = false) }
         repeat(10) { v("BLOKADA", "*".repeat(it * 2)) }
         v(blokadaUserAgent(this))
         setRestartAppOnCrash()

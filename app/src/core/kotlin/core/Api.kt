@@ -1,12 +1,15 @@
 package core
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.lang.ref.WeakReference
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
@@ -103,14 +106,30 @@ fun openFile(file: File): InputStream {
     return file.inputStream()
 }
 
-fun setContext(context: Context) {
+private var appContext: WeakReference<Context?> = WeakReference(null)
+private var activityContext: WeakReference<Context?> = WeakReference(null)
 
+suspend fun getActiveContext(activity: Boolean = false): Context? {
+    return withContext(Dispatchers.Main) {
+        when {
+            activityContext.get() != null -> activityContext.get()
+            !activity && appContext.get() != null -> appContext.get()
+            else -> {
+                throw Exception("No context set (activity: $activity)")
+            }
+        }
+    }
 }
 
-fun getContext(): Context {
-    throw Exception("Not yet")
+suspend fun Context.setActiveContext(activity: Boolean = false) {
+    withContext(Dispatchers.Main) {
+        if (activity) activityContext = WeakReference(this@setActiveContext)
+        else appContext = WeakReference(this@setActiveContext)
+    }
 }
 
-fun unsetContext() {
-
+suspend fun unsetActiveContext() {
+    withContext(Dispatchers.Main) {
+        activityContext = WeakReference(null)
+    }
 }

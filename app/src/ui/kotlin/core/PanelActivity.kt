@@ -35,6 +35,7 @@ class PanelActivity : Activity() {
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.dashboard)
+        runBlocking { setActiveContext(activity = true) }
 //        setFullScreenWindowLayoutInDisplayCutout(window)
         activityRegister.register(this)
         dashboardView.onSectionClosed = {
@@ -63,6 +64,11 @@ class PanelActivity : Activity() {
     override fun onStop() {
         super.onStop()
         viewBinderHolder.detach()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        runBlocking { unsetActiveContext() }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
