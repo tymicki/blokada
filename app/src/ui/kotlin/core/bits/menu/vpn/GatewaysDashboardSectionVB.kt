@@ -7,7 +7,8 @@ import core.bits.menu.adblocking.SlotMutex
 import gs.presentation.ListViewBinder
 import gs.presentation.NamedViewBinder
 import gs.presentation.ViewBinder
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.blokada.R
 import retrofit2.Call
 import retrofit2.Response
@@ -28,7 +29,7 @@ class GatewaysDashboardSectionVB(
     )
 
     private val gatewaysRequest = Handler {
-        async { populateGateways() }
+        GlobalScope.async { populateGateways() }
         true
     }
 

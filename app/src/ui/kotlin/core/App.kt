@@ -9,7 +9,8 @@ import gs.environment.Environment
 import gs.environment.Worker
 import gs.presentation.ViewBinderHolder
 import gs.property.*
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.BuildConfig
 import org.blokada.R
 
@@ -82,7 +83,7 @@ fun newAppModule(ctx: Context): Kodein.Module {
             val t: tunnel.Main = instance()
             val g11: g11n.Main = instance()
 
-            launch {
+            GlobalScope.launch {
                 g11.load("translations:firstLoad".ktx())
 
                 val ktx = ctx.ktx("translations:sync:filters")

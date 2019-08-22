@@ -1,7 +1,7 @@
 package core
 
-import kotlinx.coroutines.experimental.Unconfined
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlinx.coroutines.Dispatchers.Unconfined
+import kotlin.coroutines.CoroutineContext
 
 open class Kontext internal constructor(
         private val id: Any,

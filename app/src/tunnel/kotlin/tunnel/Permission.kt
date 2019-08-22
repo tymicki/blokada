@@ -5,7 +5,7 @@ import android.net.VpnService
 import core.AndroidKontext
 import core.Kontext
 import core.v
-import kotlinx.coroutines.experimental.CompletableDeferred
+import kotlinx.coroutines.CompletableDeferred
 
 private var deferred = CompletableDeferred<Boolean>()
 

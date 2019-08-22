@@ -10,8 +10,9 @@ import gs.environment.Worker
 import gs.presentation.WebDash
 import gs.property.IWhen
 import gs.property.newProperty
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -72,7 +73,7 @@ class SubscriptionActivity : Activity() {
         super.onStop()
         ktx.cancel(BLOCKA_CONFIG, updateUrl)
 
-        async {
+        GlobalScope.async {
             ktx.getMostRecent(BLOCKA_CONFIG)?.run {
                 delay(3000)
                 tunnel.checkAccountInfo(ktx, this)

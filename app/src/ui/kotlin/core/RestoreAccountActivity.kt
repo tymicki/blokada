@@ -3,7 +3,8 @@ package core
 import android.app.Activity
 import com.github.salomonbrys.kodein.instance
 import gs.property.I18n
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.checkAccountInfo
@@ -39,7 +40,7 @@ class RestoreAccountActivity : Activity() {
     private fun restoreAccountId() = when {
         name.isBlank() -> Unit
         else -> {
-            async {
+            GlobalScope.async {
                 ktx.getMostRecent(BLOCKA_CONFIG)?.run {
                     checkAccountInfo(ktx, copy(restoredAccountId = name), showError = true)
                     finish()

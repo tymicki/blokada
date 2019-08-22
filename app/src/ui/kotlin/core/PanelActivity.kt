@@ -14,7 +14,7 @@ import com.github.salomonbrys.kodein.instance
 import gs.environment.ComponentProvider
 import gs.obsolete.Sync
 import gs.presentation.ViewBinderHolder
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.askTunnelPermission
 import tunnel.tunnelPermissionResult

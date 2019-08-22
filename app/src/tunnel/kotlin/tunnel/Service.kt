@@ -11,9 +11,10 @@ import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import com.github.michaelbull.result.mapError
 import core.*
-import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.FileDescriptor
 
 class ServiceBinder(
@@ -53,7 +54,7 @@ internal class ServiceConnector(
         if (!ktx.ctx.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE
                 or Context.BIND_ABOVE_CLIENT or Context.BIND_IMPORTANT)) {
             deferred.completeExceptionally(Exception("could not bind to service"))
-        } else launch {
+        } else GlobalScope.launch {
             delay(3000)
             if (!deferred.isCompleted) deferred.completeExceptionally(
                     Exception("timeout waiting for binding to service"))

@@ -13,7 +13,8 @@ import core.Tunnel
 import filter.hostnameRegex
 import gs.environment.ComponentProvider
 import gs.property.*
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.blokada.R
 import tunnel.*
 import tunnel.Filter
@@ -775,7 +776,7 @@ class AppVB(
 
     private val actionWhitelist = Slot.Action(i18n.getString(R.string.slot_allapp_whitelist)) {
         showSnack(R.string.slot_whitelist_updating)
-        async {
+        GlobalScope.async {
             val filter = Filter(
                     id = filters.findFilterBySource(app.appId).await()?.id
                             ?: id(app.appId, whitelist = true),
@@ -789,7 +790,7 @@ class AppVB(
 
     private val actionCancel = Slot.Action(i18n.getString(R.string.slot_action_unwhitelist)) {
         showSnack(R.string.slot_whitelist_updating)
-        async {
+        GlobalScope.async {
             val filter = Filter(
                     id = filters.findFilterBySource(app.appId).await()?.id
                             ?: id(app.appId, whitelist = true),

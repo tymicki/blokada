@@ -1,8 +1,8 @@
 package core
 
 import android.content.Context
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.newFixedThreadPoolContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.newFixedThreadPoolContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream

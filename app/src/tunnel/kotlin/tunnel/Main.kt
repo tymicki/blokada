@@ -4,9 +4,10 @@ import android.net.VpnService
 import com.github.michaelbull.result.onFailure
 import com.github.salomonbrys.kodein.instance
 import core.*
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.newSingleThreadContext
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.runBlocking
 import java.io.FileDescriptor
 import java.net.DatagramSocket
 import java.net.InetSocketAddress
@@ -74,7 +75,7 @@ class Main(
         else -> DnsVpnConfigurator(currentServers, filters, ktx.ctx.packageName)
     }
 
-    fun setup(ktx: AndroidKontext, servers: List<InetSocketAddress>, config: BlockaConfig? = null, start: Boolean = false) = async(CTRL) {
+    fun setup(ktx: AndroidKontext, servers: List<InetSocketAddress>, config: BlockaConfig? = null, start: Boolean = false) = GlobalScope.async(CTRL) {
         val cfg = config ?: blockaConfig
         val processedServers = processServers(ktx, servers, cfg, ktx.di().instance() )
         v("setup tunnel, start = $start, enabled = $enabled", processedServers, config ?: "no blocka config")
@@ -140,7 +141,7 @@ class Main(
         else -> servers
     }
 
-    fun reloadConfig(ktx: AndroidKontext, onWifi: Boolean) = async(CTRL) {
+    fun reloadConfig(ktx: AndroidKontext, onWifi: Boolean) = GlobalScope.async(CTRL) {
         v("reloading config")
         createComponents(ktx, onWifi)
         filters.setUrl(ktx, currentUrl)
@@ -150,7 +151,7 @@ class Main(
         }
     }
 
-    fun setUrl(ktx: AndroidKontext, url: String, onWifi: Boolean) = async(CTRL) {
+    fun setUrl(ktx: AndroidKontext, url: String, onWifi: Boolean) = GlobalScope.async(CTRL) {
         if (url != currentUrl) {
             currentUrl = url
 
@@ -168,7 +169,7 @@ class Main(
     }
 
 
-    fun stop(ktx: AndroidKontext) = async(CTRL) {
+    fun stop(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
         v("stopping tunnel")
         maybeStopTunnelThread(ktx)
         maybeStopVpn(ktx)
@@ -176,12 +177,12 @@ class Main(
         enabled = false
     }
 
-    fun load(ktx: AndroidKontext) = async(CTRL) {
+    fun load(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
         filters.load(ktx)
         restartTunnelThread(ktx)
     }
 
-    fun sync(ktx: AndroidKontext, restartVpn: Boolean = false) = async(CTRL) {
+    fun sync(ktx: AndroidKontext, restartVpn: Boolean = false) = GlobalScope.async(CTRL) {
         v("syncing on request")
         if (filters.sync(ktx)) {
             filters.save(ktx)
@@ -190,17 +191,17 @@ class Main(
         }
     }
 
-    fun findFilterBySource(source: String) = async(CTRL) {
+    fun findFilterBySource(source: String) = GlobalScope.async(CTRL) {
         filters.findBySource(source)
     }
 
-    fun putFilter(ktx: AndroidKontext, filter: Filter, sync: Boolean = true) = async(CTRL) {
+    fun putFilter(ktx: AndroidKontext, filter: Filter, sync: Boolean = true) = GlobalScope.async(CTRL) {
         v("putting filter", filter.id)
         filters.put(ktx, filter)
         if (sync) sync(ktx, restartVpn = filter.source.id == "app")
     }
 
-    fun putFilters(ktx: AndroidKontext, newFilters: Collection<Filter>) = async(CTRL) {
+    fun putFilters(ktx: AndroidKontext, newFilters: Collection<Filter>) = GlobalScope.async(CTRL) {
         v("batch putting filters", newFilters.size)
         newFilters.forEach { filters.put(ktx, it) }
         if (filters.sync(ktx)) {
@@ -210,7 +211,7 @@ class Main(
         }
     }
 
-    fun removeFilter(ktx: AndroidKontext, filter: Filter) = async(CTRL) {
+    fun removeFilter(ktx: AndroidKontext, filter: Filter) = GlobalScope.async(CTRL) {
         filters.remove(ktx, filter)
         if (filters.sync(ktx)) {
             filters.save(ktx)
@@ -218,7 +219,7 @@ class Main(
         }
     }
 
-    fun invalidateFilters(ktx: AndroidKontext) = async(CTRL) {
+    fun invalidateFilters(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
         v("invalidating filters")
         filters.invalidateCache(ktx)
         if(filters.sync(ktx)) {
@@ -227,7 +228,7 @@ class Main(
         }
     }
 
-    fun deleteAllFilters(ktx: AndroidKontext) = async(CTRL) {
+    fun deleteAllFilters(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
         filters.removeAll(ktx)
         if (filters.sync(ktx)) {
             restartTunnelThread(ktx)

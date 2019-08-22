@@ -10,8 +10,9 @@ import gs.environment.Environment
 import gs.environment.Worker
 import gs.obsolete.hasCompleted
 import gs.property.*
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.Kovenant
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
@@ -151,7 +152,7 @@ fun newTunnelModule(ctx: Context): Module {
                 engine.setup(ctx.ktx("dns:changed"), dns.dnsServers())
             }
 
-            async {
+            GlobalScope.async {
                 ktx.on(BLOCKA_CONFIG) { cfg ->
                     engine.setup(ctx.ktx("blocka:vpn:switched"), dns.dnsServers(), cfg)
 
@@ -353,7 +354,7 @@ fun newTunnelModule(ctx: Context): Module {
                 engine.reloadConfig(ctx.ktx("onWifi:changed"), d.onWifi())
             }
 
-            async {
+            GlobalScope.async {
                 registerTunnelConfigEvent(ktx)
                 registerBlockaConfigEvent(ctx.ktx("blockaConfigInit"))
 

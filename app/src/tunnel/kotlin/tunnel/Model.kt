@@ -11,8 +11,9 @@ import com.github.salomonbrys.kodein.instance
 import com.google.android.material.snackbar.Snackbar
 import core.*
 import gs.property.Device
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import notification.displayAccountExpiredNotification
 import notification.displayLeaseExpiredNotification
 import org.blokada.R
@@ -160,7 +161,7 @@ fun registerBlockaConfigEvent(ktx: AndroidKontext) {
 
     val d: Device = ktx.di().instance()
     d.screenOn.doOnUiWhenChanged().then {
-        if (d.screenOn()) async {
+        if (d.screenOn()) GlobalScope.async {
             ktx.getMostRecent(BLOCKA_CONFIG)?.run {
                 if (!DateUtils.isToday(lastDaily)) {
                     v("daily check account")
@@ -376,7 +377,7 @@ fun checkGateways(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
 }
 
 fun checkLeaseIfNeeded(ktx: AndroidKontext) {
-    async {
+    GlobalScope.async {
         ktx.getMostRecent(BLOCKA_CONFIG)?.run {
             if (leaseActiveUntil.before(Date())) checkLease(ktx, this)
         }
@@ -507,7 +508,7 @@ private fun scheduleRecheck(ktx: AndroidKontext, config: BlockaConfig) {
     val sooner = if (accountTime.before(leaseTime)) accountTime else leaseTime
     if (sooner.before(Date())) {
         ktx.emit(BLOCKA_CONFIG, config.copy(blockaVpn = false))
-        async {
+        GlobalScope.async {
             // Wait until tunnel is off and recheck
             delay(3000)
             checkAccountInfo(ktx, config)
@@ -520,7 +521,7 @@ private fun scheduleRecheck(ktx: AndroidKontext, config: BlockaConfig) {
 
 class RenewLicenseReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, p1: Intent) {
-        async {
+        GlobalScope.async {
             val ktx = ctx.ktx("recheck")
             v("recheck account / lease task executing")
             val config = ktx.getMostRecent(BLOCKA_CONFIG)!!
