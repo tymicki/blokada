@@ -4,10 +4,9 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.mapBoth
 import com.github.michaelbull.result.mapError
 import core.*
+import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.util.*
-
-private const val KEY = "g11n:translation:store"
 
 internal class TranslationsFetcher(
         val urls: () -> Map<Url, Prefix>,
@@ -29,11 +28,11 @@ internal class TranslationsFetcher(
     private var store = TranslationStore()
 
     @Synchronized fun load(ktx: Kontext) {
-        store = store.loadBlocking(KEY)
+        store = runBlocking { store.loadFromPersistence() }
     }
 
     @Synchronized fun save(ktx: Kontext) {
-        store.saveBlocking(KEY)
+        runBlocking { store.saveToPersistence() }
     }
 
     @Synchronized fun sync(ktx: Kontext) {

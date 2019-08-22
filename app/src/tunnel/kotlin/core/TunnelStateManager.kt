@@ -1,6 +1,7 @@
 package core
 
 import com.github.salomonbrys.kodein.instance
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -11,8 +12,6 @@ import java.util.*
  * Automatically decides on the state of Tunnel.enabled flag based on the
  * state of adblocking, vpn, and DNS.
  */
-
-private const val KEY = "tunnel:pause"
 
 class TunnelStateManager(
         private val ktx: AndroidKontext,
@@ -38,11 +37,13 @@ class TunnelStateManager(
             when {
                 !s.enabled() -> {
                     // Save state before pausing
-                    TunnelPause(
-                            vpn = latest.blockaVpn,
-                            adblocking = latest.adblocking,
-                            dns = d.enabled()
-                    ).saveBlocking(KEY)
+                    runBlocking {
+                        TunnelPause(
+                                vpn = latest.blockaVpn,
+                                adblocking = latest.adblocking,
+                                dns = d.enabled()
+                        ).saveToPersistence()
+                    }
 
                     v("pausing features.")
                     core.emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
@@ -50,7 +51,7 @@ class TunnelStateManager(
                 }
                 else -> {
                     // Restore the state
-                    val pause = TunnelPause().loadBlocking(KEY)
+                    val pause = runBlocking { TunnelPause().loadFromPersistence() }
 
                     val vpn = pause.vpn && latest.hasGateway() && latest.leaseActiveUntil.after(Date())
                     var adblocking = pause.adblocking && Product.current(ktx.ctx) != Product.DNS
@@ -127,5 +128,7 @@ data class TunnelPause(
         val vpn: Boolean = false,
         val adblocking: Boolean = false,
         val dns: Boolean = false
-)
+): Persistable {
+    override fun key() = "tunnel:pause"
+}
 

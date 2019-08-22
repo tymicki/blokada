@@ -1,6 +1,9 @@
 package flavor
 
-import adblocker.*
+import adblocker.ActiveWidgetProvider
+import adblocker.ForegroundStartService
+import adblocker.ListWidgetProvider
+import adblocker.LoggerConfig
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
@@ -10,7 +13,8 @@ import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.instance
 import core.Tunnel
 import core.UiState
-import core.loadBlocking
+import core.loadFromPersistence
+import kotlinx.coroutines.runBlocking
 import notification.displayNotification
 import notification.hideNotification
 
@@ -39,7 +43,7 @@ fun newFlavorModule(ctx: Context): Kodein.Module {
                 hideNotification(ctx)
             }
 
-            val config = LoggerConfig().loadBlocking(LOGGER_KEY)
+            val config = runBlocking { LoggerConfig().loadFromPersistence() }
             val wm: AppWidgetManager = AppWidgetManager.getInstance(ctx)
             val ids = wm.getAppWidgetIds(ComponentName(ctx, ActiveWidgetProvider::class.java))
             if(((ids != null) and (ids.isNotEmpty())) or config.active) {

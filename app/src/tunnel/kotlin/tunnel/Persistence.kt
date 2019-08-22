@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.michaelbull.result.*
 import core.*
 import core.Result
+import kotlinx.coroutines.runBlocking
 
 class Persistence {
     companion object {
@@ -157,9 +158,8 @@ class RequestPersistence(
 
 class BlockaConfigPersistence {
     val load = { ktx: Kontext ->
-//        Result.of { loadPersistence("blocka:config", { BlockaConfig() }) }
         Result.of {
-            BlockaConfig().loadBlocking("blocka:config")
+            runBlocking { BlockaConfig().loadFromPersistence() }
         }
                 .mapBoth(
                         success = { it },
