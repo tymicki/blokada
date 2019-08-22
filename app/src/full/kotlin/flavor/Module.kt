@@ -10,7 +10,7 @@ import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.instance
 import core.Tunnel
 import core.UiState
-import core.loadPersistence
+import core.loadBlocking
 import notification.displayNotification
 import notification.hideNotification
 
@@ -39,7 +39,7 @@ fun newFlavorModule(ctx: Context): Kodein.Module {
                 hideNotification(ctx)
             }
 
-            val config = loadPersistence(LOGGER_KEY, { LoggerConfig() })
+            val config = LoggerConfig().loadBlocking(LOGGER_KEY)
             val wm: AppWidgetManager = AppWidgetManager.getInstance(ctx)
             val ids = wm.getAppWidgetIds(ComponentName(ctx, ActiveWidgetProvider::class.java))
             if(((ids != null) and (ids.isNotEmpty())) or config.active) {

@@ -157,7 +157,10 @@ class RequestPersistence(
 
 class BlockaConfigPersistence {
     val load = { ktx: Kontext ->
-        Result.of { loadPersistence("blocka:config", { BlockaConfig() }) }
+//        Result.of { loadPersistence("blocka:config", { BlockaConfig() }) }
+        Result.of {
+            BlockaConfig().loadBlocking("blocka:config")
+        }
                 .mapBoth(
                         success = { it },
                         failure = { ex ->

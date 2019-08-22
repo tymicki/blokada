@@ -29,11 +29,11 @@ internal class TranslationsFetcher(
     private var store = TranslationStore()
 
     @Synchronized fun load(ktx: Kontext) {
-        store = loadPersistence(KEY, { store })
+        store = store.loadBlocking(KEY)
     }
 
     @Synchronized fun save(ktx: Kontext) {
-        savePersistence(KEY, store)
+        store.saveBlocking(KEY)
     }
 
     @Synchronized fun sync(ktx: Kontext) {

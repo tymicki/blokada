@@ -6,7 +6,7 @@ import kotlin.coroutines.CoroutineContext
 private data class TypedEvent<T>(val type: EventType<T>, val value: T)
 
 internal class CommonEmit(
-        private val context: CoroutineContext = Dispatchers.Main + newEmitExceptionLogger()
+        private val context: CoroutineContext = Dispatchers.Main + logCoroutineExceptions()
 ) : Emit {
 
     private val emits = mutableMapOf<EventType<*>, TypedEvent<*>>()
@@ -61,5 +61,7 @@ internal class CommonEmit(
 
 }
 
-internal fun newEmitExceptionLogger() = CoroutineExceptionHandler { _, throwable -> e(throwable) }
+internal fun logCoroutineExceptions() = CoroutineExceptionHandler { context, throwable ->
+    e("failed coroutine $context", throwable)
+}
 

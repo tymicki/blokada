@@ -9,6 +9,7 @@ import com.github.salomonbrys.kodein.instance
 import core.*
 import gs.environment.ComponentProvider
 import gs.property.I18n
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.Events
 import tunnel.Request
@@ -40,13 +41,13 @@ class RequestLogWriter {
     private fun time() = Date().time.toString(10)
 }
 
-internal const val LOGGER_KEY = "logger:config"
-
 data class LoggerConfig(
         val active: Boolean = false,
         val logAllowed: Boolean = false,
         val logDenied: Boolean = false
-)
+): Persistable {
+    override fun key() = "logger:config"
+}
 
 class RequestLogger : Service() {
     override fun onBind(intent: Intent?): IBinder? {
@@ -95,7 +96,7 @@ class RequestLogger : Service() {
                 }
             } else {
                 if (intent.getBooleanExtra("load_on_start", false)) {
-                    config = loadPersistence(LOGGER_KEY, { LoggerConfig() })
+                    config = runBlocking { config.loadFromPersistence() }
                 }
             }
         }
@@ -119,7 +120,7 @@ class LoggerVB (
     override fun attach(view: SlotView) {
         view.type = Slot.Type.INFO
         view.enableAlternativeBackground()
-        val config = loadPersistence(LOGGER_KEY, { LoggerConfig() })
+        val config = runBlocking { LoggerConfig().loadFromPersistence() }
         view.apply {
             content = Slot.Content(
                     label = i18n.getString(R.string.logger_slot_title),
@@ -136,7 +137,7 @@ class LoggerVB (
         view.onSelect = {
             askForExternalStoragePermissionsIfNeeded(activity)
             val newConfig = modeToConfig(it)
-            savePersistence(LOGGER_KEY, newConfig)
+            runBlocking { newConfig.saveToPersistence() }
             sendConfigToService(ktx.ctx, newConfig)
         }
     }

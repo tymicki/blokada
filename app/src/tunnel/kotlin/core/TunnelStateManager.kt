@@ -38,11 +38,11 @@ class TunnelStateManager(
             when {
                 !s.enabled() -> {
                     // Save state before pausing
-                    savePersistence(KEY, TunnelPause(
+                    TunnelPause(
                             vpn = latest.blockaVpn,
                             adblocking = latest.adblocking,
                             dns = d.enabled()
-                    ))
+                    ).saveBlocking(KEY)
 
                     v("pausing features.")
                     core.emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
@@ -50,7 +50,7 @@ class TunnelStateManager(
                 }
                 else -> {
                     // Restore the state
-                    val pause = core.loadPersistence(KEY, { TunnelPause() })
+                    val pause = TunnelPause().loadBlocking(KEY)
 
                     val vpn = pause.vpn && latest.hasGateway() && latest.leaseActiveUntil.after(Date())
                     var adblocking = pause.adblocking && Product.current(ktx.ctx) != Product.DNS
