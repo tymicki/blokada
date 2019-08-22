@@ -2,7 +2,6 @@ package core.bits
 
 import android.content.Context
 import android.content.Intent
-import com.github.michaelbull.result.get
 import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.isLandscape
@@ -25,14 +24,7 @@ data class SlotsSeenStatus(
         val donate: Int = 0
 )
 
-class SlotStatusPersistence {
-    val load = { ->
-        Result.of { Persistence.paper().read<SlotsSeenStatus>("slots:status", SlotsSeenStatus()) }
-    }
-    val save = { slots: SlotsSeenStatus ->
-        Result.of { Persistence.paper().write("slots:status", slots) }
-    }
-}
+private const val PERSISTENCE_KEY = "slots:status"
 
 class HomeDashboardSectionVB(
         val ktx: AndroidKontext,
@@ -96,17 +88,17 @@ class HomeDashboardSectionVB(
     private val oneTimeBytes = createOneTimeBytes(ktx)
 
     private fun markAsSeen() {
-        val cfg = Persistence.slots.load().get()!!
+        val cfg = loadPersistence(PERSISTENCE_KEY, { SlotsSeenStatus() })
         val newCfg = when (added) {
             OneTimeByte.UPDATED -> cfg.copy(updated = BuildConfig.VERSION_CODE)
             OneTimeByte.DONATE -> cfg.copy(donate = BuildConfig.VERSION_CODE)
             else -> cfg
         }
-        Persistence.slots.save(newCfg)
+        savePersistence(PERSISTENCE_KEY, newCfg)
     }
 
     private fun decideOnSlot(noSubscription: Boolean): Pair<ViewBinder?, OneTimeByte?> {
-        val cfg = Persistence.slots.load().get()
+        val cfg = loadPersistence(PERSISTENCE_KEY, { SlotsSeenStatus() })
         val name = if (cfg == null) null else when {
             //isLandscape(ktx.ctx) -> null
             BuildConfig.VERSION_CODE > cfg.updated -> OneTimeByte.UPDATED

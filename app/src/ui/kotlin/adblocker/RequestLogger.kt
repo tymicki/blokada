@@ -5,7 +5,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import com.github.michaelbull.result.mapBoth
 import com.github.salomonbrys.kodein.instance
 import core.*
 import gs.environment.ComponentProvider
@@ -41,22 +40,7 @@ class RequestLogWriter {
     private fun time() = Date().time.toString(10)
 }
 
-class LoggerConfigPersistence {
-    val load = { ktx: Kontext ->
-        Result.of { core.Persistence.paper().read<LoggerConfig>("logger:config", LoggerConfig()) }
-                .mapBoth(
-                        success = { it },
-                        failure = { ex ->
-                            w("failed loading LoggerConfig, reverting to defaults", ex)
-                            LoggerConfig()
-                        }
-                )
-    }
-
-    val save = { config: LoggerConfig ->
-        Result.of { core.Persistence.paper().write("logger:config", config) }
-    }
-}
+internal const val LOGGER_KEY = "logger:config"
 
 data class LoggerConfig(
         val active: Boolean = false,
@@ -111,8 +95,7 @@ class RequestLogger : Service() {
                 }
             } else {
                 if (intent.getBooleanExtra("load_on_start", false)) {
-                    val persistenceConfig = LoggerConfigPersistence()
-                    config = persistenceConfig.load(this.ktx())
+                    config = loadPersistence(LOGGER_KEY, { LoggerConfig() })
                 }
             }
         }
@@ -133,12 +116,10 @@ class LoggerVB (
         onTap: (SlotView) -> Unit
 ): SlotVB(onTap) {
 
-    val persistence = LoggerConfigPersistence()
-
     override fun attach(view: SlotView) {
         view.type = Slot.Type.INFO
         view.enableAlternativeBackground()
-        val config = persistence.load(ktx)
+        val config = loadPersistence(LOGGER_KEY, { LoggerConfig() })
         view.apply {
             content = Slot.Content(
                     label = i18n.getString(R.string.logger_slot_title),
@@ -155,7 +136,7 @@ class LoggerVB (
         view.onSelect = {
             askForExternalStoragePermissionsIfNeeded(activity)
             val newConfig = modeToConfig(it)
-            persistence.save(newConfig)
+            savePersistence(LOGGER_KEY, newConfig)
             sendConfigToService(ktx.ctx, newConfig)
         }
     }

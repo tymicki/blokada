@@ -1225,7 +1225,7 @@ class StorageLocationVB(
 
     private val actionExternal = Slot.Action(i18n.getString(R.string.slot_action_external), {
         v("set persistence path", getExternalPath())
-        core.Persistence.global.savePath(getExternalPath())
+        setPersistencePath(getExternalPath())
 
         if (!checkStoragePermissions(ktx)) {
             activity.get()?.apply {
@@ -1237,15 +1237,13 @@ class StorageLocationVB(
 
     private val actionInternal = Slot.Action(i18n.getString(R.string.slot_action_internal), {
         v("resetting persistence path")
-        core.Persistence.global.savePath(core.Persistence.DEFAULT_PATH)
+        setPersistencePath("")
         view?.apply { attach(this) }
     })
 
     private val actionImport = Slot.Action(i18n.getString(R.string.slot_action_import), {
         filters.reloadConfig(ktx, device.onWifi())
     })
-
-    private fun isExternal() = core.Persistence.global.loadPath() != core.Persistence.DEFAULT_PATH
 
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
@@ -1258,9 +1256,9 @@ class StorageLocationVB(
                         i18n.getString(R.string.slot_action_internal),
                         i18n.getString(R.string.slot_action_external)
                 ),
-                selected = i18n.getString(if (isExternal()) R.string.slot_action_external
+                selected = i18n.getString(if (isCustomPersistencePath()) R.string.slot_action_external
                 else R.string.slot_action_internal),
-                action1 = if (isExternal()) actionInternal else actionExternal,
+                action1 = if (isCustomPersistencePath()) actionInternal else actionExternal,
                 action2 = actionImport
         )
     }

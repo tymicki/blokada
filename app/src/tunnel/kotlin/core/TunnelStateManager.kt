@@ -1,8 +1,6 @@
 package core
 
-import com.github.michaelbull.result.getOrElse
 import com.github.salomonbrys.kodein.instance
-import io.paperdb.Book
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -13,12 +11,13 @@ import java.util.*
  * Automatically decides on the state of Tunnel.enabled flag based on the
  * state of adblocking, vpn, and DNS.
  */
+
+private const val KEY = "tunnel:pause"
+
 class TunnelStateManager(
         private val ktx: AndroidKontext,
         private val s: Tunnel = ktx.di().instance(),
-        private val d: Dns = ktx.di().instance(),
-        private val loadPersistence: () -> Result<TunnelPause> = Persistence.pause.load,
-        private val savePersistence: (TunnelPause) -> Result<Book> = Persistence.pause.save
+        private val d: Dns = ktx.di().instance()
 ) {
 
     private var latest: BlockaConfig = BlockaConfig()
@@ -39,7 +38,7 @@ class TunnelStateManager(
             when {
                 !s.enabled() -> {
                     // Save state before pausing
-                    savePersistence(TunnelPause(
+                    savePersistence(KEY, TunnelPause(
                             vpn = latest.blockaVpn,
                             adblocking = latest.adblocking,
                             dns = d.enabled()
@@ -51,10 +50,7 @@ class TunnelStateManager(
                 }
                 else -> {
                     // Restore the state
-                    val pause = loadPersistence().getOrElse {
-                        e("could not load persistence for TunnelPause", it)
-                        TunnelPause()
-                    }
+                    val pause = core.loadPersistence(KEY, { TunnelPause() })
 
                     val vpn = pause.vpn && latest.hasGateway() && latest.leaseActiveUntil.after(Date())
                     var adblocking = pause.adblocking && Product.current(ktx.ctx) != Product.DNS
@@ -133,11 +129,3 @@ data class TunnelPause(
         val dns: Boolean = false
 )
 
-class TunnelPausePersistence {
-    val load = { ->
-        Result.of { Persistence.paper().read<TunnelPause>("tunnel:pause", TunnelPause()) }
-    }
-    val save = { pause: TunnelPause ->
-        Result.of { Persistence.paper().write("tunnel:pause", pause) }
-    }
-}

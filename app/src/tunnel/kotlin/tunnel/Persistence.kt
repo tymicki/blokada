@@ -17,14 +17,14 @@ class Persistence {
 
 class RulesPersistence {
     val load = { id: FilterId ->
-        Result.of { core.Persistence.paper().read<Ruleset>("rules:set:$id", Ruleset()) }
+        Result.of { loadPersistence("rules:set:$id", { Ruleset() }) }
     }
     val save = { id: FilterId, ruleset: Ruleset ->
-        Result.of { core.Persistence.paper().write("rules:set:$id", ruleset) }
-        Result.of { core.Persistence.paper().write("rules:size:$id", ruleset.size) }
+        Result.of { savePersistence("rules:set:$id", ruleset) }
+        Result.of { savePersistence("rules:size:$id", ruleset.size) }
     }
     val size = { id: FilterId ->
-        Result.of { core.Persistence.paper().read("rules:size:$id", 0) }
+        Result.of { loadPersistence("rules:size:$id", { 0 }) }
     }
 }
 
@@ -33,24 +33,23 @@ class FiltersPersistence {
         loadLegacy34(ktx)
                 .or { loadLegacy35(ktx) }
                 .or {
-                    v("loading from the persistence", core.Persistence.paper().path)
-                    Result.of { core.Persistence.paper().read("filters2", FilterStore()) }
+                    Result.of { loadPersistence("filters2", { FilterStore() }) }
                             .orElse { ex ->
-                                if (core.Persistence.global.loadPath() != core.Persistence.DEFAULT_PATH) {
+                                if (isCustomPersistencePath()) {
                                     w("failed loading from a custom path, resetting")
-                                    core.Persistence.global.savePath(core.Persistence.DEFAULT_PATH)
-                                    Result.of { core.Persistence.paper().read("filters2", FilterStore()) }
+                                    setPersistencePath("")
+                                    Result.of { loadPersistence("filters2", { FilterStore() }) }
                                 } else Err(Exception("failed loading from default path", ex))
                             }
                 }
     }
 
     val save = { filterStore: FilterStore ->
-        Result.of { core.Persistence.paper().write("filters2", filterStore) }
+        Result.of { savePersistence("filters2", filterStore) }
     }
 
     private fun loadLegacy34(ktx: AndroidKontext) = {
-        if (core.Persistence.global.loadPath() != core.Persistence.DEFAULT_PATH)
+        if (isCustomPersistencePath())
             Err(Exception("custom persistence path detected, skipping legacy import"))
         else {
             val prefs = ktx.ctx.getSharedPreferences("filters", Context.MODE_PRIVATE)
@@ -65,7 +64,7 @@ class FiltersPersistence {
     }()
 
     private fun loadLegacy35(ktx: AndroidKontext) = {
-        Result.of { core.Persistence.paper().read("filters2", FiltersCache()) }
+        Result.of { loadPersistence("filters2", { FiltersCache() }) }
                 .andThen {
                     if (it.cache.isEmpty()) Err(Exception("no 3.5 legacy persistence found"))
                     else {
@@ -92,7 +91,7 @@ class FiltersPersistence {
 
 class TunnelConfigPersistence {
     val load = { ktx: Kontext ->
-        Result.of { core.Persistence.paper().read<TunnelConfig>("tunnel:config", TunnelConfig()) }
+        Result.of { loadPersistence("tunnel:config", { TunnelConfig() }) }
                 .mapBoth(
                         success = { it },
                         failure = { ex ->
@@ -103,16 +102,16 @@ class TunnelConfigPersistence {
     }
 
     val save = { config: TunnelConfig ->
-        Result.of { core.Persistence.paper().write("tunnel:config", config) }
+        Result.of { savePersistence("tunnel:config", config) }
     }
 }
 
 class RequestPersistence(
         val load: (Int) -> Result<List<Request>> = { batch: Int ->
-            Result.of { core.Persistence.paper().read<List<Request>>("requests:$batch", emptyList()) }
+            Result.of { loadPersistence("requests:$batch", { emptyList<Request>() }) }
         },
         val saveBatch: (Int, List<Request>) -> Any = { batch: Int, requests: List<Request> ->
-            Result.of { core.Persistence.paper().write("requests:$batch", requests) }
+            Result.of { savePersistence("requests:$batch", requests) }
         },
         val batch_sizes: List<Int> = listOf(10, 100, 1000)
 ) {
@@ -158,7 +157,7 @@ class RequestPersistence(
 
 class BlockaConfigPersistence {
     val load = { ktx: Kontext ->
-        Result.of { core.Persistence.paper().read<BlockaConfig>("blocka:config", BlockaConfig()) }
+        Result.of { loadPersistence("blocka:config", { BlockaConfig() }) }
                 .mapBoth(
                         success = { it },
                         failure = { ex ->
@@ -169,6 +168,6 @@ class BlockaConfigPersistence {
     }
 
     val save = { config: BlockaConfig ->
-        Result.of { core.Persistence.paper().write("blocka:config", config) }
+        Result.of { savePersistence("blocka:config", config) }
     }
 }
