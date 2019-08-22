@@ -32,7 +32,7 @@ internal class TranslationsFetcher(
         doLoadTranslationStore().mapBoth(
                 success = {
                     v("loaded TranslationStore from persistence", it.cache.size)
-//                    ktx.emit(Events.FILTERS_CHANGED, it.cache)
+//                    core.emit(Events.FILTERS_CHANGED, it.cache)
                     store = it
                 },
                 failure = {

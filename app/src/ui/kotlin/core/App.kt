@@ -87,7 +87,7 @@ fun newAppModule(ctx: Context): Kodein.Module {
                 g11.load("translations:firstLoad".ktx())
 
                 val ktx = ctx.ktx("translations:sync:filters")
-                ktx.on(tunnel.Events.FILTERS_CHANGED) {
+                core.on(tunnel.Events.FILTERS_CHANGED) {
                     g11.sync(ktx)
                 }
             }

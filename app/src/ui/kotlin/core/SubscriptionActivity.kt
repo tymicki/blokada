@@ -66,15 +66,15 @@ class SubscriptionActivity : Activity() {
 
     override fun onStart() {
         super.onStart()
-        ktx.on(BLOCKA_CONFIG, updateUrl)
+        core.on(BLOCKA_CONFIG, updateUrl)
     }
 
     override fun onStop() {
         super.onStop()
-        ktx.cancel(BLOCKA_CONFIG, updateUrl)
+        core.cancel(BLOCKA_CONFIG, updateUrl)
 
         GlobalScope.async {
-            ktx.getMostRecent(BLOCKA_CONFIG)?.run {
+            core.getMostRecent(BLOCKA_CONFIG)?.run {
                 delay(3000)
                 tunnel.checkAccountInfo(ktx, this)
             }

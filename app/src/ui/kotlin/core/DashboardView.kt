@@ -141,20 +141,20 @@ class DashboardView(
     }
 
     private fun listenToEvents() {
-        ktx.on(OPEN_MENU, callback = {
+        core.on(OPEN_MENU, callback = {
             sliding.panelState = PanelState.EXPANDED
 //            model.menuViewPagerSwiped(0)
         }, recentValue = false)
 
-        ktx.on(SWIPE_RIGHT, callback = {
+        core.on(SWIPE_RIGHT, callback = {
             bg_pager.currentItem = 1
         }, recentValue = false)
 
-        ktx.on(MENU_CLICK, callback = { item ->
+        core.on(MENU_CLICK, callback = { item ->
             model.menuItemClicked(item)
         }, recentValue = false)
 
-        ktx.on(MENU_CLICK_BY_NAME, callback = { item ->
+        core.on(MENU_CLICK_BY_NAME, callback = { item ->
             val found = mainMenu.items.firstOrNull { (it as? NamedViewBinder)?.name == item } as NamedViewBinder?
             found?.run {
                 sliding.panelState = PanelState.EXPANDED
@@ -268,7 +268,7 @@ class DashboardView(
     }
 
     private fun setupExternalEventListeners() {
-        ktx.on(Events.REQUEST) {
+        core.on(Events.REQUEST) {
             bg_packets.addToHistory(it)
         }
 

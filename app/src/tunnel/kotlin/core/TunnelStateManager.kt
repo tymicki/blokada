@@ -26,7 +26,7 @@ class TunnelStateManager(
         @Synchronized set
 
     init {
-        ktx.on(BLOCKA_CONFIG) {
+        core.on(BLOCKA_CONFIG) {
             latest = it
             check(it)
         }
@@ -46,7 +46,7 @@ class TunnelStateManager(
                     ))
 
                     v("pausing features.")
-                    ktx.emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
+                    core.emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
                     d.enabled %= false
                 }
                 else -> {
@@ -73,7 +73,7 @@ class TunnelStateManager(
                     }
 
                     d.enabled %= dns
-                    ktx.emit(BLOCKA_CONFIG, latest.copy(adblocking = adblocking, blockaVpn = vpn))
+                    core.emit(BLOCKA_CONFIG, latest.copy(adblocking = adblocking, blockaVpn = vpn))
                 }
             }
         }
@@ -88,39 +88,39 @@ class TunnelStateManager(
             }
             !it.adblocking && it.blockaVpn && !it.hasGateway() -> {
                 v("turning off everything because no gateway selected")
-                ktx.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
+                core.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
                 s.enabled %= false
             }
             (it.adblocking || d.enabled()) && it.blockaVpn && !it.hasGateway() -> {
                 v("turning off vpn because no gateway selected")
-                ktx.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
+                core.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
             }
         }
     }
 
     fun turnAdblocking(on: Boolean): Boolean {
-        ktx.emit(BLOCKA_CONFIG, latest.copy(adblocking = on))
+        core.emit(BLOCKA_CONFIG, latest.copy(adblocking = on))
         return true
     }
 
     fun turnVpn(on: Boolean): Boolean {
         return when {
             !on -> {
-                ktx.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
+                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 true
             }
             latest.activeUntil.before(Date()) -> {
                 showSnack(R.string.menu_vpn_activate_account.res())
-                ktx.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
+                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }
             !latest.hasGateway() -> {
                 showSnack(R.string.menu_vpn_select_gateway.res())
-                ktx.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
+                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }
             else -> {
-                ktx.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = true))
+                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = true))
                 true
             }
         }

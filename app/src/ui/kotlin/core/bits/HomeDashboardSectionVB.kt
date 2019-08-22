@@ -44,7 +44,7 @@ class HomeDashboardSectionVB(
 ) : ListViewBinder(), NamedViewBinder {
 
     override fun attach(view: VBListView) {
-        ktx.on(BLOCKA_CONFIG, listener)
+        core.on(BLOCKA_CONFIG, listener)
         if (isLandscape(ktx.ctx)) {
             view.enableLandscapeMode(reversed = false)
             view.set(items)
@@ -52,7 +52,7 @@ class HomeDashboardSectionVB(
     }
 
     override fun detach(view: VBListView) {
-        ktx.cancel(BLOCKA_CONFIG, listener)
+        core.cancel(BLOCKA_CONFIG, listener)
     }
 
     private val update = {
@@ -138,12 +138,12 @@ class VpnVB(
 ) : BitVB() {
 
     override fun attach(view: BitView) {
-        ktx.on(BLOCKA_CONFIG, configListener)
+        core.on(BLOCKA_CONFIG, configListener)
         update()
     }
 
     override fun detach(view: BitView) {
-        ktx.cancel(BLOCKA_CONFIG, configListener)
+        core.cancel(BLOCKA_CONFIG, configListener)
     }
 
     private var config: BlockaConfig = BlockaConfig()
@@ -177,12 +177,12 @@ class Adblocking2VB(
 ) : BitVB() {
 
     override fun attach(view: BitView) {
-        ktx.on(BLOCKA_CONFIG, configListener)
+        core.on(BLOCKA_CONFIG, configListener)
         update()
     }
 
     override fun detach(view: BitView) {
-        ktx.cancel(BLOCKA_CONFIG, configListener)
+        core.cancel(BLOCKA_CONFIG, configListener)
     }
 
     private var config: BlockaConfig = BlockaConfig()
@@ -204,7 +204,7 @@ class Adblocking2VB(
             switch(config.adblocking)
             onSwitch { adblocking ->
                 if (!adblocking && !config.blockaVpn) s.enabled %= false
-                ktx.emit(BLOCKA_CONFIG, config.copy(adblocking = adblocking))
+                core.emit(BLOCKA_CONFIG, config.copy(adblocking = adblocking))
             }
         }
         Unit

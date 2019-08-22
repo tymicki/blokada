@@ -19,7 +19,7 @@ class VpnStatusVB(
 ) : ByteVB() {
 
     override fun attach(view: ByteView) {
-        ktx.on(BLOCKA_CONFIG, configListener)
+        core.on(BLOCKA_CONFIG, configListener)
         stateListener = s.enabled.doOnUiWhenChanged().then {
             update()
         }
@@ -28,7 +28,7 @@ class VpnStatusVB(
     }
 
     override fun detach(view: ByteView) {
-        ktx.cancel(BLOCKA_CONFIG, configListener)
+        core.cancel(BLOCKA_CONFIG, configListener)
         tunnelStatus.listeners.remove(tunnelListener)
         s.enabled.cancel(stateListener)
     }
@@ -57,11 +57,11 @@ class VpnStatusVB(
                     label(R.string.home_setup_vpn.res())
                     state(R.string.home_vpn_disabled.res())
                     onTap {
-                        ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
                         if (!tunManager.turnVpn(it)) {
-                            ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }
                 }
@@ -81,11 +81,11 @@ class VpnStatusVB(
                     label(R.string.home_setup_vpn.res())
                     state(R.string.home_account_active.res())
                     onTap {
-                        ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
                         if (!tunManager.turnVpn(it)) {
-                            ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }
                 }
@@ -96,11 +96,11 @@ class VpnStatusVB(
                     label(R.string.home_setup_vpn.res())
                     state(R.string.home_vpn_disabled.res())
                     onTap {
-                        ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
                         if (!tunManager.turnVpn(it)) {
-                            ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }
                 }
@@ -111,11 +111,11 @@ class VpnStatusVB(
                     label(config.gatewayNiceName.res())
                     state(R.string.home_connected_vpn.res())
                     onTap {
-                        ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
                         if (!tunManager.turnVpn(it)) {
-                            ktx.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }
                 }
@@ -153,7 +153,7 @@ class VpnStatusVB(
     private fun activateVpnAutomatically(cfg: BlockaConfig) {
         if (!cfg.blockaVpn && !wasActive && cfg.activeUntil.after(Date()) && cfg.hasGateway()) {
             v("automatically enabling vpn on new subscription")
-            ktx.emit(BLOCKA_CONFIG, cfg.copy(blockaVpn = true))
+            core.emit(BLOCKA_CONFIG, cfg.copy(blockaVpn = true))
         }
     }
 

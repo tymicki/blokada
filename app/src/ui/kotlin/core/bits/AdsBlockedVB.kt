@@ -30,14 +30,14 @@ class AdsBlockedVB(
         }
         tunnelStatus.listeners.add(tunnelListener)
         tunnelStatus.update(tunnelEvents)
-        ktx.on(BLOCKA_CONFIG, configListener)
+        core.on(BLOCKA_CONFIG, configListener)
         update()
     }
 
     override fun detach(view: ByteView) {
         tunnelEvents.tunnelDropCount.cancel(droppedCountListener)
         tunnelStatus.listeners.remove(tunnelListener)
-        ktx.cancel(BLOCKA_CONFIG, configListener)
+        core.cancel(BLOCKA_CONFIG, configListener)
     }
 
     private val update = {
@@ -97,8 +97,8 @@ class AdsBlockedVB(
                     arrow(null)
                     state(R.string.home_adblocking_enabled.res())
                     onTap {
-//                        ktx.emit(SWIPE_RIGHT)
-                        ktx.emit(MENU_CLICK_BY_NAME, R.string.panel_section_ads.res())
+//                        core.emit(SWIPE_RIGHT)
+                        core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_ads.res())
                     }
                     onSwitch {
                         tunManager.turnAdblocking(it)

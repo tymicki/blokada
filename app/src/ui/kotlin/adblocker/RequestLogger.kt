@@ -75,15 +75,15 @@ class RequestLogger : Service() {
     var config = LoggerConfig()
         set(value) {
             if (field != value) {
-                this.ktx().cancel(Events.REQUEST, onAllowed)
-                this.ktx().cancel(Events.REQUEST, onBlocked)
+                cancel(Events.REQUEST, onAllowed)
+                cancel(Events.REQUEST, onBlocked)
                 if (value.active) {
                     logger = RequestLogWriter()
                     if (value.logAllowed) {
-                        this.ktx().on(Events.REQUEST, onAllowed)
+                        core.on(Events.REQUEST, onAllowed)
                     }
                     if (value.logDenied) {
-                        this.ktx().on(Events.REQUEST, onBlocked)
+                        core.on(Events.REQUEST, onBlocked)
                     }
                 } else {
                     stopSelf()
@@ -120,8 +120,8 @@ class RequestLogger : Service() {
     }
 
     override fun onDestroy() {
-        this.ktx().cancel(Events.REQUEST, onAllowed)
-        this.ktx().cancel(Events.REQUEST, onBlocked)
+        cancel(Events.REQUEST, onAllowed)
+        cancel(Events.REQUEST, onBlocked)
         super.onDestroy()
     }
 }

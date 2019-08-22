@@ -111,7 +111,7 @@ class FilterManagerTest {
 
         var step = 0
         val ktx = Kontext.forTest()
-        ktx.on(tunnel.Events.FILTERS_CHANGED) {
+        core.on(tunnel.Events.FILTERS_CHANGED) {
             when (step) {
                 0 -> {
                     Assert.assertEquals(1, it.size)

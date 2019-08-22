@@ -109,8 +109,8 @@ val TUNNEL_CONFIG = "TUNNEL_CONFIG".newEventOf<TunnelConfig>()
 
 fun registerTunnelConfigEvent(ktx: Kontext) {
     val config = Persistence.config.load(ktx)
-    ktx.emit(TUNNEL_CONFIG, config)
-    ktx.on(TUNNEL_CONFIG, { Persistence.config.save(it) })
+    core.emit(TUNNEL_CONFIG, config)
+    core.on(TUNNEL_CONFIG, { Persistence.config.save(it) })
 }
 
 val EXPIRATION_OFFSET = 60 * 1000
@@ -157,12 +157,12 @@ fun registerBlockaConfigEvent(ktx: AndroidKontext) {
 
     checkAccountInfo(ktx, config)
 
-    ktx.on(BLOCKA_CONFIG, { Persistence.blocka.save(it) })
+    core.on(BLOCKA_CONFIG, { Persistence.blocka.save(it) })
 
     val d: Device = ktx.di().instance()
     d.screenOn.doOnUiWhenChanged().then {
         if (d.screenOn()) GlobalScope.async {
-            ktx.getMostRecent(BLOCKA_CONFIG)?.run {
+            core.getMostRecent(BLOCKA_CONFIG)?.run {
                 if (!DateUtils.isToday(lastDaily)) {
                     v("daily check account")
                     checkAccountInfo(ktx, copy(lastDaily = System.currentTimeMillis()))
@@ -195,7 +195,7 @@ private fun newAccount(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0
                                     privateKey = BoringTunJNI.x25519_key_to_base64(secret),
                                     publicKey = BoringTunJNI.x25519_key_to_base64(public)
                             )
-                            ktx.emit(BLOCKA_CONFIG, newCfg)
+                            core.emit(BLOCKA_CONFIG, newCfg)
                             v("new user. public key: ${newCfg.publicKey}")
                         }
                     }
@@ -324,7 +324,7 @@ fun clearConnectedGateway(ktx: AndroidKontext, config: BlockaConfig, showError: 
     }
 
     deleteLease(ktx, config)
-    ktx.emit(BLOCKA_CONFIG, config.copy(
+    core.emit(BLOCKA_CONFIG, config.copy(
             blockaVpn = false,
             gatewayId = "",
             gatewayIp = "",
@@ -378,7 +378,7 @@ fun checkGateways(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
 
 fun checkLeaseIfNeeded(ktx: AndroidKontext) {
     GlobalScope.async {
-        ktx.getMostRecent(BLOCKA_CONFIG)?.run {
+        core.getMostRecent(BLOCKA_CONFIG)?.run {
             if (leaseActiveUntil.before(Date())) checkLease(ktx, this)
         }
     }
@@ -418,7 +418,7 @@ private fun checkLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0
                                         blockaVpn = true
                                 )
                                 v("found active lease until: ${lease.expires}")
-                                ktx.emit(BLOCKA_CONFIG, newCfg)
+                                core.emit(BLOCKA_CONFIG, newCfg)
                                 scheduleRecheck(ktx, newCfg)
                             } else {
                                 v("no active lease, or expires soon")
@@ -480,7 +480,7 @@ private fun newLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) 
                                     blockaVpn = true
                             )
                             v("new active lease, until: ${lease.expires}")
-                            ktx.emit(BLOCKA_CONFIG, newCfg)
+                            core.emit(BLOCKA_CONFIG, newCfg)
                             scheduleRecheck(ktx, newCfg)
                         }
                     }
@@ -507,7 +507,7 @@ private fun scheduleRecheck(ktx: AndroidKontext, config: BlockaConfig) {
     val leaseTime = config.getLeaseExpiration()
     val sooner = if (accountTime.before(leaseTime)) accountTime else leaseTime
     if (sooner.before(Date())) {
-        ktx.emit(BLOCKA_CONFIG, config.copy(blockaVpn = false))
+        core.emit(BLOCKA_CONFIG, config.copy(blockaVpn = false))
         GlobalScope.async {
             // Wait until tunnel is off and recheck
             delay(3000)
@@ -524,7 +524,7 @@ class RenewLicenseReceiver : BroadcastReceiver() {
         GlobalScope.async {
             val ktx = ctx.ktx("recheck")
             v("recheck account / lease task executing")
-            val config = ktx.getMostRecent(BLOCKA_CONFIG)!!
+            val config = core.getMostRecent(BLOCKA_CONFIG)!!
             checkAccountInfo(ktx, config)
         }
     }

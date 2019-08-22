@@ -24,11 +24,11 @@ class AccountVB(
             ktx.ctx.startActivity(Intent(ktx.ctx, SubscriptionActivity::class.java))
         }
         update(null)
-        ktx.on(BLOCKA_CONFIG, update)
+        core.on(BLOCKA_CONFIG, update)
     }
 
     override fun detach(view: BitView) {
-        ktx.cancel(BLOCKA_CONFIG, update)
+        core.cancel(BLOCKA_CONFIG, update)
     }
 
     private val update = { cfg: BlockaConfig? ->

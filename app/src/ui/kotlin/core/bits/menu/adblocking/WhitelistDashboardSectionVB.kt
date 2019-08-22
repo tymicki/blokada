@@ -34,7 +34,7 @@ class WhitelistDashboardSectionVB(
 
     override fun attach(view: VBListView) {
         view.enableAlternativeMode()
-        ktx.on(Events.FILTERS_CHANGED, updateApps)
+        core.on(Events.FILTERS_CHANGED, updateApps)
     }
 }
 

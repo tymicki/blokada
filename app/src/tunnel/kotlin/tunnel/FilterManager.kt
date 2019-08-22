@@ -41,7 +41,7 @@ internal class FilterManager(
         doLoadFilterStore(ktx).mapBoth(
                 success = {
                     v("loaded FilterStore from persistence", it.url, it.cache.size)
-                    ktx.emit(Events.FILTERS_CHANGED, it.cache)
+                    core.emit(Events.FILTERS_CHANGED, it.cache)
                     store = it
                 },
                 failure = {
@@ -83,19 +83,19 @@ internal class FilterManager(
             )
             store.copy(cache = store.cache.minus(old).plus(newWithPreservedFields))
         }
-        ktx.emit(Events.FILTERS_CHANGED, store.cache)
+        core.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
     fun remove(ktx: Kontext, old: Filter) {
         v("removing filter", old.id)
         store = store.copy(cache = store.cache.minus(old))
-        ktx.emit(Events.FILTERS_CHANGED, store.cache)
+        core.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
     fun removeAll(ktx: Kontext) {
         v("removing all filters")
         store = store.copy(cache = emptySet())
-        ktx.emit(Events.FILTERS_CHANGED, store.cache)
+        core.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
     fun invalidateCache(ktx: Kontext) {
@@ -113,7 +113,7 @@ internal class FilterManager(
     fun sync(ktx: Kontext) = {
         if (syncFiltersWithRepo(ktx)) {
             val success = syncRules(ktx)
-            ktx.emit(Events.MEMORY_CAPACITY, Memory.linesAvailable())
+            core.emit(Events.MEMORY_CAPACITY, Memory.linesAvailable())
             success
         } else false
     }()
@@ -126,7 +126,7 @@ internal class FilterManager(
 
         if (!doValidateFilterStoreCache(store)) {
             v("syncing filters", store.url)
-            ktx.emit(Events.FILTERS_CHANGING)
+            core.emit(Events.FILTERS_CHANGING)
             doFetchFiltersFromRepo(store.url).mapBoth(
                     success = { builtinFilters ->
                         v("fetched. size:", builtinFilters.size)
@@ -151,7 +151,7 @@ internal class FilterManager(
                         store = store.copy(cache = doProcessFetchedFilters(new).prioritised(),
                                 lastFetch = doGetNow())
                         v("synced", store.cache.size)
-                        ktx.emit(Events.FILTERS_CHANGED, store.cache)
+                        core.emit(Events.FILTERS_CHANGED, store.cache)
                     },
                     failure = {
                         e("failed syncing filters", it)
@@ -168,7 +168,7 @@ internal class FilterManager(
         active.forEach { filter ->
             if (!doValidateRulesetCache(filter)) {
                 v("fetching ruleset", filter.id)
-                ktx.emit(Events.FILTERS_CHANGING)
+                core.emit(Events.FILTERS_CHANGING)
                 doFetchRuleset(doResolveFilterSource(filter), doGetMemoryLimit()).mapBoth(
                         success = {
                             blockade.set(ktx, filter.id, it)

@@ -41,7 +41,7 @@ class RestoreAccountActivity : Activity() {
         name.isBlank() -> Unit
         else -> {
             GlobalScope.async {
-                ktx.getMostRecent(BLOCKA_CONFIG)?.run {
+                core.getMostRecent(BLOCKA_CONFIG)?.run {
                     checkAccountInfo(ktx, copy(restoredAccountId = name), showError = true)
                     finish()
                 }

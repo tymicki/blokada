@@ -51,7 +51,7 @@ class GatewayVB(
                     gateway.overloaded() -> {
                         showSnack(R.string.slot_gateway_overloaded)
                         // Resend event to re-select same gateway
-                        ktx.emit(BLOCKA_CONFIG, cfg)
+                        core.emit(BLOCKA_CONFIG, cfg)
                     }
                     else -> {
                         checkGateways(ktx, cfg.copy(
@@ -81,10 +81,10 @@ class GatewayVB(
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
         view.type = Slot.Type.INFO
-        ktx.on(BLOCKA_CONFIG, onConfig)
+        core.on(BLOCKA_CONFIG, onConfig)
     }
 
     override fun detach(view: SlotView) {
-        ktx.cancel(BLOCKA_CONFIG, onConfig)
+        core.cancel(BLOCKA_CONFIG, onConfig)
     }
 }

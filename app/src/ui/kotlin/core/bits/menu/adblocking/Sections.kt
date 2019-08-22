@@ -59,12 +59,12 @@ class FiltersSectionVB(
 
     override fun attach(view: VBListView) {
         view.enableAlternativeMode()
-        ktx.on(Events.FILTERS_CHANGED, filtersUpdated)
+        core.on(Events.FILTERS_CHANGED, filtersUpdated)
     }
 
     override fun detach(view: VBListView) {
         slotMutex.detach()
-        ktx.cancel(Events.FILTERS_CHANGED, filtersUpdated)
+        core.cancel(Events.FILTERS_CHANGED, filtersUpdated)
     }
 
 }

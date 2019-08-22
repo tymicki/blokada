@@ -153,7 +153,7 @@ fun newTunnelModule(ctx: Context): Module {
             }
 
             GlobalScope.async {
-                ktx.on(BLOCKA_CONFIG) { cfg ->
+                core.on(BLOCKA_CONFIG) { cfg ->
                     engine.setup(ctx.ktx("blocka:vpn:switched"), dns.dnsServers(), cfg)
 
 //                    if (cfg.blockaVpn && !s.enabled()) {
@@ -162,7 +162,7 @@ fun newTunnelModule(ctx: Context): Module {
 //                    }
                 }
 
-                ktx.on(Events.TUNNEL_RESTART) {
+                core.on(Events.TUNNEL_RESTART) {
                     val restartedRecently = (System.currentTimeMillis() - lastRestartMillis) < 15 * 1000
                     lastRestartMillis = System.currentTimeMillis()
                     if (!restartedRecently) restarts = 0
@@ -191,7 +191,7 @@ fun newTunnelModule(ctx: Context): Module {
             }
 
             // React to device power saving blocking our tunnel
-            ktx.on(tunnel.Events.TUNNEL_POWER_SAVING) {
+            core.on(tunnel.Events.TUNNEL_POWER_SAVING) {
                 w("power saving detected")
                 ctx.startActivity(Intent(ctx, PowersaveActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

@@ -76,7 +76,7 @@ class HostsLogVB(
             items.forEach { view.add(it) }
         }
 
-        ktx.on(Events.REQUEST, request)
+        core.on(Events.REQUEST, request)
         view.onEndReached = loadMore
     }
 
@@ -85,7 +85,7 @@ class HostsLogVB(
         view.onEndReached = {}
         searchString = ""
         items.clear()
-        ktx.cancel(Events.REQUEST, request)
+        core.cancel(Events.REQUEST, request)
     }
 
     private val loadMore = {

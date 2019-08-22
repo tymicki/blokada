@@ -21,11 +21,11 @@ class CopyAccountVB(
         view.icon(R.drawable.ic_blocked.res())
         view.label(R.string.slot_account_show.res())
         view.state("******".res())
-        ktx.on(BLOCKA_CONFIG, update)
+        core.on(BLOCKA_CONFIG, update)
     }
 
     override fun detach(view: BitView) {
-        ktx.cancel(BLOCKA_CONFIG, update)
+        core.cancel(BLOCKA_CONFIG, update)
     }
 
     private val update = { cfg: BlockaConfig? ->

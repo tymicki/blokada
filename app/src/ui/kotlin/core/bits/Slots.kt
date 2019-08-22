@@ -79,7 +79,7 @@ class ProtectionVB(
     override fun attach(view: SlotView) {
         tunnelEvents.listeners.add(tunnelListener)
         tunnelEvents.update(s)
-        ktx.on(BLOCKA_CONFIG, configListener)
+        core.on(BLOCKA_CONFIG, configListener)
         onStartOnBoot = s.startOnBoot.doOnUiWhenSet().then {
             startOnBoot = if (s.startOnBoot()) 1 else 0
             update()
@@ -100,7 +100,7 @@ class ProtectionVB(
 
     override fun detach(view: SlotView) {
         tunnelEvents.listeners.remove(tunnelListener)
-        ktx.cancel(BLOCKA_CONFIG, configListener)
+        core.cancel(BLOCKA_CONFIG, configListener)
         s.startOnBoot.cancel(onStartOnBoot)
         d.dnsServers.cancel(onDns)
         s.error.cancel(onError)
@@ -152,7 +152,7 @@ class ProtectionVB(
     }
 
     private val settingsAction = Slot.Action(i18n.getString(R.string.slot_protection_action), {
-        ktx.emit(OPEN_MENU)
+        core.emit(OPEN_MENU)
     })
 
     private fun off() {
@@ -293,15 +293,15 @@ class FiltersStatusVB(
 
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
-        ktx.on(Events.RULESET_BUILT, refreshRuleset)
-        ktx.on(Events.FILTERS_CHANGING, updatingFilters)
-        ktx.on(Events.MEMORY_CAPACITY, refreshMemory)
+        core.on(Events.RULESET_BUILT, refreshRuleset)
+        core.on(Events.FILTERS_CHANGING, updatingFilters)
+        core.on(Events.MEMORY_CAPACITY, refreshMemory)
     }
 
     override fun detach(view: SlotView) {
-        ktx.cancel(Events.RULESET_BUILT, refreshRuleset)
-        ktx.cancel(Events.FILTERS_CHANGING, updatingFilters)
-        ktx.cancel(Events.MEMORY_CAPACITY, refreshMemory)
+        core.cancel(Events.RULESET_BUILT, refreshRuleset)
+        core.cancel(Events.FILTERS_CHANGING, updatingFilters)
+        core.cancel(Events.MEMORY_CAPACITY, refreshMemory)
     }
 
 }
@@ -1432,7 +1432,7 @@ class AdblockingVB(
                     switched = cfg.adblocking
             )
             onSwitch = {
-                ktx.emit(BLOCKA_CONFIG, cfg.copy(adblocking = !cfg.adblocking))
+                core.emit(BLOCKA_CONFIG, cfg.copy(adblocking = !cfg.adblocking))
             }
         }
         Unit
@@ -1441,11 +1441,11 @@ class AdblockingVB(
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
         view.type = Slot.Type.INFO
-        ktx.on(BLOCKA_CONFIG, update)
+        core.on(BLOCKA_CONFIG, update)
     }
 
     override fun detach(view: SlotView) {
-        ktx.cancel(BLOCKA_CONFIG, update)
+        core.cancel(BLOCKA_CONFIG, update)
     }
 }
 

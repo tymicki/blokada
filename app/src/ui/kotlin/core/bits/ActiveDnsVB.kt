@@ -51,20 +51,20 @@ class ActiveDnsVB(
 
 //            if (dns.enabled() && !dns.hasCustomDnsSelected()) {
 //                Handler {
-//                    ktx.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
+//                    core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
 //                    true
 //                }.sendEmptyMessageDelayed(0, 300)
 //            }
 
             onTap {
-                ktx.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
+                core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
             }
             switch(dns.enabled())
             onSwitch { enabled ->
                 when {
                     enabled && !dns.hasCustomDnsSelected(checkEnabled = false) -> {
                         showSnack(R.string.menu_dns_select.res())
-                        ktx.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
+                        core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
                         switch(false)
                     }
                     else -> {
@@ -148,7 +148,7 @@ class MenuActiveDnsVB(
                 when {
                     enabled && !dns.hasCustomDnsSelected(checkEnabled = false) -> {
                         showSnack(R.string.menu_dns_select.res())
-                        ktx.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
+                        core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
                         switch(false)
                     }
                     else -> {

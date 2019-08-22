@@ -72,7 +72,7 @@ internal class DnsTunnel(
             val cause = ex.cause
             if (cause is ErrnoException && cause.errno == OsConstants.EPERM) {
                 if (++epermCounter >= 3 && config.powersave) {
-                    ktx.emit(Events.TUNNEL_POWER_SAVING)
+                    core.emit(Events.TUNNEL_POWER_SAVING)
                     epermCounter = 0
                 }
             } else {

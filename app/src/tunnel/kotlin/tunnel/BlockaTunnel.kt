@@ -203,7 +203,7 @@ internal class BlockaTunnel(
 
             envelope.rawData.copyInto(packetBytes)
 
-            ktx.emit(Events.REQUEST, Request(host))
+            core.emit(Events.REQUEST, Request(host))
             if (++oneWayDnsCounter > MAX_ONE_WAY_DNS_REQUESTS) {
                 throw Exception("Too many DNS requests without response")
             }
@@ -213,7 +213,7 @@ internal class BlockaTunnel(
             dnsMessage.header.rcode = Rcode.NOERROR
             dnsMessage.addRecord(denyResponse, Section.AUTHORITY)
             toDeviceFakeDnsResponse(ktx, dnsMessage.toWire(), originEnvelope)
-            ktx.emit(Events.REQUEST, Request(host, blocked = true))
+            core.emit(Events.REQUEST, Request(host, blocked = true))
             true
         }
     }
@@ -393,7 +393,7 @@ internal class BlockaTunnel(
             val cause = ex.cause
             if (cause is ErrnoException && cause.errno == OsConstants.EPERM) {
                 if (++epermCounter >= 3 && config.powersave) {
-                    ktx.emit(Events.TUNNEL_POWER_SAVING)
+                    core.emit(Events.TUNNEL_POWER_SAVING)
                     epermCounter = 0
                 }
             } else {
@@ -415,7 +415,7 @@ internal class BlockaTunnel(
             Result.of { run(ktx, tunnel) }.mapError {
                 if (it is InterruptedException || threadInterrupted()) interrupted = true
                 else {
-                    ktx.emit(Events.TUNNEL_RESTART)
+                    core.emit(Events.TUNNEL_RESTART)
                     val cooldown = min(cooldownTtl * cooldownCounter++, cooldownMax)
                     e("tunnel thread error, will restart after $cooldown ms", this, it.toString())
                     Result.of { Thread.sleep(cooldown) }.mapError {

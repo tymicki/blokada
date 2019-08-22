@@ -94,12 +94,12 @@ class ActiveWidgetProvider : AppWidgetProvider() {
         val restoreData = WidgetRestoreData
         restoreData.oldWidgetIds = oldWidgetIds ?: IntArray(0)
         restoreData.newWidgetIds = newWidgetIds ?: IntArray(0)
-        context?.ktx()?.emit(RESTORE_WIDGET, restoreData)
+        core.emit(RESTORE_WIDGET, restoreData)
     }
 
     override fun onDeleted(context: Context?, appWidgetIds: IntArray?) {
         super.onDeleted(context, appWidgetIds)
-        context!!.ktx().emit(DELETE_WIDGET, appWidgetIds ?: IntArray(0))
+        core.emit(DELETE_WIDGET, appWidgetIds ?: IntArray(0))
     }
 
     override fun onDisabled(context: Context?) {
@@ -152,11 +152,11 @@ class UpdateWidgetService : Service() {
                 }
             }
 
-            this.ktx().on(NEW_WIDGET, onNewWidgetEvent)
+            core.on(NEW_WIDGET, onNewWidgetEvent)
 
-            this.ktx().on(RESTORE_WIDGET, onRestoreEvent)
+            core.on(RESTORE_WIDGET, onRestoreEvent)
 
-            this.ktx().on(DELETE_WIDGET, onDeleteEvent)
+            core.on(DELETE_WIDGET, onDeleteEvent)
 
             val t: Tunnel = this.inject().instance()
             val droppedlist = t.tunnelRecentDropped()
@@ -165,7 +165,7 @@ class UpdateWidgetService : Service() {
             } else {
                 onBlocked(droppedlist.last())
             }
-            this.ktx().on(Events.REQUEST, onBlockedEvent)
+            core.on(Events.REQUEST, onBlockedEvent)
 
             onTunnelStateChanged()
             onTunnelStateEvent = t.tunnelState.doOnUiWhenChanged(withInit = true).then {
@@ -182,10 +182,10 @@ class UpdateWidgetService : Service() {
     }
 
     override fun onDestroy() {
-        this.ktx().cancel(Events.REQUEST, onBlockedEvent)
-        this.ktx().cancel(NEW_WIDGET, onNewWidgetEvent)
-        this.ktx().cancel(RESTORE_WIDGET, onRestoreEvent)
-        this.ktx().cancel(DELETE_WIDGET, onDeleteEvent)
+        cancel(Events.REQUEST, onBlockedEvent)
+        cancel(NEW_WIDGET, onNewWidgetEvent)
+        cancel(RESTORE_WIDGET, onRestoreEvent)
+        cancel(DELETE_WIDGET, onDeleteEvent)
         val t: Tunnel = this.inject().instance()
         t.tunnelState.cancel(onTunnelStateEvent)
         val d: Dns = this.inject().instance()
@@ -446,7 +446,7 @@ class ConfigWidgetActivity : Activity() {
 //            data.alpha = findViewById<SeekBar>(R.id.widget_cv_alpha).progress
             data.id = appWidgetId
 
-            ktx().emit(NEW_WIDGET, data)
+            core.emit(NEW_WIDGET, data)
 
             val serviceIntent = Intent(this.applicationContext,
                     UpdateWidgetService::class.java)

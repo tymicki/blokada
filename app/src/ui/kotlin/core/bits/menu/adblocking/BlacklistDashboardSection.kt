@@ -34,12 +34,12 @@ class BlacklistDashboardSection(
 
     override fun attach(view: VBListView) {
         view.enableAlternativeMode()
-        ktx.on(Events.FILTERS_CHANGED, updateApps)
+        core.on(Events.FILTERS_CHANGED, updateApps)
     }
 
     override fun detach(view: VBListView) {
         slotMutex.detach()
-        ktx.cancel(Events.FILTERS_CHANGED, updateApps)
+        core.cancel(Events.FILTERS_CHANGED, updateApps)
     }
 
 }

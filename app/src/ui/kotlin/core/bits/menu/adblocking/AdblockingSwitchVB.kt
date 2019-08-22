@@ -16,18 +16,18 @@ class AdblockingSwitchVB(
         view.label(R.string.slot_adblocking_label.res())
         view.icon(R.drawable.ic_blocked.res())
         view.alternative(true)
-        ktx.on(BLOCKA_CONFIG, update)
+        core.on(BLOCKA_CONFIG, update)
     }
 
     override fun detach(view: BitView) {
-        ktx.cancel(BLOCKA_CONFIG, update)
+        core.cancel(BLOCKA_CONFIG, update)
     }
 
     private val update = { cfg: BlockaConfig ->
         view?.run {
             switch(cfg.adblocking)
             onSwitch {
-                ktx.emit(BLOCKA_CONFIG, cfg.copy(adblocking = !cfg.adblocking))
+                core.emit(BLOCKA_CONFIG, cfg.copy(adblocking = !cfg.adblocking))
             }
         }
         Unit

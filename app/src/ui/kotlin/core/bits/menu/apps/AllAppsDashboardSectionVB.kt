@@ -56,7 +56,7 @@ class AllAppsDashboardSectionVB(
 
     override fun attach(view: VBListView) {
         view.enableAlternativeMode()
-        ktx.on(Events.FILTERS_CHANGED, updateApps)
+        core.on(Events.FILTERS_CHANGED, updateApps)
         filters.apps.refresh()
         getApps = filters.apps.doOnUiWhenSet().then {
             apps = filters.apps().filter { it.system == system }
@@ -66,7 +66,7 @@ class AllAppsDashboardSectionVB(
 
     override fun detach(view: VBListView) {
         slotMutex.detach()
-        ktx.cancel(Events.FILTERS_CHANGED, updateApps)
+        core.cancel(Events.FILTERS_CHANGED, updateApps)
         filters.apps.cancel(getApps)
     }
 

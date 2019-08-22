@@ -268,7 +268,7 @@ class Main(
             runBlocking { binding.join() }
             binder = binding.getCompleted()
             fd = binder!!.service.turnOn(ktx)
-            ktx.on(Events.REQUEST, onRequest)
+            core.on(Events.REQUEST, onRequest)
             v("vpn started")
         }.onFailure { ex ->
             e("failed starting vpn", ex)
@@ -301,7 +301,7 @@ class Main(
     }
 
     private fun stopVpn(ktx: AndroidKontext) {
-        ktx.cancel(Events.REQUEST, onRequest)
+        core.cancel(Events.REQUEST, onRequest)
         binder?.service?.turnOff(ktx)
         connector.unbind(ktx)//.mapError { ex -> w("failed unbinding connector", ex) }
         binder = null

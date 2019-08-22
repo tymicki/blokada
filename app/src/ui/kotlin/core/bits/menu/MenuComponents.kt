@@ -42,7 +42,7 @@ class MenuItemVB(
         view.arrow(true)
         view.alternative(true)
         view.onTap {
-            ktx.emit(MENU_CLICK, opens)
+            core.emit(MENU_CLICK, opens)
         }
     }
 
