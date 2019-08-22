@@ -5,6 +5,7 @@ import com.github.salomonbrys.kodein.instance
 import com.github.salomonbrys.kodein.with
 import gs.environment.Environment
 
+@Deprecated("use new persistence instead")
 interface Persistence<T> {
     fun read(current: T): T
     fun write(source: T)
