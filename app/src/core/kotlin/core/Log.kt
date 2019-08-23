@@ -1,5 +1,6 @@
 package core
 
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.io.PrintWriter
@@ -56,7 +57,9 @@ private fun writeException(priority: Int, tag: String, ex: Throwable) {
 
 private val logFile by lazy {
     try {
-        val path = File(getContext().filesDir, "blokada.log")
+        android.util.Log.println(android.util.Log.VERBOSE, tag(), "setting up log file")
+        val context = runBlocking { getApplicationContext() }!!
+        val path = File(context.filesDir, "blokada.log")
         val writer = PrintWriter(FileOutputStream(path, true), true)
         if (path.length() > 4 * 1024 * 1024) path.delete()
         android.util.Log.println(android.util.Log.VERBOSE, tag(),

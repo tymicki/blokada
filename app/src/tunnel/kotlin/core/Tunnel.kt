@@ -89,7 +89,12 @@ fun newTunnelModule(ctx: Context): Module {
         bind<IPermissionsAsker>() with singleton {
             object : IPermissionsAsker {
                 override fun askForPermissions() {
-                    activityRegister.askPermissions()
+                    val act = runBlocking { getActivity() } ?: throw Exception("starting MainActivity")
+                    val deferred = askTunnelPermission(Kontext.new("static perm ask"), act)
+                    runBlocking {
+                        val response = deferred.await()
+                        if (!response) { throw Exception("could not get tunnel permissions") }
+                    }
                 }
             }
         }

@@ -4,7 +4,6 @@ import android.app.DownloadManager
 import android.app.NotificationManager
 import android.content.Context
 import android.os.PowerManager
-import android.view.View
 import com.github.salomonbrys.kodein.*
 import gs.property.*
 import nl.komponents.kovenant.android.androidUiDispatcher
@@ -45,8 +44,6 @@ fun newGscoreModule(ctx: Context): Kodein.Module {
         bind<I18nPersistence>() with multiton { it: LanguageTag ->
             I18nPersistence(xx = lazy, locale = it)
         }
-
-        bind<LazyProvider<View>>() with multiton { it: String -> LazyProvider<View>() }
 
         bind<DownloadManager>() with singleton {
             ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager

@@ -6,7 +6,7 @@ import kotlin.coroutines.CoroutineContext
 private data class TypedEvent<T>(val type: EventType<T>, val value: T)
 
 internal class CommonEmit(
-        private val context: CoroutineContext = Dispatchers.Main + logCoroutineExceptions()
+        private val context: CoroutineContext = Dispatchers.Main.immediate + logCoroutineExceptions()
 ) : Emit {
 
     private val emits = mutableMapOf<EventType<*>, TypedEvent<*>>()

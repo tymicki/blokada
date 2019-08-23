@@ -1,13 +1,11 @@
 package adblocker
 
-import android.app.Activity
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import com.github.salomonbrys.kodein.instance
 import core.*
-import gs.environment.ComponentProvider
 import gs.property.I18n
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
@@ -113,7 +111,6 @@ class RequestLogger : Service() {
 class LoggerVB (
         private val ktx: AndroidKontext,
         private val i18n: I18n = ktx.di().instance(),
-        private val activity: ComponentProvider<Activity> = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ): SlotVB(onTap) {
 
@@ -135,7 +132,7 @@ class LoggerVB (
             )
         }
         view.onSelect = {
-            askForExternalStoragePermissionsIfNeeded(activity)
+            askForExternalStoragePermissionsIfNeeded()
             val newConfig = modeToConfig(it)
             runBlocking { newConfig.saveToPersistence() }
             sendConfigToService(ktx.ctx, newConfig)
@@ -167,10 +164,12 @@ class LoggerVB (
         ctx.startService(serviceIntent)
     }
 
-    private fun askForExternalStoragePermissionsIfNeeded(activity: ComponentProvider<Activity>) {
+    private fun askForExternalStoragePermissionsIfNeeded() {
         if (!checkStoragePermissions(ktx)) {
-            activity.get()?.apply {
-                askStoragePermission(ktx, this)
+            runBlocking {
+                getActivity()?.apply {
+                    askStoragePermission(ktx, this)
+                }
             }
         }
     }

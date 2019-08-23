@@ -11,14 +11,10 @@ import android.view.View
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import com.github.salomonbrys.kodein.instance
-import gs.environment.ComponentProvider
-import gs.obsolete.Sync
 import gs.presentation.ViewBinderHolder
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
-import tunnel.askTunnelPermission
 import tunnel.tunnelPermissionResult
-import java.lang.ref.WeakReference
 
 
 
@@ -29,19 +25,16 @@ class PanelActivity : Activity() {
     private val dashboardView by lazy { findViewById<DashboardView>(R.id.DashboardView) }
     private val tunnelManager by lazy { ktx.di().instance<tunnel.Main>() }
     private val filters by lazy { ktx.di().instance<Filters>() }
-    private val activityContext by lazy { ktx.di().instance<ComponentProvider<Activity>>() }
     private val viewBinderHolder by lazy { ktx.di().instance<ViewBinderHolder>() }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.dashboard)
-        runBlocking { setActiveContext(activity = true) }
+        runBlocking { setActivityContext() }
 //        setFullScreenWindowLayoutInDisplayCutout(window)
-        activityRegister.register(this)
         dashboardView.onSectionClosed = {
             filters.changed %= true
         }
-        activityContext.set(this)
 //        getNotch()
 //        if (hasSoftKeys(getSystemService(Context.WINDOW_SERVICE) as WindowManager))
 //            dashboardView.navigationBarPx = resources.getDimensionPixelSize(R.dimen.dashboard_navigation_inset)
@@ -49,7 +42,7 @@ class PanelActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        modalManager.closeModal()
+        runBlocking { modalManager.closeModal() }
     }
 
     override fun onBackPressed() {
@@ -68,7 +61,7 @@ class PanelActivity : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        runBlocking { unsetActiveContext() }
+        runBlocking { unsetActivity() }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -127,28 +120,4 @@ class PanelActivity : Activity() {
 }
 
 val modalManager = ModalManager()
-val activityRegister = ActiveActivityRegister()
 
-class ActiveActivityRegister {
-
-    private var activity = Sync(WeakReference(null as Activity?))
-
-    fun register(activity: Activity) {
-        this.activity = Sync(WeakReference(activity))
-    }
-
-    fun get() = activity.get().get()
-
-    fun askPermissions() {
-        val act = activity.get().get() ?: throw Exception("starting MainActivity")
-        val deferred = askTunnelPermission(Kontext.new("static perm ask"), act)
-        runBlocking {
-            val response = deferred.await()
-            if (!response) { throw Exception("could not get tunnel permissions") }
-        }
-    }
-
-    fun getParentView(): View? {
-        return activity.get().get()?.findViewById(R.id.root)
-    }
-}

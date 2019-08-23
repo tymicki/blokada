@@ -3,7 +3,6 @@ package core
 import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.github.salomonbrys.kodein.LazyKodein
 import com.github.salomonbrys.kodein.instance
 import com.github.salomonbrys.kodein.with
 import gs.environment.Worker
@@ -13,6 +12,7 @@ import gs.property.newProperty
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -33,11 +33,12 @@ class SubscriptionActivity : Activity() {
     }
 
     private val dash by lazy {
-        WebDash(LazyKodein(ktx.di), subscriptionUrl, reloadOnError = true,
+        WebDash(subscriptionUrl, reloadOnError = true,
                 javascript = true, forceEmbedded = true, big = true,
                 onLoadSpecificUrl = "app.blokada.org/#/success" to {
                     this@SubscriptionActivity.finish()
-                    showSnack(R.string.subscription_success)
+                    runBlocking { showSnack(R.string.subscription_success) }
+                    Unit
                 })
     }
 
@@ -61,7 +62,7 @@ class SubscriptionActivity : Activity() {
         view?.run { dash.detach(this) }
         container.removeAllViews()
         subscriptionUrl.cancel(listener)
-        modalManager.closeModal()
+        runBlocking { modalManager.closeModal() }
     }
 
     override fun onStart() {

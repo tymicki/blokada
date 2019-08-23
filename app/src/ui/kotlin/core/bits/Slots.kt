@@ -1,6 +1,5 @@
 package core.bits
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -11,10 +10,10 @@ import com.github.salomonbrys.kodein.instance
 import core.*
 import core.Tunnel
 import filter.hostnameRegex
-import gs.environment.ComponentProvider
 import gs.property.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.*
 import tunnel.Filter
@@ -334,7 +333,7 @@ class DomainForwarderVB(
                     )
                     tunnelManager.putFilter(ktx, f)
                     view.fold()
-                    showSnack(R.string.panel_domain_blocked_toast)
+                    runBlocking { showSnack(R.string.panel_domain_blocked_toast) }
                 }
                 //action2 = Slot.Action(i18n.getString(R.string.slot_action_facts), view.ACTION_NONE)
         )
@@ -371,7 +370,7 @@ class DomainBlockedVB(
                     )
                     tunnelManager.putFilter(ktx, f)
                     view.fold()
-                    showSnack(R.string.panel_domain_forwarded_toast)
+                    runBlocking { showSnack(R.string.panel_domain_forwarded_toast) }
                 }
                 //action2 = Slot.Action(i18n.getString(R.string.slot_action_facts), view.ACTION_NONE)
         )
@@ -439,10 +438,10 @@ class DownloadListsVB(
                 label = i18n.getString(R.string.tunnel_config_refetch_now_title),
                 description = i18n.getString(R.string.tunnel_config_refetch_now_description),
                 icon = ctx.getDrawable(R.drawable.ic_download),
-                action1 = Slot.Action(i18n.getString(R.string.tunnel_config_refetch_now), {
-                    showSnack(R.string.tunnel_config_refetch_toast)
+                action1 = Slot.Action(i18n.getString(R.string.tunnel_config_refetch_now)) {
+                    runBlocking { showSnack(R.string.tunnel_config_refetch_toast) }
                     filters.invalidateFilters(ktx)
-                })
+                }
         )
     }
 
@@ -559,7 +558,7 @@ class NewFilterVB(
         view.type = Slot.Type.NEW
         view.content = Slot.Content(i18n.getString(nameResId))
         view.onTap = {
-            modal.openModal()
+            runBlocking { modal.openModal() }
             ctx.startActivity(Intent(ctx, StepActivity::class.java).apply {
                 putExtra(StepActivity.EXTRA_WHITELIST, whitelist)
             })
@@ -597,7 +596,7 @@ class EnterDomainVB(
         view.type = Slot.Type.EDIT
         view.content = Slot.Content(i18n.getString(R.string.slot_enter_domain_title),
                 description = i18n.getString(R.string.slot_enter_domain_desc),
-                action1 = Slot.Action(i18n.getString(R.string.slot_continue), {
+                action1 = Slot.Action(i18n.getString(R.string.slot_continue)) {
                     if (inputValid) {
                         view.fold()
                         val sources = when {
@@ -611,7 +610,7 @@ class EnterDomainVB(
                         }
                         accepted(sources)
                     }
-                }),
+                },
                 action2 = Slot.Action(i18n.getString(R.string.slot_enter_domain_file), view.ACTION_NONE)
         )
 
@@ -693,9 +692,9 @@ class HomeAppVB(
                 info = i18n.getString(R.string.slot_app_desc),
                 detail = app.source.source,
                 icon = sourceToIcon(ctx, app.source.source),
-                action1 = Slot.Action(i18n.getString(R.string.slot_action_unwhitelist), {
+                action1 = Slot.Action(i18n.getString(R.string.slot_action_unwhitelist)) {
                     filters.removeFilter(ktx, app)
-                })
+                }
                 //action2 = Slot.Action(i18n.getString(R.string.slot_action_facts), view.ACTION_NONE)
         )
     }
@@ -709,7 +708,7 @@ class SearchBarVB(
         val onSearch: (String) -> Unit,
         private val modal: ModalManager = modalManager
 ) : SlotVB(onTap = {
-    modal.openModal()
+    runBlocking { modal.openModal() }
     ctx.startActivity(Intent(ctx, SearchActivity::class.java))
     SearchActivity.setCallback { s ->
         onSearch(s)
@@ -775,8 +774,8 @@ class AppVB(
 ) : SlotVB(onTap) {
 
     private val actionWhitelist = Slot.Action(i18n.getString(R.string.slot_allapp_whitelist)) {
-        showSnack(R.string.slot_whitelist_updating)
         GlobalScope.async {
+            showSnack(R.string.slot_whitelist_updating)
             val filter = Filter(
                     id = filters.findFilterBySource(app.appId).await()?.id
                             ?: id(app.appId, whitelist = true),
@@ -789,8 +788,8 @@ class AppVB(
     }
 
     private val actionCancel = Slot.Action(i18n.getString(R.string.slot_action_unwhitelist)) {
-        showSnack(R.string.slot_whitelist_updating)
         GlobalScope.async {
+            showSnack(R.string.slot_whitelist_updating)
             val filter = Filter(
                     id = filters.findFilterBySource(app.appId).await()?.id
                             ?: id(app.appId, whitelist = true),
@@ -849,7 +848,7 @@ class AppVB(
 
 class AddDnsVB(private val ktx: AndroidKontext,
                private val modal: ModalManager = modalManager): SlotVB({
-    modal.openModal()
+    runBlocking { modal.openModal() }
     ktx.ctx.startActivity(Intent(ktx.ctx, AddDnsActivity::class.java))}){
     override fun attach(view: SlotView) {
         view.content = Slot.Content(ktx.ctx.resources.getString(R.string.dns_custom_add_slot))
@@ -898,7 +897,7 @@ class DnsChoiceVB(
                     onTap(view)
                     Handler {
                         if (item.id == "default") {
-                            showSnack(R.string.menu_dns_remove_default)
+                            runBlocking { showSnack(R.string.menu_dns_remove_default) }
                         } else {
                             if (item.active) {
                                 dns.choices().firstOrNull()?.active = true
@@ -1164,7 +1163,7 @@ class DnsListControlVB(
                 description = i18n.getString(R.string.slot_dns_control_description),
                 icon = ctx.getDrawable(R.drawable.ic_reload),
                 action1 = Slot.Action(i18n.getString(R.string.slot_action_refresh), {
-                    showSnack(R.string.slot_action_refresh_toast)
+                    runBlocking { showSnack(R.string.slot_action_refresh_toast) }
                     dns.choices.refresh(force = true)
                 }),
                 action2 = Slot.Action(i18n.getString(R.string.slot_action_restore), {
@@ -1194,7 +1193,7 @@ class FiltersListControlVB(
                 description = i18n.getString(R.string.slot_filters_description),
                 icon = ctx.getDrawable(R.drawable.ic_reload),
                 action1 = Slot.Action(i18n.getString(R.string.slot_action_refresh)) {
-                    showSnack(R.string.slot_action_refresh_toast)
+                    runBlocking { showSnack(R.string.slot_action_refresh_toast) }
                     val ktx = ctx.ktx("quickActions:refresh")
                     filters.apps.refresh(force = true)
                     tunnel.invalidateFilters(ktx)
@@ -1217,33 +1216,34 @@ class StorageLocationVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
         private val i18n: I18n = ktx.di().instance(),
-        private val activity: ComponentProvider<android.app.Activity> = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         private val device: Device = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
-    private val actionExternal = Slot.Action(i18n.getString(R.string.slot_action_external), {
+    private val actionExternal = Slot.Action(i18n.getString(R.string.slot_action_external)) {
         v("set persistence path", getExternalPath())
         setPersistencePath(getExternalPath())
 
         if (!checkStoragePermissions(ktx)) {
-            activity.get()?.apply {
-                askStoragePermission(ktx, this)
+            runBlocking {
+                getActivity()?.apply {
+                    askStoragePermission(ktx, this)
+                }
             }
         }
         view?.apply { attach(this) }
-    })
+    }
 
-    private val actionInternal = Slot.Action(i18n.getString(R.string.slot_action_internal), {
+    private val actionInternal = Slot.Action(i18n.getString(R.string.slot_action_internal)) {
         v("resetting persistence path")
         setPersistencePath("")
         view?.apply { attach(this) }
-    })
+    }
 
-    private val actionImport = Slot.Action(i18n.getString(R.string.slot_action_import), {
+    private val actionImport = Slot.Action(i18n.getString(R.string.slot_action_import)) {
         filters.reloadConfig(ktx, device.onWifi())
-    })
+    }
 
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
@@ -1299,7 +1299,7 @@ class UpdateVB(
                         description = i18n.getString(R.string.update_notification_text, current.newestVersionName),
                         action1 = Slot.Action(i18n.getString(R.string.update_button)) {
                             if (clickCounter++ % 2 == 0) {
-                                showSnack(R.string.update_starting)
+                                runBlocking { showSnack(R.string.update_starting) }
                                 updater.start(repo.content().downloadLinks)
                             } else {
                                 val intent = Intent(Intent.ACTION_VIEW)
@@ -1338,7 +1338,6 @@ class AboutVB(
         private val i18n: I18n = ktx.di().instance(),
         private val ver: Version = ktx.di().instance(),
         private val pages: Pages = ktx.di().instance(),
-        private val activity: ComponentProvider<Activity> = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -1374,10 +1373,12 @@ class AboutVB(
         return intent
     }
 
-    private fun askForExternalStoragePermissionsIfNeeded(activity: ComponentProvider<Activity>): Boolean {
+    private fun askForExternalStoragePermissionsIfNeeded(): Boolean {
         return if (!checkStoragePermissions(ktx)) {
-            activity.get()?.apply {
-                askStoragePermission(ktx, this)
+            runBlocking {
+                getActivity()?.apply {
+                    askStoragePermission(ktx, this)
+                }
             }
             false
         } else true
@@ -1611,7 +1612,7 @@ class CleanupVB(
         view.label(R.string.home_cleanup.res())
         view.state(R.string.slot_cleanup_desc.res(), smallcap = false)
         view.onTap {
-            showSnack(R.string.welcome_cleanup_done)
+            runBlocking { showSnack(R.string.welcome_cleanup_done) }
             val builds = getInstalledBuilds()
             for (b in builds.subList(1, builds.size).reversed()) {
                 uninstallPackage(b)

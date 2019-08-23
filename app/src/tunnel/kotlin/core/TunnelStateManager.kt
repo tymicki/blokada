@@ -107,12 +107,12 @@ class TunnelStateManager(
                 true
             }
             latest.activeUntil.before(Date()) -> {
-                showSnack(R.string.menu_vpn_activate_account.res())
+                runBlocking { showSnack(R.string.menu_vpn_activate_account.res()) }
                 core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }
             !latest.hasGateway() -> {
-                showSnack(R.string.menu_vpn_select_gateway.res())
+                runBlocking { showSnack(R.string.menu_vpn_select_gateway.res()) }
                 core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }

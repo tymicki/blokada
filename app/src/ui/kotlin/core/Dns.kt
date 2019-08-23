@@ -1,20 +1,18 @@
 package core
 
-import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
-import android.view.WindowManager
 import com.github.salomonbrys.kodein.*
-import gs.environment.*
+import gs.environment.Environment
+import gs.environment.Journal
+import gs.environment.Worker
+import gs.environment.getDnsServers
 import gs.property.*
-import org.blokada.R
 import org.pcap4j.packet.namednumber.UdpPort
 import java.io.InputStreamReader
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.nio.charset.Charset
-import java.util.Properties
+import java.util.*
 
 fun newDnsModule(ctx: Context): Kodein.Module {
     return Kodein.Module {
@@ -273,63 +271,6 @@ class DnsLocalisedFetcher(
         }
         j.log("dns: fetch strings: done")
     }
-}
-
-class GenerateDialog(
-        private val xx: Environment,
-        private val ctx: Context = xx().instance(),
-        private val dns: Dns = xx().instance()
-) {
-
-    private val activity by lazy { xx().instance<ComponentProvider<Activity>>().get() }
-    private val j by lazy { ctx.inject().instance<Journal>() }
-    private val dialog: AlertDialog
-    private var which: Int = 0
-
-    init {
-        val d = AlertDialog.Builder(activity)
-        d.setTitle(R.string.filter_generate_title)
-        val options = arrayOf(
-                ctx.getString(R.string.dns_generate_refetch),
-                ctx.getString(R.string.dns_generate_defaults)
-        )
-        d.setSingleChoiceItems(options, which, object : DialogInterface.OnClickListener {
-            override fun onClick(dialog: DialogInterface?, which: Int) {
-                this@GenerateDialog.which = which
-            }
-        })
-        d.setPositiveButton(R.string.filter_edit_do, { dia, int -> })
-        d.setNegativeButton(R.string.filter_edit_cancel, { dia, int -> })
-        dialog = d.create()
-    }
-
-    fun show() {
-        if (dialog.isShowing) return
-        try {
-            dialog.show()
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener { handleSave() }
-            dialog.window.clearFlags(
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                            WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-            )
-        } catch (e: Exception) {
-            j.log(e)
-        }
-    }
-
-    private fun handleSave() {
-        when (which) {
-            0 -> {
-                dns.choices.refresh(force = true)
-            }
-            1 -> {
-                dns.choices %= emptyList()
-                dns.choices.refresh()
-            }
-        }
-        dialog.dismiss()
-    }
-
 }
 
 fun printServers(s: List<InetSocketAddress>): String {

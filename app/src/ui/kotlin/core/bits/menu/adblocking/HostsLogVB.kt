@@ -1,14 +1,11 @@
 package core.bits.menu.adblocking
 
-import android.app.Activity
 import com.github.michaelbull.result.getOr
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.DomainBlockedVB
 import core.bits.DomainForwarderVB
 import core.bits.SearchBarVB
 import core.bits.menu.MenuItemVB
-import gs.environment.ComponentProvider
 import gs.presentation.ListViewBinder
 import gs.presentation.NamedViewBinder
 import org.blokada.R
@@ -18,7 +15,6 @@ import tunnel.Request
 
 class HostsLogVB(
         val ktx: AndroidKontext,
-        val activity: ComponentProvider<Activity> = ktx.di().instance(),
         override val name: Resource = R.string.panel_section_ads_log.res()
 ) : ListViewBinder(), NamedViewBinder {
 

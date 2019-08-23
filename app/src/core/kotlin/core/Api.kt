@@ -1,10 +1,12 @@
 package core
 
+import android.app.Activity
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.withContext
+import org.blokada.R
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -107,29 +109,36 @@ fun openFile(file: File): InputStream {
 }
 
 private var appContext: WeakReference<Context?> = WeakReference(null)
-private var activityContext: WeakReference<Context?> = WeakReference(null)
+private var activityContext: WeakReference<Activity?> = WeakReference(null)
 
-suspend fun getActiveContext(activity: Boolean = false): Context? {
-    return withContext(Dispatchers.Main) {
-        when {
-            activityContext.get() != null -> activityContext.get()
-            !activity && appContext.get() != null -> appContext.get()
-            else -> {
-                throw Exception("No context set (activity: $activity)")
-            }
-        }
+suspend fun getActivityContext() = withContext(Dispatchers.Main.immediate) {
+    activityContext.get() as Context
+}
+
+suspend fun getActivity() = withContext(Dispatchers.Main.immediate) {
+    activityContext.get()
+}
+
+suspend fun getActivityParentView() = withContext(Dispatchers.Main.immediate) {
+    activityContext.get()?.findViewById<android.view.View>(R.id.view)
+}
+
+suspend fun getApplicationContext() = withContext(Dispatchers.Main.immediate) {
+    appContext.get()
+}
+
+suspend fun Context.setApplicationContext() {
+    withContext(Dispatchers.Main.immediate) {
+        appContext = WeakReference(this@setApplicationContext)
     }
 }
 
-suspend fun Context.setActiveContext(activity: Boolean = false) {
-    withContext(Dispatchers.Main) {
-        if (activity) activityContext = WeakReference(this@setActiveContext)
-        else appContext = WeakReference(this@setActiveContext)
+suspend fun Activity.setActivityContext() {
+    withContext(Dispatchers.Main.immediate) {
+        activityContext = WeakReference(this@setActivityContext)
     }
 }
 
-suspend fun unsetActiveContext() {
-    withContext(Dispatchers.Main) {
-        activityContext = WeakReference(null)
-    }
+suspend fun unsetActivity() = withContext(Dispatchers.Main.immediate) {
+    activityContext = WeakReference(null)
 }

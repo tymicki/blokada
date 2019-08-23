@@ -10,14 +10,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
-import com.github.salomonbrys.kodein.instance
-import com.github.salomonbrys.kodein.with
 import core.ListSection
 import core.Navigable
 import core.Scrollable
-import gs.environment.Environment
-import gs.environment.Journal
-import gs.environment.LazyProvider
+import core.e
 import gs.property.IProperty
 import gs.property.IWhen
 import org.blokada.R
@@ -25,14 +21,11 @@ import tunnel.blokadaUserAgent
 import java.net.URL
 
 class WebDash(
-        private val xx: Environment,
         private val url: IProperty<URL>,
         private val forceEmbedded: Boolean = false,
         private var reloadOnError: Boolean = false,
         private val javascript: Boolean = false,
         private val big: Boolean = false,
-        private val j: Journal = xx().instance(),
-        private val provider: LazyProvider<View> = xx().with("webview").instance(),
         private val small: Boolean = false,
         private val onLoadSpecificUrl: Pair<String, () -> Unit>? = null
 ): CallbackViewBinder, Scrollable, ListSection {
@@ -59,18 +52,14 @@ class WebDash(
     override fun unselect() = Unit
 
     override fun createView(ctx: Context, parent: ViewGroup): View {
-        var v = provider.get()
-        if (v == null) {
-            // TODO: Dont use inflater
-            val themedContext = ContextThemeWrapper(ctx, R.style.GsTheme_Dialog)
-            // TODO: one instance for all
-            v = LayoutInflater.from(themedContext).inflate(
-                    if (small) R.layout.webview_small
-                    else if (big) R.layout.webview_big
-                    else R.layout.webview
-                    , parent, false)
-//            provider.set(v)
-        }
+        // TODO: Dont use inflater
+        val themedContext = ContextThemeWrapper(ctx, R.style.GsTheme_Dialog)
+        // TODO: one instance for all
+        val v = LayoutInflater.from(themedContext).inflate(
+                if (small) R.layout.webview_small
+                else if (big) R.layout.webview_big
+                else R.layout.webview
+                , parent, false)
         return v!!
     }
 
@@ -99,7 +88,7 @@ class WebDash(
         if (v == null) clean = false
         else {
             val u = url().toExternalForm()
-            j.log("WebDash: load: $u")
+            core.v("WebDash: load: $u")
             v.loadUrl(u)
         }
         true
@@ -134,7 +123,7 @@ class WebDash(
                     try {
                         ctx.startActivity(intent)
                     } catch (e: Exception) {
-                        j.log("WebDash: failed to open external url", e)
+                        core.e("WebDash: failed to open external url", e)
                     }
                     return true
                 }
@@ -175,7 +164,7 @@ class WebDash(
 
     private fun handleError(url: String?, reason: Exception) {
         try {
-            j.log("WebDash: load failed: $url", reason)
+            e("WebDash: load failed: $url", reason)
             clean = false
             if (!reloadOnError) return
             if (url?.contains(url().host) == true && reloadCounter++ <= 10) loader.sendEmptyMessageDelayed(0, RELOAD_ERROR_MILLIS)

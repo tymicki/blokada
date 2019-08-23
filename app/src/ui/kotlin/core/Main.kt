@@ -62,7 +62,7 @@ class MainApplication: Application(), KodeinAware {
     override fun onCreate() {
         super.onCreate()
         Paper.init(this)
-        runBlocking { setActiveContext(activity = false) }
+        runBlocking { setApplicationContext() }
         repeat(10) { v("BLOKADA", "*".repeat(it * 2)) }
         v(blokadaUserAgent(this))
         setRestartAppOnCrash()

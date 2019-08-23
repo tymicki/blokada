@@ -3,7 +3,6 @@ package core
 import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.github.salomonbrys.kodein.LazyKodein
 import com.github.salomonbrys.kodein.instance
 import com.github.salomonbrys.kodein.with
 import gs.environment.Worker
@@ -29,7 +28,7 @@ class WebViewActivity : Activity() {
     private lateinit var url: IProperty<URL>
 
     private val dash by lazy {
-        WebDash(LazyKodein(ktx.di), url, reloadOnError = true,
+        WebDash(url, reloadOnError = true,
                 javascript = true, forceEmbedded = true, big = true)
     }
 

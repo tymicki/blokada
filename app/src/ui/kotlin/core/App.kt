@@ -1,10 +1,8 @@
 package core
 
-import android.app.Activity
 import android.content.Context
 import com.github.salomonbrys.kodein.*
 import filter.DefaultSourceProvider
-import gs.environment.ComponentProvider
 import gs.environment.Environment
 import gs.environment.Worker
 import gs.presentation.ViewBinderHolder
@@ -52,7 +50,6 @@ fun newAppModule(ctx: Context): Kodein.Module {
             EnabledStateActor(this.lazy)
         }
         bind<UiState>() with singleton { AUiState(kctx = with("gscore").instance(10), xx = lazy) }
-        bind<ComponentProvider<Activity>>() with singleton { ComponentProvider<Activity>() }
         bind<DefaultSourceProvider>() with singleton {
             DefaultSourceProvider(ctx = instance(), j = instance(), processor = instance(),
                     repo = instance(), f = instance())
