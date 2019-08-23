@@ -8,10 +8,9 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
-import com.github.salomonbrys.kodein.instance
+import g11n.i18n
 import gs.presentation.LayoutViewBinder
 import gs.presentation.doAfter
-import gs.property.I18n
 import org.blokada.R
 
 
@@ -65,8 +64,6 @@ class ByteView(
     init {
         inflate(context, R.layout.byteview_content, this)
     }
-
-    private val i18n by lazy { context.ktx("ByteView").di().instance<I18n>() }
 
     private val rootView = findViewById<ViewGroup>(R.id.byte_root)
     private val labelView = findViewById<TextView>(R.id.byte_label)

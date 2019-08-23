@@ -11,11 +11,10 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.github.salomonbrys.kodein.instance
 import com.ramotion.foldingcell.FoldingCell
+import g11n.i18n
 import gs.presentation.LayoutViewBinder
 import gs.presentation.doAfter
-import gs.property.I18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R
@@ -117,8 +116,6 @@ class SlotView(
     init {
         inflate(context, R.layout.slotview_content, this)
     }
-
-    private val i18n by lazy { context.ktx("SlotView").di().instance<I18n>() }
 
     private val foldingView = getChildAt(0) as FoldingCell
     private val foldedContainerView = findViewById<ViewGroup>(R.id.folded)
@@ -494,8 +491,6 @@ class LabelView(
         inflate(context, R.layout.labelview_content, this)
     }
 
-    private val i18n by lazy { context.ktx("LabelView").di().instance<I18n>() }
-
     private val labelView = findViewById<TextView>(R.id.label)
 
     var label: String = ""
@@ -513,7 +508,6 @@ class LabelView(
 
 class LabelVB(
         val ktx: AndroidKontext,
-        val i18n: I18n = ktx.di().instance(),
         val label: Resource
 ) : LayoutViewBinder(R.layout.labelview) {
 

@@ -4,8 +4,10 @@ import android.app.DownloadManager
 import android.app.NotificationManager
 import android.content.Context
 import android.os.PowerManager
-import com.github.salomonbrys.kodein.*
-import gs.property.*
+import com.github.salomonbrys.kodein.Kodein
+import com.github.salomonbrys.kodein.bind
+import com.github.salomonbrys.kodein.multiton
+import com.github.salomonbrys.kodein.singleton
 import nl.komponents.kovenant.android.androidUiDispatcher
 import nl.komponents.kovenant.ui.KovenantUi
 
@@ -22,23 +24,6 @@ fun newGscoreModule(ctx: Context): Kodein.Module {
         }
         bind<Worker>(10) with multiton { it: String ->
             newConcurrentWorker(prefix = it, tasks = 1)
-        }
-
-        bind<Serialiser>() with multiton { it: String ->
-            SharedPreferencesWrapper(ctx.getSharedPreferences(it, 0))
-        }
-
-        bind<Version>() with singleton {
-            VersionImpl(kctx = with("gscore").instance(2), xx = lazy)
-        }
-        bind<Repo>() with singleton {
-            RepoImpl(kctx = with("gscore").instance(2), xx = lazy)
-        }
-        bind<I18n>() with singleton {
-            I18nImpl(xx = lazy, kctx = with("gscore").instance(2))
-        }
-        bind<I18nPersistence>() with multiton { it: LanguageTag ->
-            I18nPersistence(xx = lazy, locale = it)
         }
 
         bind<DownloadManager>() with singleton {

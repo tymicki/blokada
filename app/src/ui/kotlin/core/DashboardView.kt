@@ -20,10 +20,10 @@ import core.bits.menu.MENU_CLICK
 import core.bits.menu.MENU_CLICK_BY_NAME
 import core.bits.menu.MenuItemVB
 import core.bits.menu.createMenu
+import g11n.i18n
 import gs.environment.inject
 import gs.presentation.NamedViewBinder
 import gs.presentation.doAfter
-import gs.property.I18n
 import org.blokada.R
 import tunnel.Events
 import tunnel.Persistence
@@ -69,7 +69,6 @@ class DashboardView(
 
     private val tunnelEvents by lazy { ctx.inject().instance<EnabledStateActor>() }
     private val tun by lazy { ctx.inject().instance<Tunnel>() }
-    private val i18n by lazy { ctx.inject().instance<I18n>() }
 
     private var scrolledView: View? = null
 

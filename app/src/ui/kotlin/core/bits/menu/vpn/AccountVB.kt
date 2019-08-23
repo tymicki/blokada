@@ -1,10 +1,9 @@
 package core.bits.menu.vpn
 
 import android.content.Intent
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.pretty
-import gs.property.I18n
+import g11n.i18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R
@@ -14,7 +13,6 @@ import java.util.*
 
 class AccountVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val modal: ModalManager = modalManager
 ) : BitVB() {
 

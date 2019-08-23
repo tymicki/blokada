@@ -11,6 +11,7 @@ import com.github.salomonbrys.kodein.*
 import core.getApplicationContext
 import core.v
 import core.workerFor
+import g11n.i18n
 import gs.environment.*
 import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.Kovenant
@@ -137,7 +138,6 @@ class LocaleReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
         task(ctx.inject().with("LocaleReceiver").instance()) {
             v("locale receiver ping")
-            val i18n: I18n = ctx.inject().instance()
             i18n.locale.refresh(force = true)
         }
     }

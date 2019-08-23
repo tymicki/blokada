@@ -4,8 +4,8 @@ import android.content.Context
 import com.github.salomonbrys.kodein.*
 import gs.environment.Worker
 import gs.property.IProperty
-import gs.property.Repo
 import gs.property.newPersistedProperty2
+import gs.property.repo
 import notification.displayNotificationForUpdate
 import org.blokada.BuildConfig
 import update.AUpdateDownloader
@@ -35,7 +35,6 @@ fun newUpdateModule(ctx: Context): Kodein.Module {
             val t: Tunnel = instance()
             val ui: UiState = instance()
             val u: Update = instance()
-            val repo: Repo = instance()
 
             // Check for update periodically
             t.tunnelState.doWhen { t.tunnelState(TunnelState.ACTIVE) }.then {

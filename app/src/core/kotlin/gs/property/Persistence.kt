@@ -1,9 +1,8 @@
 package gs.property
 
 import android.content.SharedPreferences
-import com.github.salomonbrys.kodein.instance
-import com.github.salomonbrys.kodein.with
-import gs.environment.Environment
+import core.getApplicationContext
+import kotlinx.coroutines.runBlocking
 
 @Deprecated("use new persistence instead")
 interface Persistence<T> {
@@ -35,10 +34,17 @@ interface Serialiser {
     fun edit(): gs.property.Serialiser.Editor
 }
 
-abstract class PersistenceWithSerialiser<T>(val xx: Environment): gs.property.Persistence<T> {
+abstract class PersistenceWithSerialiser<T>(): gs.property.Persistence<T> {
     protected fun serialiser(key: String): gs.property.Serialiser {
-        return xx().with(key).instance<Serialiser>()
+        return serialiserFor(key)
     }
+}
+
+private val serializers = mutableMapOf<String, Serialiser>()
+@Synchronized fun serialiserFor(name: String) : Serialiser {
+    if (!serializers.containsKey(name)) serializers[name] =
+            SharedPreferencesWrapper(runBlocking { getApplicationContext()!! }.getSharedPreferences(name, 0))
+    return serializers[name]!!
 }
 
 interface HasKey {
@@ -47,9 +53,8 @@ interface HasKey {
 
 @Deprecated("out")
 class BasicPersistence<T>(
-        xx: Environment,
         val key: String
-) : PersistenceWithSerialiser<T>(xx) {
+) : PersistenceWithSerialiser<T>() {
 
     val p by lazy { serialiser("basic") }
 

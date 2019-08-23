@@ -1,25 +1,23 @@
 package gs.property
 
-import gs.environment.Environment
+import core.workerFor
 import gs.environment.Worker
+import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
 
-abstract class Version {
-    abstract val appName: IProperty<String>
-    abstract val name: IProperty<String>
-    abstract val previousCode: IProperty<Int>
-    abstract val nameCore: IProperty<String>
-    abstract val obsolete: IProperty<Boolean>
+private val kctx = workerFor("gscore")
+
+val version by lazy {
+    runBlocking {
+        VersionImpl(kctx)
+    }
 }
 
-class VersionImpl(
-        kctx: Worker,
-        xx: Environment
-) : Version() {
+class VersionImpl(kctx: Worker) {
 
-    override val appName = newProperty(kctx, { "gs" })
-    override val name = newProperty(kctx, { "0.0" })
-    override val previousCode = newPersistedProperty(kctx, BasicPersistence(xx, "previous_code"), { 0 })
-    override val nameCore = newProperty(kctx, { BuildConfig.VERSION_NAME })
-    override val obsolete = newProperty(kctx, { false })
+    val appName = newProperty(kctx, { "gs" })
+    val name = newProperty(kctx, { "0.0" })
+    val previousCode = newPersistedProperty2(kctx, "previous_code", { 0 })
+    val nameCore = newProperty(kctx, { BuildConfig.VERSION_NAME })
+    val obsolete = newProperty(kctx, { false })
 }

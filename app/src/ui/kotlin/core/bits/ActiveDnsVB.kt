@@ -1,11 +1,10 @@
 package core.bits
 
-import android.content.Context
 import android.util.Base64
 import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
-import gs.property.I18n
+import g11n.i18n
 import gs.property.IWhen
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -16,8 +15,6 @@ import java.nio.charset.Charset
 class ActiveDnsVB(
         private val ktx: AndroidKontext,
         private val simple: Boolean = false,
-        private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val dns: Dns = ktx.di().instance()
 ) : ByteVB() {
 
@@ -107,8 +104,6 @@ class ActiveDnsVB(
 
 class MenuActiveDnsVB(
         private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val dns: Dns = ktx.di().instance()
 ) : BitVB() {
 

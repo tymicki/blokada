@@ -1,9 +1,8 @@
 package gs.property
 
-import com.github.salomonbrys.kodein.instance
 import core.*
-import gs.environment.Environment
 import gs.environment.Worker
+import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.util.*
 
@@ -16,20 +15,19 @@ data class RepoContent(
         internal val fetchedUrl: String
 )
 
-abstract class Repo {
-    abstract val url: IProperty<String>
-    abstract val content: IProperty<RepoContent>
-    abstract val lastRefreshMillis: IProperty<Long>
+private val kctx = workerFor("gscore")
+
+val repo by lazy {
+    runBlocking {
+        RepoImpl(kctx)
+    }
 }
 
 class RepoImpl(
-        private val kctx: Worker,
-        private val xx: Environment
-) : Repo() {
+        private val kctx: Worker
+) {
 
-    private val version: Version by xx.instance()
-
-    override val url = newPersistedProperty(kctx, BasicPersistence(xx, "repo_url"), zeroValue = { "" })
+    val url = newPersistedProperty2(kctx, "repo_url", zeroValue = { "" })
 
     init {
         url.doWhenSet().then {
@@ -38,7 +36,7 @@ class RepoImpl(
         }
     }
 
-    override val lastRefreshMillis = newPersistedProperty(kctx, BasicPersistence(xx, "repo_refresh"), zeroValue = { 0L })
+    val lastRefreshMillis = newPersistedProperty2(kctx, "repo_refresh", zeroValue = { 0L })
 
     private val repoRefresh = {
         v("repo refresh start")
@@ -77,7 +75,7 @@ class RepoImpl(
         }
     }
 
-    override val content = newPersistedProperty(kctx, ARepoPersistence(xx),
+    val content = newPersistedProperty(kctx, ARepoPersistence(),
             zeroValue = { RepoContent(null, listOf(), 0, "", listOf(), "") },
             refresh = { repoRefresh() },
             shouldRefresh = {
@@ -95,7 +93,7 @@ class RepoImpl(
     )
 }
 
-class ARepoPersistence(xx: Environment) : PersistenceWithSerialiser<RepoContent>(xx) {
+class ARepoPersistence() : PersistenceWithSerialiser<RepoContent>() {
 
     val p by lazy { serialiser("repo") }
 

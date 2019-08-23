@@ -3,6 +3,7 @@ package core
 import android.content.Context
 import com.github.salomonbrys.kodein.*
 import filter.DefaultSourceProvider
+import g11n.i18n
 import gs.environment.Worker
 import gs.presentation.ViewBinderHolder
 import gs.property.*
@@ -52,12 +53,10 @@ fun newAppModule(ctx: Context): Kodein.Module {
         }
         bind<UiState>() with singleton { AUiState(kctx = with("gscore").instance(10)) }
         bind<DefaultSourceProvider>() with singleton {
-            DefaultSourceProvider(ctx = ctx, processor = instance(),
-                    repo = instance(), f = instance())
+            DefaultSourceProvider(ctx = ctx, processor = instance(), f = instance())
         }
         bind<g11n.Main>() with singleton {
             val pages: Pages = instance()
-            val i18n: I18n = instance()
             g11n.Main(
                     urls = { mapOf(
                             pages.filtersStringsFallback().toExternalForm() to "filters",
@@ -76,7 +75,6 @@ fun newAppModule(ctx: Context): Kodein.Module {
         }
 
         onReady {
-            val repo: Repo = instance()
             val t: tunnel.Main = instance()
             val g11: g11n.Main = instance()
 
@@ -89,7 +87,6 @@ fun newAppModule(ctx: Context): Kodein.Module {
                 }
             }
 
-            val i18n: I18n = instance()
             i18n.locale.doWhenChanged().then {
                 v("refresh filters on locale set")
                 g11.sync("translations:sync:locale".ktx())
@@ -105,7 +102,6 @@ fun newAppModule(ctx: Context): Kodein.Module {
                 wasConnected = device.connected()
             }
 
-            val version: Version = instance()
             version.appName %= ctx.getString(R.string.branding_app_name)
 
             val p = BuildConfig.VERSION_NAME.split('.')

@@ -13,9 +13,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.GestureDetectorCompat
-import com.github.salomonbrys.kodein.instance
+import g11n.i18n
 import gs.presentation.LayoutViewBinder
-import gs.property.I18n
 import org.blokada.R
 
 
@@ -108,8 +107,6 @@ class BitView(
     init {
         inflate(context, R.layout.bitview_content, this)
     }
-
-    private val i18n by lazy { context.ktx("BitView").di().instance<I18n>() }
 
     private val containerView = findViewById<ViewGroup>(R.id.bit_container)
     private val unreadView = findViewById<ImageView>(R.id.bit_unread)

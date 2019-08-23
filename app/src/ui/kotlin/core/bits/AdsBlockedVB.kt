@@ -3,7 +3,7 @@ package core.bits
 import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
-import gs.property.I18n
+import g11n.i18n
 import gs.property.IWhen
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
@@ -11,7 +11,6 @@ import tunnel.BlockaConfig
 
 class AdsBlockedVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val tunnelEvents: Tunnel = ktx.di().instance(),
         private val tunnelStatus: EnabledStateActor = ktx.di().instance(),
         private val tunManager: TunnelStateManager = ktx.di().instance()

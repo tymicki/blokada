@@ -8,7 +8,7 @@ import core.bits.menu.isLandscape
 import gs.presentation.ListViewBinder
 import gs.presentation.NamedViewBinder
 import gs.presentation.ViewBinder
-import gs.property.Version
+import gs.property.version
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.BuildConfig
@@ -31,7 +31,6 @@ private const val PERSISTENCE_KEY = "slots:status"
 class HomeDashboardSectionVB(
         val ktx: AndroidKontext,
         val ctx: Context = ktx.ctx,
-        val version: Version = ktx.di().instance(),
         val welcome: Welcome = ktx.di().instance(),
         val manager: TunnelStateManager = ktx.di().instance(),
         override val name: Resource = R.string.panel_section_home.res()

@@ -4,9 +4,8 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import com.github.salomonbrys.kodein.instance
 import core.*
-import gs.property.I18n
+import g11n.i18n
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.Events
@@ -110,7 +109,6 @@ class RequestLogger : Service() {
 
 class LoggerVB (
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ): SlotVB(onTap) {
 

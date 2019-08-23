@@ -1,9 +1,8 @@
 package core.bits.menu.vpn
 
 import android.content.Intent
-import com.github.salomonbrys.kodein.instance
 import core.*
-import gs.property.I18n
+import g11n.i18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R
@@ -13,7 +12,6 @@ import java.util.*
 class GatewayVB(
         private val ktx: AndroidKontext,
         private val gateway: RestModel.GatewayInfo,
-        private val i18n: I18n = ktx.di().instance(),
         private val modal: ModalManager = modalManager,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {

@@ -9,8 +9,8 @@ import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
 import com.github.salomonbrys.kodein.instance
 import com.github.salomonbrys.kodein.singleton
-import gs.property.I18n
-import gs.property.getBrandedString
+import g11n.getBrandedString
+import g11n.i18n
 import org.blokada.R
 
 
@@ -46,7 +46,6 @@ fun newBatteryModule(ctx: Context) = Kodein.Module {
 class BatteryVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val battery: Battery = ktx.di().instance(),
         private val onRemove: () -> Unit = {},
         onTap: (SlotView) -> Unit

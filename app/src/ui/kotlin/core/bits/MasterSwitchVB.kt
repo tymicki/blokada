@@ -2,15 +2,12 @@ package core.bits
 
 import com.github.salomonbrys.kodein.instance
 import core.*
-import gs.property.I18n
 import org.blokada.R
 
 class MasterSwitchVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val tunnelEvents: Tunnel = ktx.di().instance(),
-        private val tunnelStatus: EnabledStateActor = ktx.di().instance(),
-        private val tunManager: TunnelStateManager = ktx.di().instance()
+        private val tunnelStatus: EnabledStateActor = ktx.di().instance()
 ) : ByteVB() {
 
     private var active = false

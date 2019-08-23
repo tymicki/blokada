@@ -1,54 +1,53 @@
-package gs.property
+package g11n
 
 import android.content.res.Resources
-import com.github.salomonbrys.kodein.instance
-import com.github.salomonbrys.kodein.with
 import core.*
-import gs.environment.Environment
 import gs.environment.Worker
 import gs.main.getPreferredLocales
+import gs.property.Persistence
+import gs.property.PersistenceWithSerialiser
+import gs.property.newPersistedProperty2
+import gs.property.repo
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import java.util.*
 
-abstract class I18n {
-    abstract val locale: IProperty<String>
-    abstract val localised: (key: Any) -> String
-    abstract val localisedOrNull: (key: Any) -> String?
-    abstract val set: (key: Any, value: String) -> Unit
-    abstract fun getString(resId: Int): String
-    abstract fun getString(resId: Int, vararg arguments: Any): String
-    abstract fun getQuantityString(resId: Int, quantity: Int, vararg arguments: Any): String
-    abstract fun getString(resource: Resource): String
-    abstract fun contentUrl(): String
-    abstract fun fallbackContentUrl(): String
-}
-
 typealias LanguageTag = String
-typealias Key = String
 typealias Localised = String
 
+private val kctx = workerFor("gscore")
+
+val i18n by lazy {
+    runBlocking {
+        I18nImpl(kctx)
+    }
+}
+
+private val persistences = mutableMapOf<String, I18nPersistence>()
+@Synchronized fun persistenceFor(name: String) : I18nPersistence {
+    if (!persistences.containsKey(name)) I18nPersistence(name)
+    return persistences[name]!!
+}
+
 class I18nImpl (
-        private val kctx: Worker,
-        private val xx: Environment
-) : I18n() {
+        private val kctx: Worker
+) {
 
     private val ctx by lazy {
         runBlocking { getApplicationContext()!! }
     }
 
-    private val repo: Repo by xx.instance()
     private val res: Resources by lazy { ctx.resources }
 
-    override fun contentUrl(): String {
+    fun contentUrl(): String {
         return "%s/%s".format(repo.content().contentPath ?: "http://localhost", locale())
     }
 
-    override fun fallbackContentUrl(): String {
+    fun fallbackContentUrl(): String {
         return "%s/%s".format(repo.content().contentPath ?: "http://localhost", "en")
     }
 
-    override val locale = newPersistedProperty(kctx, BasicPersistence(xx, "locale"), { "en" },
+    val locale = newPersistedProperty2(kctx, "locale", { "en" },
             refresh = {
                 val ktx = "i18n:locale:refresh".ktx()
                 val preferred = getPreferredLocales()
@@ -77,11 +76,11 @@ class I18nImpl (
 
     private val localisedMap: MutableMap<LanguageTag, MutableMap<Key, Localised>> = mutableMapOf()
 
-    override val localised = { key: Any ->
+    val localised = { key: Any ->
         localisedOrNull(key) ?: key.toString()
     }
 
-    override val localisedOrNull = { key: Any ->
+    val localisedOrNull = { key: Any ->
         // Map resId to actual string key defined in xml files since we use them dynamically
         val (isResource, realKey) = if (key is Int) true to res.getResourceName(key) else false to key.toString()
 
@@ -101,30 +100,30 @@ class I18nImpl (
     }
 
     private val persistence: (LanguageTag) -> Persistence<Map<Key, LanguageTag>> = { tag ->
-        xx().with(tag).instance<I18nPersistence>()
+        persistenceFor(tag)
     }
 
-    override val set: (key: Any, value: String) -> Unit
+    val set: (key: Any, value: String) -> Unit
         get() = { key, value ->
             val strings = localisedMap.getOrPut(locale(), { mutableMapOf<Key, Localised>() })
             strings.put(key.toString(), value)
             persistence(locale()).write(strings)
         }
 
-    override fun getString(resId: Int): String {
+    fun getString(resId: Int): String {
         return localised(resId)
     }
 
-    override fun getString(resId: Int, vararg arguments: Any): String {
+    fun getString(resId: Int, vararg arguments: Any): String {
         return localised(resId).format(*arguments)
     }
 
-    override fun getQuantityString(resId: Int, quantity: Int, vararg arguments: Any): String {
+    fun getQuantityString(resId: Int, quantity: Int, vararg arguments: Any): String {
         // Intentionally no support for quantity strings for now
         return localised(resId).format(*arguments)
     }
 
-    override fun getString(resource: Resource): String {
+    fun getString(resource: Resource): String {
         return when {
             resource.hasResId() -> localised(resource.getResId())
             else -> resource.getString()
@@ -146,9 +145,8 @@ class I18nImpl (
 }
 
 class I18nPersistence(
-        xx: Environment,
         private val locale: LanguageTag
-) : PersistenceWithSerialiser<Map<Key, Localised>>(xx) {
+) : PersistenceWithSerialiser<Map<Key, Localised>>() {
 
     val p by lazy { serialiser("i18n_$locale") }
 
@@ -174,6 +172,6 @@ class I18nPersistence(
 
 }
 
-fun I18n.getBrandedString(resId: Int): String {
+fun I18nImpl.getBrandedString(resId: Int): String {
     return getString(resId, getString(R.string.branding_app_name_short))
 }

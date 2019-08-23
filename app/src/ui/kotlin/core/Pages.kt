@@ -2,9 +2,9 @@ package core
 
 import android.content.Context
 import com.github.salomonbrys.kodein.*
+import g11n.i18n
 import gs.environment.Environment
 import gs.environment.Worker
-import gs.property.I18n
 import gs.property.IProperty
 import gs.property.newProperty
 import java.net.HttpURLConnection
@@ -38,8 +38,6 @@ class PagesImpl (
         w: Worker,
         xx: Environment
 ) : Pages() {
-
-    val i18n: I18n by xx.instance()
 
     init {
         i18n.locale.doWhenSet().then {

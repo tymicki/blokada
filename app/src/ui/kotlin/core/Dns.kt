@@ -2,6 +2,7 @@ package core
 
 import android.content.Context
 import com.github.salomonbrys.kodein.*
+import g11n.i18n
 import gs.environment.Environment
 import gs.environment.Worker
 import gs.environment.getDnsServers
@@ -132,7 +133,7 @@ class DnsImpl(
         else d?.servers!!
     })
 
-    override val enabled = newPersistedProperty(w, BasicPersistence(xx, "dnsEnabled"), { false })
+    override val enabled = newPersistedProperty2(w, "dnsEnabled", { false })
 
     init {
         pages.dns.doWhenSet().then {
@@ -187,7 +188,7 @@ data class DnsChoice(
     }
 }
 
-class DnsChoicePersistence(xx: Environment) : PersistenceWithSerialiser<List<DnsChoice>>(xx) {
+class DnsChoicePersistence(xx: Environment) : PersistenceWithSerialiser<List<DnsChoice>>() {
 
     val p by lazy { serialiser("dns") }
     val s by lazy { DnsSerialiser() }
@@ -252,7 +253,6 @@ class DnsSerialiser {
 
 class DnsLocalisedFetcher(
         private val xx: Environment,
-        private val i18n: I18n = xx().instance(),
         private val pages: Pages = xx().instance()
 ) {
     init {

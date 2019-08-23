@@ -18,8 +18,8 @@ import android.widget.RemoteViews
 import android.widget.TextView
 import com.github.salomonbrys.kodein.instance
 import core.*
+import g11n.i18n
 import gs.environment.inject
-import gs.property.I18n
 import gs.property.IWhen
 import org.blokada.R
 import tunnel.Events
@@ -287,7 +287,6 @@ class UpdateWidgetService : Service() {
         val appWidgetManager = AppWidgetManager.getInstance(this)
         val remoteViews = RemoteViews(this.packageName, R.layout.widget_active)
         val d: Dns = this.inject().instance()
-        val i18n: I18n = this.inject().instance()
         val dc = d.choices().find { it.active }
         val name = when {
             dc == null -> this.getString(R.string.dns_text_none)

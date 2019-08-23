@@ -10,7 +10,11 @@ import com.github.salomonbrys.kodein.instance
 import core.*
 import core.Tunnel
 import filter.hostnameRegex
-import gs.property.*
+import g11n.i18n
+import gs.property.IWhen
+import gs.property.device
+import gs.property.repo
+import gs.property.version
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -18,7 +22,6 @@ import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.*
 import tunnel.Filter
-import tunnel.Persistence
 import update.UpdateCoordinator
 import java.net.URL
 import java.nio.charset.Charset
@@ -27,7 +30,6 @@ import java.util.*
 
 class FiltersStatusVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -92,7 +94,6 @@ class DomainForwarderVB(
         private val domain: String,
         private val date: Date,
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val tunnelManager: tunnel.Main = ktx.di().instance(),
         private val alternative: Boolean = false,
         onTap: (SlotView) -> Unit
@@ -129,7 +130,6 @@ class DomainBlockedVB(
         private val domain: String,
         private val date: Date,
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val tunnelManager: tunnel.Main = ktx.di().instance(),
         private val alternative: Boolean = false,
         onTap: (SlotView) -> Unit
@@ -166,7 +166,6 @@ class FilterVB(
         private val filter: Filter,
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -209,7 +208,6 @@ class FilterVB(
 class DownloadListsVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -246,23 +244,23 @@ class ConfigHelper {
             else -> 86400L
         }
 
-        private fun stringToId(string: String, i18n: I18n) = when (string) {
+        private fun stringToId(string: String) = when (string) {
             i18n.getString(R.string.tunnel_config_refetch_frequency_2) -> R.string.tunnel_config_refetch_frequency_2
             i18n.getString(R.string.tunnel_config_refetch_frequency_3) -> R.string.tunnel_config_refetch_frequency_3
             i18n.getString(R.string.tunnel_config_refetch_frequency_4) -> R.string.tunnel_config_refetch_frequency_4
             else -> R.string.tunnel_config_refetch_frequency_1
         }
 
-        private fun idToString(id: Int, i18n: I18n) = i18n.getString(id)
+        private fun idToString(id: Int) = i18n.getString(id)
 
-        fun getFrequencyString(ktx: Kontext, i18n: I18n) = {
+        fun getFrequencyString(ktx: Kontext) = {
             val config = tunnel.Persistence.config.load(ktx)
-            idToString(ttlToId(config.cacheTTL), i18n)
+            idToString(ttlToId(config.cacheTTL))
         }()
 
-        fun setFrequency(ktx: Kontext, i18n: I18n, string: String) = {
+        fun setFrequency(ktx: Kontext, string: String) = {
             val config = tunnel.Persistence.config.load(ktx)
-            val new = config.copy(cacheTTL = idToTtl(stringToId(string, i18n)))
+            val new = config.copy(cacheTTL = idToTtl(stringToId(string)))
             tunnel.Persistence.config.save(new)
         }()
     }
@@ -271,7 +269,6 @@ class ConfigHelper {
 class ListDownloadFrequencyVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -289,10 +286,10 @@ class ListDownloadFrequencyVB(
                         i18n.getString(R.string.tunnel_config_refetch_frequency_3),
                         i18n.getString(R.string.tunnel_config_refetch_frequency_4)
                 ),
-                selected = ConfigHelper.getFrequencyString(ktx, i18n)
+                selected = ConfigHelper.getFrequencyString(ktx)
         )
         view.onSelect = { selected ->
-            ConfigHelper.setFrequency(ktx, i18n, selected)
+            ConfigHelper.setFrequency(ktx, selected)
             filters.reloadConfig(ktx, device.onWifi())
             view.fold()
         }
@@ -303,7 +300,6 @@ class ListDownloadFrequencyVB(
 class DownloadOnWifiVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -331,7 +327,6 @@ class NewFilterVB(
         private val whitelist: Boolean = false,
         private val ctx: Context = ktx.ctx,
         private val nameResId: Int = R.string.slot_new_filter,
-        private val i18n: I18n = ktx.di().instance(),
         private val modal: ModalManager = modalManager
 ) : SlotVB() {
 
@@ -350,7 +345,6 @@ class NewFilterVB(
 
 class EnterDomainVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val accepted: (List<FilterSourceDescriptor>) -> Unit = {}
 ) : SlotVB() {
 
@@ -409,7 +403,6 @@ class EnterDomainVB(
 
 class EnterNameVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val accepted: (String) -> Unit = {}
 ) : SlotVB(), Stepable {
 
@@ -459,7 +452,6 @@ class HomeAppVB(
         private val app: Filter,
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -485,7 +477,6 @@ class HomeAppVB(
 class SearchBarVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         val onSearch: (String) -> Unit,
         private val modal: ModalManager = modalManager
 ) : SlotVB(onTap = {
@@ -523,7 +514,6 @@ class SearchBarVB(
 class EnterSearchVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val onSearch: (String) -> Unit
 ) : SlotVB(onTap = {}) {
     override fun attach(view: SlotView) {
@@ -549,7 +539,6 @@ class AppVB(
         private val whitelisted: Boolean,
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -641,7 +630,6 @@ class DnsChoiceVB(
         private val item: DnsChoice,
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val dns: Dns = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -710,7 +698,6 @@ class DnsChoiceVB(
 class StartOnBootVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val tun: Tunnel = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -732,7 +719,6 @@ class StartOnBootVB(
 class KeepAliveVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val keepAlive: KeepAlive = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -754,7 +740,6 @@ class KeepAliveVB(
 class WatchdogVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -775,7 +760,6 @@ class WatchdogVB(
 class PowersaveVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -799,7 +783,6 @@ class PowersaveVB(
 class DnsFallbackVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -823,7 +806,6 @@ class DnsFallbackVB(
 class ReportVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -846,7 +828,6 @@ class ReportVB(
 
 class NotificationsVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val ui: UiState = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -865,7 +846,6 @@ class NotificationsVB(
 
 class BackgroundAnimationVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val ui: UiState = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -885,8 +865,7 @@ class BackgroundAnimationVB(
 }
 
 class ResetCounterVB(private val ktx: AndroidKontext,
-         private val i18n: I18n = ktx.di().instance(),
-        onTap: (SlotView) -> Unit
+                     onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
@@ -908,7 +887,6 @@ class ResetCounterVB(private val ktx: AndroidKontext,
 class DnsListControlVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val dns: Dns = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -936,7 +914,6 @@ class DnsListControlVB(
 class FiltersListControlVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: Filters = ktx.di().instance(),
         private val translations: g11n.Main = ktx.di().instance(),
         private val tunnel: tunnel.Main = ktx.di().instance(),
@@ -973,7 +950,6 @@ class FiltersListControlVB(
 class StorageLocationVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
         private val filters: tunnel.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -1032,10 +1008,6 @@ fun openInBrowser(ctx: Context, url: URL) {
 class UpdateVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
-        private val repo: Repo = ktx.di().instance(),
-        private val ver: Version = ktx.di().instance(),
-        private val pages: Pages = ktx.di().instance(),
         private val updater: UpdateCoordinator = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -1092,8 +1064,6 @@ class UpdateVB(
 class AboutVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val i18n: I18n = ktx.di().instance(),
-        private val ver: Version = ktx.di().instance(),
         private val pages: Pages = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -1108,7 +1078,7 @@ class AboutVB(
 
         view.content = Slot.Content(
                 label = i18n.getString(R.string.slot_about),
-                description = "${ver.appName} ${ver.name}",
+                description = "${version.appName} ${version.name}",
                 detail = blokadaUserAgent(ctx),
                 action2 = creditsAction,
                 action3 = Slot.Action(i18n.getString(R.string.update_button_appinfo)) {

@@ -2,9 +2,11 @@ package core
 
 import android.content.Context
 import com.github.salomonbrys.kodein.*
-import gs.environment.Environment
+import g11n.i18n
 import gs.environment.Worker
-import gs.property.*
+import gs.property.IProperty
+import gs.property.newPersistedProperty2
+import gs.property.newProperty
 
 abstract class Welcome {
     abstract val introSeen: IProperty<Boolean>
@@ -17,16 +19,14 @@ abstract class Welcome {
 }
 
 class WelcomeImpl (
-        w: Worker,
-        xx: Environment,
-        val i18n: I18n = xx().instance()
+        w: Worker
 ) : Welcome() {
-    override val introSeen = newPersistedProperty(w, BasicPersistence(xx, "intro_seen"), { false })
-    override val guideSeen = newPersistedProperty(w, BasicPersistence(xx, "guide_seen"), { false })
+    override val introSeen = newPersistedProperty2(w, "intro_seen", { false })
+    override val guideSeen = newPersistedProperty2(w, "guide_seen", { false })
     override val patronShow = newProperty(w, { false })
-    override val patronSeen = newPersistedProperty(w, BasicPersistence(xx, "optional_seen"), { false })
-    override val ctaSeenCounter = newPersistedProperty(w, BasicPersistence(xx, "cta_seen"), { 3 })
-    override val advanced = newPersistedProperty(w, BasicPersistence(xx, "advanced"), { false })
+    override val patronSeen = newPersistedProperty2(w, "optional_seen", { false })
+    override val ctaSeenCounter = newPersistedProperty2(w, "cta_seen", { 3 })
+    override val advanced = newPersistedProperty2(w, "advanced", { false })
     override val conflictingBuilds = newProperty(w, { listOf<String>() })
 
     init {
@@ -41,7 +41,7 @@ class WelcomeImpl (
 fun newWelcomeModule(ctx: Context): Kodein.Module {
     return Kodein.Module {
         bind<Welcome>() with singleton {
-            WelcomeImpl(w = with("gscore").instance(2), xx = lazy)
+            WelcomeImpl(w = with("gscore").instance(2))
         }
     }
 }

@@ -1,8 +1,7 @@
 package core
 
 import android.app.Activity
-import com.github.salomonbrys.kodein.instance
-import gs.property.I18n
+import g11n.i18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.blokada.R
@@ -54,7 +53,6 @@ class RestoreAccountActivity : Activity() {
 
 class EnterAccountVB(
         private val ktx: AndroidKontext,
-        private val i18n: I18n = ktx.di().instance(),
         private val accepted: (String) -> Unit = {}
 ) : SlotVB(), Stepable {
 

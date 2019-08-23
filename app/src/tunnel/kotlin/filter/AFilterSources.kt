@@ -9,7 +9,7 @@ import core.load
 import core.loadGzip
 import core.openUrl
 import gs.environment.inject
-import gs.property.Repo
+import gs.property.repo
 import tunnel.FilterId
 import tunnel.IFilterSource
 import java.io.InputStreamReader
@@ -219,7 +219,6 @@ private fun openFile(ctx: Context, uri: Uri): java.io.InputStream {
 
 class DefaultSourceProvider(
         val ctx: Context,
-        val repo: Repo,
         val f: Filters,
         val processor: IHostlineProcessor
 ) {

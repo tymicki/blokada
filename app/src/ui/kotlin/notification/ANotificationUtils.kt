@@ -12,8 +12,8 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.github.salomonbrys.kodein.instance
 import core.*
+import g11n.i18n
 import gs.environment.inject
-import gs.property.I18n
 import org.blokada.R
 
 
@@ -67,7 +67,6 @@ fun hideNotification(ctx: Context) {
 fun createNotificationKeepAlive(ctx: Context, count: Int, last: String): Notification {
     val b = NotificationCompat.Builder(ctx)
     if (Product.current(ctx) == Product.DNS) {
-        val i18n = ctx.inject().instance<I18n>()
         val choice = ctx.inject().instance<Dns>().choices().first { it.active }
         val id = if (choice.id.startsWith("custom")) "custom" else choice.id
         val provider = i18n.localisedOrNull("dns_${id}_name") ?: id.capitalize()
