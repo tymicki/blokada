@@ -1,9 +1,15 @@
 package gs.environment
 
+import android.util.Log
+
 interface Journal {
     fun event(vararg events: Any)
-    fun log(vararg errors: Any)
-    fun setUserId(id: String)
-    fun setUserProperty(key: String, value: Any)
 }
 
+class ALogcatJournal(private val tag: String) : Journal {
+
+    override fun event(vararg events: Any) {
+        Log.i(tag, "event: ${events.joinToString(separator = ";")}")
+    }
+
+}

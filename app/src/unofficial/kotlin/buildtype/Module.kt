@@ -1,10 +1,8 @@
 package buildtype
 
-import android.content.Context
-import com.github.salomonbrys.kodein.Kodein
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-fun newBuildTypeModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
+suspend fun initBuildType() = withContext(Dispatchers.Main.immediate) {
 
-    }
 }

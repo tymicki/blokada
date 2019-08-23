@@ -1,16 +1,13 @@
 package gs.property
 
-import android.content.Context
 import android.content.res.Resources
 import com.github.salomonbrys.kodein.instance
 import com.github.salomonbrys.kodein.with
-import core.Format
-import core.Resource
-import core.ktx
-import core.v
+import core.*
 import gs.environment.Environment
 import gs.environment.Worker
 import gs.main.getPreferredLocales
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import java.util.*
 
@@ -36,7 +33,10 @@ class I18nImpl (
         private val xx: Environment
 ) : I18n() {
 
-    private val ctx: Context by xx.instance()
+    private val ctx by lazy {
+        runBlocking { getApplicationContext()!! }
+    }
+
     private val repo: Repo by xx.instance()
     private val res: Resources by lazy { ctx.resources }
 

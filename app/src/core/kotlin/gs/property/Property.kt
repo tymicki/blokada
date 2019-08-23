@@ -1,6 +1,9 @@
 package gs.property
 
+import core.loadFromPersistence
+import core.saveToPersistence
 import gs.environment.Worker
+import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.ui.promiseOnUi
 
@@ -133,6 +136,16 @@ fun <T> newPersistedProperty(
         shouldRefresh: (value: T) -> Boolean = { true }
  ) : IProperty<T> {
     return PersistedProperty(kctx, persistence, zeroValue, refresh, shouldRefresh)
+}
+
+fun <T> newPersistedProperty2(
+        kctx: Worker,
+        key: String,
+        zeroValue: () -> T,
+        refresh: ((value: T) -> T)? = null,
+        shouldRefresh: (value: T) -> Boolean = { true }
+) : IProperty<T> {
+    return PersistedProperty2(kctx, key, zeroValue, refresh, shouldRefresh)
 }
 
 private interface IWhenExecute : IWhen {
@@ -371,6 +384,28 @@ private class PersistedProperty<T>(
     init {
         doWhenSet().then {
             persistence.write(value!!)
+        }
+        refresh()
+    }
+
+}
+
+private class PersistedProperty2<T>(
+        private val kctx: Worker,
+        private val key: String,
+        private val zeroValue: () -> T,
+        private val refresh: ((value: T) -> T)? = null,
+        private val shouldRefresh: (value: T) -> Boolean = { false }
+): BaseProperty<T>(
+        kctx = kctx,
+        zeroValue = { runBlocking { zeroValue().loadFromPersistence(key) } },
+        refresh = refresh ?: { runBlocking { it.loadFromPersistence(key) } },
+        shouldRefresh = shouldRefresh
+) {
+
+    init {
+        doWhenSet().then {
+            runBlocking { value!!.saveToPersistence(key) }
         }
         refresh()
     }

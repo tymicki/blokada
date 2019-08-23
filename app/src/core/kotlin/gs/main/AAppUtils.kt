@@ -6,9 +6,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import com.github.salomonbrys.kodein.instance
-import gs.environment.Journal
-import gs.environment.inject
 
 
 internal fun registerUncaughtExceptionHandler(ctx: android.content.Context) {
@@ -45,8 +42,7 @@ class RestartService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val j: Journal = inject().instance()
-        j.log("RestartService start command")
+        core.v("RestartService start command")
         return Service.START_STICKY;
     }
 

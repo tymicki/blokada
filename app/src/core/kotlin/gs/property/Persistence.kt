@@ -45,6 +45,7 @@ interface HasKey {
     fun key(): String
 }
 
+@Deprecated("out")
 class BasicPersistence<T>(
         xx: Environment,
         val key: String

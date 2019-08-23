@@ -3,7 +3,6 @@ package gs.property
 import com.github.salomonbrys.kodein.instance
 import core.*
 import gs.environment.Environment
-import gs.environment.Time
 import gs.environment.Worker
 import java.net.URL
 import java.util.*
@@ -28,7 +27,6 @@ class RepoImpl(
         private val xx: Environment
 ) : Repo() {
 
-    private val time: Time by xx.instance()
     private val version: Version by xx.instance()
 
     override val url = newPersistedProperty(kctx, BasicPersistence(xx, "repo_url"), zeroValue = { "" })
@@ -60,7 +58,7 @@ class RepoImpl(
             }
             v("repo downloaded")
 
-            lastRefreshMillis %= time.now()
+            lastRefreshMillis %= gs.environment.time.now()
             RepoContent(
                     contentPath = URL(repo[0]),
                     locales = locales,
@@ -87,7 +85,7 @@ class RepoImpl(
 
                 when {
                     it.fetchedUrl != url() -> true
-                    lastRefreshMillis() + ttl < time.now() -> true
+                    lastRefreshMillis() + ttl < gs.environment.time.now() -> true
                     it.downloadLinks.isEmpty() -> true
                     it.contentPath == null -> true
                     it.locales.isEmpty() -> true

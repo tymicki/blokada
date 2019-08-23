@@ -11,21 +11,17 @@ import nl.komponents.kovenant.ui.KovenantUi
 
 fun newGscoreModule(ctx: Context): Kodein.Module {
     return Kodein.Module {
-        bind<Context>() with singleton { ctx }
-        bind<Journal>() with singleton { ALogcatJournal("gscore") }
-        bind<Time>() with singleton { SystemTime() }
-
         bind<Worker>() with multiton { it: String ->
-            newSingleThreadedWorker(j = instance(), prefix = it)
+            newSingleThreadedWorker(prefix = it)
         }
         bind<Worker>(2) with multiton { it: String ->
-            newConcurrentWorker(j = instance(), prefix = it, tasks = 1)
+            newConcurrentWorker(prefix = it, tasks = 1)
         }
         bind<Worker>(3) with multiton { it: String ->
-            newConcurrentWorker(j = instance(), prefix = it, tasks = 1)
+            newConcurrentWorker(prefix = it, tasks = 1)
         }
         bind<Worker>(10) with multiton { it: String ->
-            newConcurrentWorker(j = instance(), prefix = it, tasks = 1)
+            newConcurrentWorker(prefix = it, tasks = 1)
         }
 
         bind<Serialiser>() with multiton { it: String ->

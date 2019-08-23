@@ -10,7 +10,7 @@ import com.cloudflare.app.boringtun.BoringTunJNI
 import com.github.salomonbrys.kodein.instance
 import com.google.android.material.snackbar.Snackbar
 import core.*
-import gs.property.Device
+import gs.property.device
 import kotlinx.coroutines.*
 import notification.displayAccountExpiredNotification
 import notification.displayLeaseExpiredNotification
@@ -159,9 +159,8 @@ fun registerBlockaConfigEvent(ktx: AndroidKontext) {
 
     core.on(BLOCKA_CONFIG, { Persistence.blocka.save(it) })
 
-    val d: Device = ktx.di().instance()
-    d.screenOn.doOnUiWhenChanged().then {
-        if (d.screenOn()) GlobalScope.async {
+    device.screenOn.doOnUiWhenChanged().then {
+        if (device.screenOn()) GlobalScope.async {
             core.getMostRecent(BLOCKA_CONFIG)?.run {
                 if (!DateUtils.isToday(lastDaily)) {
                     v("daily check account")

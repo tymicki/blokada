@@ -3,10 +3,10 @@ package core
 import android.content.Context
 import com.github.salomonbrys.kodein.*
 import gs.environment.Environment
-import gs.environment.Journal
 import gs.environment.Worker
 import gs.environment.getDnsServers
 import gs.property.*
+import kotlinx.coroutines.runBlocking
 import org.pcap4j.packet.namednumber.UdpPort
 import java.io.InputStreamReader
 import java.net.InetAddress
@@ -66,9 +66,7 @@ class DnsImpl(
         xx: Environment,
         pages: Pages = xx().instance(),
         serialiser: DnsSerialiser = DnsSerialiser(),
-        fetcher: DnsLocalisedFetcher = xx().instance(),
-        d: Device = xx().instance(),
-        ctx: Context = xx().instance()
+        fetcher: DnsLocalisedFetcher = xx().instance()
 ) : Dns() {
 
     override fun hasCustomDnsSelected(checkEnabled: Boolean): Boolean {
@@ -118,6 +116,11 @@ class DnsImpl(
         newDns
     }
 
+    private val ctx by lazy {
+        runBlocking { getApplicationContext()!! }
+    }
+
+
     override val choices = newPersistedProperty(w, DnsChoicePersistence(xx),
             zeroValue = { listOf() },
             refresh = refresh,
@@ -142,7 +145,7 @@ class DnsImpl(
         enabled.doOnUiWhenChanged(withInit = true).then {
             dnsServers.refresh()
         }
-        d.connected.doOnUiWhenSet().then {
+        device.connected.doOnUiWhenSet().then {
             dnsServers.refresh()
         }
 
@@ -250,15 +253,14 @@ class DnsSerialiser {
 class DnsLocalisedFetcher(
         private val xx: Environment,
         private val i18n: I18n = xx().instance(),
-        private val pages: Pages = xx().instance(),
-        private val j: Journal = xx().instance()
+        private val pages: Pages = xx().instance()
 ) {
     init {
         i18n.locale.doWhenChanged().then { fetch() }
     }
 
     fun fetch() {
-        j.log("dns: fetch strings: start ${pages.dnsStrings()}")
+        core.v("dns: fetch strings: start ${pages.dnsStrings()}")
         val prop = Properties()
         try {
             prop.load(InputStreamReader(openUrl(pages.dnsStrings(), 10000)().getInputStream(),
@@ -267,9 +269,9 @@ class DnsLocalisedFetcher(
                 i18n.set("dns_$it", prop.getProperty(it))
             }
         } catch (e: Exception) {
-            j.log("dns: fetch strings crash", e)
+            core.v("dns: fetch strings crash", e)
         }
-        j.log("dns: fetch strings: done")
+        core.v("dns: fetch strings: done")
     }
 }
 

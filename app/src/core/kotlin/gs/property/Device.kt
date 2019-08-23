@@ -8,56 +8,64 @@ import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.PowerManager
 import com.github.salomonbrys.kodein.*
-import core.ktx
+import core.getApplicationContext
 import core.v
+import core.workerFor
 import gs.environment.*
+import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.Kovenant
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
 import java.net.InetSocketAddress
 import java.net.Socket
 
-abstract class Device {
-    abstract val appInForeground: IProperty<Boolean>
-    abstract val screenOn: IProperty<Boolean>
-    abstract val connected: IProperty<Boolean>
-    abstract val tethering: IProperty<Boolean>
-    abstract val watchdogOn: IProperty<Boolean>
-    abstract val onWifi: IProperty<Boolean>
-    abstract val reports: IProperty<Boolean>
+private val kctx = workerFor("gscore") // Was 2 threads
+private val kctxWatchdog = workerFor("watchdog")
+
+val device by lazy {
+    runBlocking {
+        DeviceImpl(kctx, getApplicationContext()!!)
+    }
+}
+
+val watchdog by lazy {
+    runBlocking {
+        Watchdog()
+    }
+}
+
+class DeviceImpl (
+        kctx: Worker,
+        ctx: Context
+) {
 
     fun isWaiting(): Boolean {
         return !connected()
     }
 
-}
+    private val pm: PowerManager by lazy {
+        runBlocking {
+            getApplicationContext()!!.getSystemService(Context.POWER_SERVICE) as PowerManager
+        }
+    }
 
-class DeviceImpl (
-        kctx: Worker,
-        xx: Environment,
-        ctx: Context = xx().instance()
-) : Device() {
-
-    private val pm: PowerManager by xx.instance()
-    private val watchdog: IWatchdog by xx.instance()
-
-    override val appInForeground = newProperty(kctx, { false })
-    override val screenOn = newProperty(kctx, { pm.isInteractive })
-    override val connected = newProperty(kctx, zeroValue = { true }, refresh = {
+    val appInForeground = newProperty(kctx, { false })
+    val screenOn = newProperty(kctx, { pm.isInteractive })
+    val connected = newProperty(kctx, zeroValue = { true }, refresh = {
         // With watchdog off always returning true, we basically disable detection.
         // Because isConnected sometimes returns false when we are actually online.
         val c = isConnected(ctx) or watchdog.test()
         v("connected", c)
         c
     } )
-    override val tethering = newProperty(kctx, { isTethering(ctx)} )
+    val tethering = newProperty(kctx, { isTethering(ctx)} )
 
-    override val watchdogOn = newPersistedProperty(kctx, BasicPersistence(xx, "watchdogOn"),
+    val watchdogOn = newPersistedProperty2(kctx, "watchdogOn",
             { false })
 
-    override val onWifi = newProperty(kctx, { isWifi(ctx) } )
+    val onWifi = newProperty(kctx, { isWifi(ctx) } )
 
-    override val reports = newPersistedProperty(kctx, BasicPersistence(xx, "reports"),
+    val reports = newPersistedProperty2(kctx, "reports",
             { true }
     )
 
@@ -69,9 +77,8 @@ class ConnectivityReceiver : BroadcastReceiver() {
         task(ctx.inject().with("ConnectivityReceiver").instance()) {
             // Do it async so that Android can refresh the current network info before we access it
             v("connectivity receiver ping")
-            val s: Device = ctx.inject().instance()
-            s.connected.refresh()
-            s.onWifi.refresh()
+            device.connected.refresh()
+            device.onWifi.refresh()
         }
     }
 
@@ -90,13 +97,9 @@ class ConnectivityReceiver : BroadcastReceiver() {
 
 fun newDeviceModule(ctx: Context): Kodein.Module {
     return Kodein.Module {
-        bind<Device>() with singleton {
-            DeviceImpl(kctx = with("gscore").instance(2), xx = lazy)
-        }
         bind<ConnectivityReceiver>() with singleton { ConnectivityReceiver() }
         bind<ScreenOnReceiver>() with singleton { ScreenOnReceiver() }
         bind<LocaleReceiver>() with singleton { LocaleReceiver() }
-        bind<IWatchdog>() with singleton { AWatchdog(ctx) }
         onReady {
             // Register various Android listeners to receive events
             task {
@@ -114,8 +117,7 @@ class ScreenOnReceiver : BroadcastReceiver() {
         task(ctx.inject().with("ScreenOnReceiver").instance()) {
             // This causes everything to load
             v("screen receiver ping")
-            val s: Device = ctx.inject().instance()
-            s.screenOn.refresh()
+            device.screenOn.refresh()
         }
     }
 
@@ -150,28 +152,16 @@ class LocaleReceiver : BroadcastReceiver() {
     }
 }
 
-interface IWatchdog {
-    fun start()
-    fun stop()
-    fun test(): Boolean
-}
-
 /**
- * AWatchdog is meant to test if device has Internet connectivity at this moment.
+ * Watchdog is meant to test if device has Internet connectivity at this moment.
  *
  * It's used for getting connectivity state since Android's connectivity event cannot always be fully
  * trusted. It's also used to test if Blokada is working properly once activated (and periodically).
  */
-class AWatchdog(
-        private val ctx: Context
-) : IWatchdog {
+class Watchdog {
 
-    private val d by lazy { ctx.inject().instance<Device>() }
-    private val kctx by lazy { ctx.inject().with("watchdog").instance<Worker>() }
-    private val ktx by lazy { "device:watchdog".ktx() }
-
-    override fun test(): Boolean {
-        if (!d.watchdogOn()) return true
+    fun test(): Boolean {
+        if (!device.watchdogOn()) return true
         v("watchdog ping")
         val socket = Socket()
         socket.soTimeout = 3000
@@ -193,33 +183,33 @@ class AWatchdog(
     private var wait = 1
     private var nextTask: Promise<*, *>? = null
 
-    @Synchronized override fun start() {
+    @Synchronized fun start() {
         if (started) return
-        if (!d.watchdogOn()) { return }
+        if (!device.watchdogOn()) { return }
         started = true
         wait = 1
         if (nextTask != null) Kovenant.cancel(nextTask!!, Exception("cancelled"))
         nextTask = tick()
     }
 
-    @Synchronized override fun stop() {
+    @Synchronized fun stop() {
         started = false
         if (nextTask != null) Kovenant.cancel(nextTask!!, Exception("cancelled"))
         nextTask = null
     }
 
     private fun tick(): Promise<*, *> {
-        return task(kctx) {
+        return task(kctxWatchdog) {
             if (started) {
                 // Delay the first check to not cause false positives
                 if (wait == 1) Thread.sleep(1000L)
                 val connected = test()
                 val next = if (connected) wait * 2 else wait
                 wait *= 2
-                if (d.connected() != connected) {
+                if (device.connected() != connected) {
                     // Connection state change will cause reactivating (and restarting watchdog)
                     v("watchdog change: connected: $connected")
-                    d.connected %= connected
+                    device.connected %= connected
                     stop()
                 } else {
                     Thread.sleep(Math.min(next, MAX) * 1000L)

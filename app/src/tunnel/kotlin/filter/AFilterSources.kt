@@ -8,7 +8,6 @@ import core.Filters
 import core.load
 import core.loadGzip
 import core.openUrl
-import gs.environment.Journal
 import gs.environment.inject
 import gs.property.Repo
 import tunnel.FilterId
@@ -109,7 +108,7 @@ class FilterSourceUri(
                 openFile(ctx, source!!)
             }, { processor.process(it) })
         } catch (e: Exception) {
-            ctx.inject().instance<Journal>().log(Exception("source file load failed", e))
+            core.e(Exception("source file load failed", e))
             emptyList<String>()
         }
         return LinkedHashSet<String>().apply { addAll(list) }
@@ -154,7 +153,6 @@ class FilterSourceUri(
 
 class FilterSourceApp(
         private val ctx: Context,
-        private val j: Journal,
         var source: String? = null
 ) : IFilterSource {
 
@@ -187,7 +185,7 @@ class FilterSourceApp(
             system = s.apps().first { it.appId == source }.system
             true
         } catch (e: Exception) {
-            j.log("FilterSourceApp: fromUserInput: fail", e)
+            core.v("FilterSourceApp: fromUserInput: fail", e)
             false
         }
     }
@@ -221,7 +219,6 @@ private fun openFile(ctx: Context, uri: Uri): java.io.InputStream {
 
 class DefaultSourceProvider(
         val ctx: Context,
-        val j: Journal,
         val repo: Repo,
         val f: Filters,
         val processor: IHostlineProcessor
@@ -231,7 +228,7 @@ class DefaultSourceProvider(
         return when (id) {
             "app" -> {
                 f.apps.refresh(blocking = true)
-                val f = FilterSourceApp(ctx, j)
+                val f = FilterSourceApp(ctx)
                 if (source != null) f.fromUserInput(source)
                 f
             }

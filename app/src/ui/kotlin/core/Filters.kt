@@ -11,12 +11,11 @@ import android.net.Uri
 import com.github.salomonbrys.kodein.*
 import filter.DefaultHostlineProcessor
 import filter.IHostlineProcessor
-import gs.environment.Environment
-import gs.environment.Journal
 import gs.environment.Worker
 import gs.environment.inject
 import gs.property.IProperty
 import gs.property.newProperty
+import kotlinx.coroutines.runBlocking
 import nl.komponents.kovenant.task
 import org.blokada.R
 import tunnel.FilterSourceDescriptor
@@ -27,9 +26,7 @@ abstract class Filters {
 }
 
 class FiltersImpl(
-        private val kctx: Worker,
-        private val xx: Environment,
-        private val ctx: Context = xx().instance()
+        private val kctx: Worker
 ) : Filters() {
 
     override val changed = newProperty(kctx, { false })
@@ -38,6 +35,7 @@ class FiltersImpl(
         val ktx = "filters:apps:refresh".ktx()
         v("apps refresh start")
 
+        val ctx = runBlocking { getApplicationContext()!! }
         val installed = ctx.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
                 .filter { it.packageName != ctx.packageName }
         val a = installed.map {
@@ -59,15 +57,12 @@ class FiltersImpl(
 fun newFiltersModule(ctx: Context): Kodein.Module {
     return Kodein.Module {
         bind<Filters>() with singleton {
-            FiltersImpl(kctx = with("gscore").instance(10), xx = lazy,
-                    ctx = ctx)
+            FiltersImpl(kctx = with("gscore").instance(10))
         }
         bind<IHostlineProcessor>() with singleton { DefaultHostlineProcessor() }
         bind<AppInstallReceiver>() with singleton { AppInstallReceiver() }
         onReady {
             val s: Filters = instance()
-            val t: Tunnel = instance()
-            val j: Journal = instance()
             val m: tunnel.Main = instance()
 
             // Compile filters every time they change

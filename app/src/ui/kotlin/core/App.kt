@@ -3,12 +3,12 @@ package core
 import android.content.Context
 import com.github.salomonbrys.kodein.*
 import filter.DefaultSourceProvider
-import gs.environment.Environment
 import gs.environment.Worker
 import gs.presentation.ViewBinderHolder
 import gs.property.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
 import org.blokada.R
 
@@ -21,11 +21,12 @@ abstract class UiState {
 }
 
 class AUiState(
-        private val kctx: Worker,
-        private val xx: Environment
+        private val kctx: Worker
 ) : UiState() {
 
-    private val ctx: Context by xx.instance()
+    private val ctx by lazy {
+        runBlocking { getApplicationContext()!! }
+    }
 
     override val seenWelcome = newPersistedProperty(kctx, APrefsPersistence(ctx, "seenWelcome"),
             { false }
@@ -49,9 +50,9 @@ fun newAppModule(ctx: Context): Kodein.Module {
         bind<EnabledStateActor>() with singleton {
             EnabledStateActor(this.lazy)
         }
-        bind<UiState>() with singleton { AUiState(kctx = with("gscore").instance(10), xx = lazy) }
+        bind<UiState>() with singleton { AUiState(kctx = with("gscore").instance(10)) }
         bind<DefaultSourceProvider>() with singleton {
-            DefaultSourceProvider(ctx = instance(), j = instance(), processor = instance(),
+            DefaultSourceProvider(ctx = ctx, processor = instance(),
                     repo = instance(), f = instance())
         }
         bind<g11n.Main>() with singleton {
@@ -75,7 +76,6 @@ fun newAppModule(ctx: Context): Kodein.Module {
         }
 
         onReady {
-            val d: Device = instance()
             val repo: Repo = instance()
             val t: tunnel.Main = instance()
             val g11: g11n.Main = instance()
@@ -97,12 +97,12 @@ fun newAppModule(ctx: Context): Kodein.Module {
 
             // Since having filters is really important, poke whenever we get connectivity
             var wasConnected = false
-            d.connected.doWhenChanged().then {
-                if (d.connected() && !wasConnected) {
+            device.connected.doWhenChanged().then {
+                if (device.connected() && !wasConnected) {
                     repo.content.refresh()
                     t.sync(ctx.ktx("connected:sync"))
                 }
-                wasConnected = d.connected()
+                wasConnected = device.connected()
             }
 
             val version: Version = instance()

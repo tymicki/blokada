@@ -9,7 +9,7 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import buildtype.newBuildTypeModule
+import buildtype.initBuildType
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.KodeinAware
 import com.github.salomonbrys.kodein.instance
@@ -17,10 +17,12 @@ import com.github.salomonbrys.kodein.lazy
 import flavor.newFlavorModule
 import gs.environment.inject
 import gs.environment.newGscoreModule
-import gs.property.Device
 import gs.property.IWhen
+import gs.property.device
 import gs.property.newDeviceModule
 import io.paperdb.Paper
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import tunnel.blokadaUserAgent
 import tunnel.newRestApiModule
@@ -56,7 +58,6 @@ class MainApplication: Application(), KodeinAware {
         import(newRestApiModule(this@MainApplication))
         import(newAppModule(this@MainApplication), allowOverride = true)
         import(newFlavorModule(this@MainApplication), allowOverride = true)
-        import(newBuildTypeModule(this@MainApplication), allowOverride = true)
     }
 
     override fun onCreate() {
@@ -66,6 +67,10 @@ class MainApplication: Application(), KodeinAware {
         repeat(10) { v("BLOKADA", "*".repeat(it * 2)) }
         v(blokadaUserAgent(this))
         setRestartAppOnCrash()
+
+        GlobalScope.launch {
+            initBuildType()
+        }
     }
 
     override fun attachBaseContext(base: Context) {
@@ -93,14 +98,13 @@ class BootReceiver : BroadcastReceiver() {
 
 class BootJobService : JobService() {
 
-    private val d by lazy { inject().instance<Device>() }
     private val t by lazy { inject().instance<Tunnel>() }
     private val ktx by lazy { "boot:service".ktx() }
 
     override fun onStartJob(params: JobParameters?): Boolean {
         v("boot job start")
-        d.connected.refresh()
-        d.onWifi.refresh()
+        device.connected.refresh()
+        device.onWifi.refresh()
         return scheduleJobFinish(params)
     }
 

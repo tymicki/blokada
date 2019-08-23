@@ -2,9 +2,11 @@ package core
 
 import android.app.Activity
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
+import gs.environment.Worker
+import gs.environment.newSingleThreadedWorker
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.withContext
 import org.blokada.R
 import java.io.BufferedReader
@@ -94,7 +96,7 @@ fun createStream(con: URLConnection) = {
     }
 }()
 
-fun openUrl(url: URL, timeoutMillis: Int) = {
+fun openUrl(url: URL, timeoutMillis: Int): () -> HttpURLConnection = {
     val c = url.openConnection() as HttpURLConnection
     c.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.155 Safari/537.36");
     c.setRequestProperty("Accept-Encoding", "gzip")
@@ -108,39 +110,47 @@ fun openFile(file: File): InputStream {
     return file.inputStream()
 }
 
+private val ctx = newSingleThreadContext("context-register")
 private var appContext: WeakReference<Context?> = WeakReference(null)
 private var activityContext: WeakReference<Activity?> = WeakReference(null)
 
-suspend fun getActivityContext() = withContext(Dispatchers.Main.immediate) {
+suspend fun getActivityContext() = withContext(ctx) {
     activityContext.get() as Context
 }
 
-suspend fun getActivity() = withContext(Dispatchers.Main.immediate) {
+suspend fun getActivity() = withContext(ctx) {
     activityContext.get()
 }
 
-suspend fun getActivityParentView() = withContext(Dispatchers.Main.immediate) {
+suspend fun getActivityParentView() = withContext(ctx) {
     activityContext.get()?.findViewById<android.view.View>(R.id.root)
 }
 
-suspend fun getApplicationContext() = withContext(Dispatchers.Main.immediate) {
+suspend fun getApplicationContext() = withContext(ctx) {
     appContext.get()
 }
 
 suspend fun Context.setApplicationContext() {
-    withContext(Dispatchers.Main.immediate) {
+    withContext(ctx) {
         appContext = WeakReference(this@setApplicationContext)
     }
 }
 
 suspend fun Activity.setActivityContext() {
-    v("setting activity context", this@setActivityContext)
-    withContext(Dispatchers.Main.immediate) {
+    withContext(ctx) {
+        v("setting activity context", this@setActivityContext)
         activityContext = WeakReference(this@setActivityContext)
     }
 }
 
-suspend fun unsetActivity() = withContext(Dispatchers.Main.immediate) {
+suspend fun unsetActivity() = withContext(ctx) {
     v("unsetting activity context")
     activityContext = WeakReference(null)
 }
+
+private val workers = mutableMapOf<String, Worker>()
+@Synchronized fun workerFor(name: String) : Worker {
+    if (!workers.containsKey(name)) workers[name] = newSingleThreadedWorker(name)
+    return workers[name]!!
+}
+

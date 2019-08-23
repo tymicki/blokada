@@ -4,79 +4,61 @@ import android.app.Application
 import android.content.Context
 import android.text.format.DateUtils
 import android.util.Log
-import com.github.salomonbrys.kodein.*
-import core.Tunnel
-import gs.environment.Environment
-import gs.environment.Journal
-import gs.environment.Time
-import gs.environment.Worker
-import gs.property.BasicPersistence
-import gs.property.Device
-import gs.property.IProperty
-import gs.property.newPersistedProperty
+import core.getApplicationContext
+import core.workerFor
+import gs.environment.time
+import gs.property.device
+import gs.property.newPersistedProperty2
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.blokada.R
 
-fun newBuildTypeModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
-        bind<Journal>(overrides = true) with singleton {
-            OfficialJournal(ctx = ctx)
-        }
-        bind<Events>() with singleton {
-            EventsImpl(kctx = with("gscore").instance(), xx = lazy)
-        }
-        onReady {
-            val e: Events = instance()
-            val d: Device = instance()
+private val kctx = workerFor("gscore")
 
-            // I assume this will happen at least once a day
-            d.screenOn.doWhenChanged().then {
-                if (d.reports()) {
-                    e.lastDailyMillis.refresh()
-                    e.lastActiveMillis.refresh()
-                }
-            }
-
-            // This will happen when loading the app to memory
-            if (d.reports()) {
-                e.lastDailyMillis.refresh()
-                e.lastActiveMillis.refresh()
-            }
-        }
+private val j by lazy {
+    runBlocking {
+        Journal(getApplicationContext()!!)
     }
 }
 
-abstract class Events {
-    abstract val lastDailyMillis: IProperty<Long>
-    abstract val lastActiveMillis: IProperty<Long>
+private val lastDailyMillis = newPersistedProperty2(kctx, "daily", { 0L },
+        refresh = {
+            j.event("daily")
+            time.now()
+        },
+        shouldRefresh = { !DateUtils.isToday(it) })
+
+private val lastActiveMillis = newPersistedProperty2(kctx, "daily-active", { 0L },
+        refresh = {
+            // TODO: once tunnel is avaibale
+//            if (t.active()) {
+//                j.event("daily-active")
+//                time.now()
+//            } else it
+            it
+        },
+        shouldRefresh = { !DateUtils.isToday(it) })
+
+suspend fun initBuildType() = withContext(Dispatchers.Main.immediate) {
+    // I assume this will happen at least once a day
+    device.screenOn.doWhenChanged().then {
+        if (device.reports()) {
+            lastDailyMillis.refresh()
+            lastActiveMillis.refresh()
+        }
+    }
+
+    // This will happen when loading the app to memory
+    if (device.reports()) {
+        lastDailyMillis.refresh()
+        lastActiveMillis.refresh()
+    }
 }
 
-class EventsImpl(
-        private val kctx: Worker,
-        private val xx: Environment,
-        private val time: Time = xx().instance(),
-        private val j: Journal = xx().instance(),
-        private val t: Tunnel = xx().instance()
-) : Events() {
-    override val lastDailyMillis = newPersistedProperty(kctx, BasicPersistence(xx, "daily"), { 0L },
-            refresh = {
-                j.event("daily")
-                time.now()
-            },
-            shouldRefresh = { !DateUtils.isToday(it) })
-
-    override val lastActiveMillis = newPersistedProperty(kctx, BasicPersistence(xx, "daily-active"), { 0L },
-            refresh = {
-                if (t.active()) {
-                    j.event("daily-active")
-                    time.now()
-                } else it
-            },
-            shouldRefresh = { !DateUtils.isToday(it) })
-}
-
-class OfficialJournal(
+class Journal(
         private val ctx: Context
-) : Journal {
+) {
 
     private val amp by lazy {
         val a = JournalFactory.instance.initialize(ctx, ctx.getString(R.string.journal_key))
@@ -90,29 +72,11 @@ class OfficialJournal(
         a
     }
 
-    private var userId: String? = null
-    private val userProperties = mutableMapOf<String, String>()
-
-    override fun setUserId(id: String) {
-        userId = id
-    }
-
-    override fun setUserProperty(key: String, value: Any) {
-        userProperties.put(key, value.toString())
-    }
-
-    override fun event(vararg events: Any) {
+    fun event(vararg events: Any) {
         events.forEach { event ->
             amp.logEvent(event.toString())
             Log.i("blokada", "event: $event")
         }
-    }
-
-    override fun log(vararg errors: Any) {
-        errors.forEach { when(it) {
-            is Throwable -> Log.e("blokada", "------", it)
-            else -> Log.e("blokada", it.toString())
-        }}
     }
 
 }

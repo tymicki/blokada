@@ -3,10 +3,12 @@ package core
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.github.salomonbrys.kodein.*
 import com.github.salomonbrys.kodein.Kodein.Module
+import com.github.salomonbrys.kodein.bind
+import com.github.salomonbrys.kodein.instance
+import com.github.salomonbrys.kodein.singleton
+import com.github.salomonbrys.kodein.with
 import filter.DefaultSourceProvider
-import gs.environment.Environment
 import gs.environment.Worker
 import gs.obsolete.hasCompleted
 import gs.property.*
@@ -36,11 +38,12 @@ abstract class Tunnel {
 }
 
 class TunnelImpl(
-        kctx: Worker,
-        private val xx: Environment,
-        private val ctx: Context = xx().instance()
+        kctx: Worker
 ) : Tunnel() {
 
+    private val ctx by lazy {
+        runBlocking { getApplicationContext()!! }
+    }
 
     override val enabled = newPersistedProperty(kctx, APrefsPersistence(ctx, "enabled"),
             { false }
@@ -85,7 +88,7 @@ class TunnelImpl(
 
 fun newTunnelModule(ctx: Context): Module {
     return Module {
-        bind<Tunnel>() with singleton { TunnelImpl(kctx = with("gscore").instance(), xx = lazy) }
+        bind<Tunnel>() with singleton { TunnelImpl(kctx = with("gscore").instance()) }
         bind<IPermissionsAsker>() with singleton {
             object : IPermissionsAsker {
                 override fun askForPermissions() {
@@ -141,13 +144,10 @@ fun newTunnelModule(ctx: Context): Module {
         )  }
         onReady {
             val s: Tunnel = instance()
-            val d: Device = instance()
             val dns: Dns = instance()
             val pages: Pages = instance()
-            val device: Device = instance()
             val engine: tunnel.Main = instance()
             val perms: IPermissionsAsker = instance()
-            val watchdog: IWatchdog = instance()
             val retryKctx: Worker = with("retry").instance()
             val ktx = "tunnel:legacy".ktx()
             var restarts = 0
@@ -185,14 +185,14 @@ fun newTunnelModule(ctx: Context): Module {
                 val url = pages.filters().toExternalForm()
                 if (pages.filters().host != "localhost" && url != oldUrl) {
                     oldUrl = url
-                    engine.setUrl(ctx.ktx("filtersUrl:changed"), url, d.onWifi())
+                    engine.setUrl(ctx.ktx("filtersUrl:changed"), url, device.onWifi())
                 }
             }
 
             // React to user switching us off / on
             s.enabled.doWhenSet().then {
-                s.restart %= s.enabled() && (s.restart() || d.isWaiting())
-                s.active %= s.enabled() && !d.isWaiting()
+                s.restart %= s.enabled() && (s.restart() || device.isWaiting())
+                s.active %= s.enabled() && !device.isWaiting()
             }
 
             // React to device power saving blocking our tunnel
@@ -247,7 +247,7 @@ fun newTunnelModule(ctx: Context): Module {
             s.tunnelState.doWhenChanged().then {
                 if (s.tunnelState(TunnelState.ACTIVE)) {
                     // Make sure the tunnel is actually usable by checking connectivity
-                    if (d.screenOn()) watchdog.start()
+                    if (device.screenOn()) watchdog.start()
                     if (resetRetriesTask != null) Kovenant.cancel(resetRetriesTask!!, Exception())
 
                     // Reset retry counter in case we seem to be stable
@@ -270,7 +270,7 @@ fun newTunnelModule(ctx: Context): Module {
                     if (resetRetriesTask != null) Kovenant.cancel(resetRetriesTask!!, Exception())
 
                     // Monitor connectivity if disconnected, in case we can't relay on Android event
-                    if (s.enabled() && d.screenOn()) watchdog.start()
+                    if (s.enabled() && device.screenOn()) watchdog.start()
 
                     // Reset retry counter after a longer break since we never give up, never surrender
                     resetRetriesTask = task(retryKctx) {
@@ -301,20 +301,20 @@ fun newTunnelModule(ctx: Context): Module {
             }
 
             // Auto off in case of no connectivity, and auto on once connected
-            d.connected.doWhenChanged(withInit = true).then {
+            device.connected.doWhenChanged(withInit = true).then {
                 when {
-                    !d.connected() && s.active() -> {
+                    !device.connected() && s.active() -> {
                         v("no connectivity, deactivating")
                         s.restart %= true
                         s.active %= false
                     }
-                    d.connected() && s.restart() && !s.updating() && s.enabled() -> {
+                    device.connected() && s.restart() && !s.updating() && s.enabled() -> {
                         v("connectivity back, activating")
                         s.restart %= false
                         s.error %= false
                         s.active %= true
                     }
-                    d.connected() && s.error() && !s.updating() && !s.enabled() -> {
+                    device.connected() && s.error() && !s.updating() && !s.enabled() -> {
                         v("connectivity back, auto recover from error")
                         s.error %= false
                         s.enabled %= true
@@ -325,7 +325,7 @@ fun newTunnelModule(ctx: Context): Module {
             // Auto restart (eg. when reconfiguring the engine, or retrying)
             s.tunnelState.doWhen {
                 s.tunnelState(TunnelState.INACTIVE) && s.enabled() && s.restart() && s.updating(false)
-                        && !d.isWaiting() && s.retries() > 0
+                        && !device.isWaiting() && s.retries() > 0
             }.then {
                 v("tunnel auto restart")
                 s.restart %= false
@@ -333,37 +333,37 @@ fun newTunnelModule(ctx: Context): Module {
             }
 
             // Make sure watchdog is started and stopped as user wishes
-            d.watchdogOn.doWhenChanged().then { when {
-                d.watchdogOn() && s.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> {
+            device.watchdogOn.doWhenChanged().then { when {
+                device.watchdogOn() && s.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> {
                     // Flip the connected flag so we detect the change if now we're actually connected
-                    d.connected %= false
+                    device.connected %= false
                     watchdog.start()
                 }
-                d.watchdogOn(false) -> {
+                device.watchdogOn(false) -> {
                     watchdog.stop()
-                    d.connected.refresh()
-                    d.onWifi.refresh()
+                    device.connected.refresh()
+                    device.onWifi.refresh()
                 }
             }}
 
             // Monitor connectivity only when user is interacting with device
-            d.screenOn.doWhenChanged().then { when {
+            device.screenOn.doWhenChanged().then { when {
                 s.enabled(false) -> Unit
-                d.screenOn() && s.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> watchdog.start()
-                d.screenOn(false) -> watchdog.stop()
+                device.screenOn() && s.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> watchdog.start()
+                device.screenOn(false) -> watchdog.stop()
             }}
 
             s.startOnBoot {}
 
-            d.onWifi.doWhenChanged().then {
-                engine.reloadConfig(ctx.ktx("onWifi:changed"), d.onWifi())
+            device.onWifi.doWhenChanged().then {
+                engine.reloadConfig(ctx.ktx("onWifi:changed"), device.onWifi())
             }
 
             GlobalScope.async {
                 registerTunnelConfigEvent(ktx)
                 registerBlockaConfigEvent(ctx.ktx("blockaConfigInit"))
 
-                engine.reloadConfig(ctx.ktx("load:persistence:after:start"), d.onWifi())
+                engine.reloadConfig(ctx.ktx("load:persistence:after:start"), device.onWifi())
             }
         }
     }

@@ -11,13 +11,11 @@ import android.content.ServiceConnection
 import android.os.Binder
 import android.os.IBinder
 import com.github.salomonbrys.kodein.*
-import gs.environment.Environment
-import gs.environment.Journal
 import gs.environment.Worker
 import gs.environment.inject
 import gs.property.IProperty
 import gs.property.IWhen
-import gs.property.newPersistedProperty
+import gs.property.newPersistedProperty2
 import notification.createNotificationKeepAlive
 import org.blokada.R
 
@@ -27,28 +25,22 @@ abstract class KeepAlive {
 
 
 class KeepAliveImpl(
-        private val kctx: Worker,
-        private val xx: Environment,
-        private val ctx: Context = xx().instance()
+        private val kctx: Worker
 ) : KeepAlive() {
-    override val keepAlive = newPersistedProperty(kctx, APrefsPersistence(ctx, "keepAlive"),
-            { false }
-    )
+    override val keepAlive = newPersistedProperty2(kctx, "keepAlive", { false })
 }
 
 fun newKeepAliveModule(ctx: Context): Kodein.Module {
     return Kodein.Module {
         bind<KeepAlive>() with singleton {
-            KeepAliveImpl(kctx = with("gscore").instance(), xx = lazy)
+            KeepAliveImpl(kctx = with("gscore").instance())
         }
         onReady {
-            val ui: UiState = instance()
             val s: KeepAlive = instance()
             val t: Tunnel = instance()
 
             // Start / stop the keep alive service depending on the configuration flag
             val keepAliveNotificationUpdater = { dropped: Int ->
-                val ctx: Context = instance()
                 val nm: NotificationManager = instance()
                 val n = createNotificationKeepAlive(ctx = ctx, count = dropped,
                         last = t.tunnelRecentDropped().lastOrNull() ?:
@@ -123,10 +115,9 @@ class KeepAliveService : Service() {
     }
 
     class KeepAliveBinder : Binder()
-    private val j by lazy { inject().instance<Journal>() }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        j.log("KeepAliveService: start command")
+        core.v("KeepAliveService: start command")
         return Service.START_STICKY
     }
 
@@ -141,7 +132,7 @@ class KeepAliveService : Service() {
             val n = createNotificationKeepAlive(this, count, last)
             startForeground(3, n)
 
-            j.log("KeepAliveService: bound")
+            core.v("KeepAliveService: bound")
             return binder
         }
         return null
@@ -150,13 +141,13 @@ class KeepAliveService : Service() {
     override fun onUnbind(intent: Intent?): Boolean {
         binder = null
         stopForeground(true)
-        j.log("KeepAliveService: unbind")
+        core.v("KeepAliveService: unbind")
         return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        j.log("KeepAliveService: destroy")
+        core.v("KeepAliveService: destroy")
         // This is probably pointless
         if (binder != null) sendBroadcast(Intent("org.blokada.keepAlive"))
     }

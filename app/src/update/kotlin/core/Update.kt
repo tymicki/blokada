@@ -2,13 +2,10 @@ package core
 
 import android.content.Context
 import com.github.salomonbrys.kodein.*
-import gs.environment.Environment
-import gs.environment.Journal
-import gs.environment.Time
 import gs.environment.Worker
 import gs.property.IProperty
 import gs.property.Repo
-import gs.property.newPersistedProperty
+import gs.property.newPersistedProperty2
 import notification.displayNotificationForUpdate
 import org.blokada.BuildConfig
 import update.AUpdateDownloader
@@ -19,22 +16,19 @@ abstract class Update {
 }
 
 class UpdateImpl (
-        w: Worker,
-        xx: Environment,
-        val ctx: Context = xx().instance()
+        w: Worker
 ) : Update() {
 
-    override val lastSeenUpdateMillis = newPersistedProperty(w, APrefsPersistence(ctx, "lastSeenUpdate"),
-            { 0L })
+    override val lastSeenUpdateMillis = newPersistedProperty2(w, "lastSeenUpdate", { 0L })
 }
 
 fun newUpdateModule(ctx: Context): Kodein.Module {
     return Kodein.Module {
         bind<Update>() with singleton {
-            UpdateImpl(w = with("gscore").instance(), xx = lazy)
+            UpdateImpl(w = with("gscore").instance())
         }
         bind<UpdateCoordinator>() with singleton {
-            UpdateCoordinator(xx = lazy, downloader = AUpdateDownloader(ctx = instance()))
+            UpdateCoordinator(xx = lazy, downloader = AUpdateDownloader(ctx = ctx))
         }
         onReady {
             val s: Filters = instance()
@@ -61,12 +55,10 @@ fun newUpdateModule(ctx: Context): Kodein.Module {
                 val content = repo.content()
                 val last = u.lastSeenUpdateMillis()
                 val cooldown = 86400 * 1000L
-                val env: Time = instance()
-                val j: Journal = instance()
 
-                if (isUpdate(ctx, content.newestVersionCode) && canShowNotification(last, env, cooldown)) {
+                if (isUpdate(ctx, content.newestVersionCode) && canShowNotification(last, cooldown)) {
                     displayNotificationForUpdate(ctx, content.newestVersionName)
-                    u.lastSeenUpdateMillis %= env.now()
+                    u.lastSeenUpdateMillis %= gs.environment.time.now()
                 }
             }
 
@@ -75,8 +67,8 @@ fun newUpdateModule(ctx: Context): Kodein.Module {
     }
 }
 
-internal fun canShowNotification(last: Long, env: Time, cooldownMillis: Long): Boolean {
-    return last + cooldownMillis < env.now()
+internal fun canShowNotification(last: Long, cooldownMillis: Long): Boolean {
+    return last + cooldownMillis < gs.environment.time.now()
 }
 
 fun isUpdate(ctx: Context, code: Int): Boolean {
