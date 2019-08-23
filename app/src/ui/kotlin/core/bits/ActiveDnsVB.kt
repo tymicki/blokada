@@ -7,7 +7,8 @@ import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import gs.property.I18n
 import gs.property.IWhen
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.showSnack
 import java.nio.charset.Charset
@@ -64,7 +65,7 @@ class ActiveDnsVB(
             onSwitch { enabled ->
                 when {
                     enabled && !dns.hasCustomDnsSelected(checkEnabled = false) -> {
-                        runBlocking { showSnack(R.string.menu_dns_select.res()) }
+                        GlobalScope.launch { showSnack(R.string.menu_dns_select.res()) }
                         core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
                         switch(false)
                     }
@@ -148,7 +149,7 @@ class MenuActiveDnsVB(
             onSwitch { enabled ->
                 when {
                     enabled && !dns.hasCustomDnsSelected(checkEnabled = false) -> {
-                        runBlocking { showSnack(R.string.menu_dns_select.res()) }
+                        GlobalScope.launch { showSnack(R.string.menu_dns_select.res()) }
                         core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
                         switch(false)
                     }

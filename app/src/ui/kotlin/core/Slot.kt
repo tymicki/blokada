@@ -16,7 +16,8 @@ import com.ramotion.foldingcell.FoldingCell
 import gs.presentation.LayoutViewBinder
 import gs.presentation.doAfter
 import gs.property.I18n
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.showSnack
 import java.util.*
@@ -198,7 +199,7 @@ class SlotView(
     }
 
     val ACTION_NONE = {
-        runBlocking { showSnack(R.string.slot_action_none) }
+        GlobalScope.launch { showSnack(R.string.slot_action_none) }
         Unit
     }
 

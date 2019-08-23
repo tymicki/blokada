@@ -7,7 +7,8 @@ import core.AndroidKontext
 import core.BitVB
 import core.BitView
 import core.res
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -41,7 +42,7 @@ class CopyAccountVB(
                 val clipboardManager = ktx.ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clipData = ClipData.newPlainText("account-id", cfg.accountId)
                 clipboardManager.primaryClip = clipData
-                runBlocking { showSnack(R.string.slot_account_action_copied) }
+                GlobalScope.launch { showSnack(R.string.slot_account_action_copied) }
             }
         }
         Unit

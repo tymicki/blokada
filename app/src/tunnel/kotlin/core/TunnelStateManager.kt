@@ -1,6 +1,8 @@
 package core
 
 import com.github.salomonbrys.kodein.instance
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
@@ -107,12 +109,12 @@ class TunnelStateManager(
                 true
             }
             latest.activeUntil.before(Date()) -> {
-                runBlocking { showSnack(R.string.menu_vpn_activate_account.res()) }
+                GlobalScope.launch { showSnack(R.string.menu_vpn_activate_account.res()) }
                 core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }
             !latest.hasGateway() -> {
-                runBlocking { showSnack(R.string.menu_vpn_select_gateway.res()) }
+                GlobalScope.launch { showSnack(R.string.menu_vpn_select_gateway.res()) }
                 core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }

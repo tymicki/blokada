@@ -12,6 +12,8 @@ import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import com.github.salomonbrys.kodein.instance
 import gs.presentation.ViewBinderHolder
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.tunnelPermissionResult
@@ -42,7 +44,7 @@ class PanelActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        runBlocking { modalManager.closeModal() }
+        GlobalScope.launch { modalManager.closeModal() }
     }
 
     override fun onBackPressed() {

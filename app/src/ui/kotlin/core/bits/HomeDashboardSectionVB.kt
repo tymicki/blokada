@@ -9,7 +9,8 @@ import gs.presentation.ListViewBinder
 import gs.presentation.NamedViewBinder
 import gs.presentation.ViewBinder
 import gs.property.Version
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.BuildConfig
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
@@ -234,7 +235,7 @@ fun createOneTimeBytes(ktx: AndroidKontext) = mapOf(
                 description = R.string.slot_updated_desc.res(),
                 onTap = { ktx ->
                     val pages: Pages = ktx.di().instance()
-                    runBlocking { modalManager.openModal() }
+                    GlobalScope.launch { modalManager.openModal() }
                     ktx.ctx.startActivity(Intent(ktx.ctx, WebViewActivity::class.java).apply {
                         putExtra(WebViewActivity.EXTRA_URL, pages.updated().toExternalForm())
                     })

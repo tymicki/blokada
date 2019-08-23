@@ -8,7 +8,8 @@ import core.bits.menu.MenuItemVB
 import core.bits.menu.MenuItemsVB
 import core.bits.menu.SimpleMenuItemVB
 import gs.presentation.NamedViewBinder
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 
 private fun createMenuVpn(ktx: AndroidKontext): NamedViewBinder {
@@ -56,7 +57,7 @@ fun createWhyVpnMenuItem(ktx: AndroidKontext): NamedViewBinder {
             label = R.string.menu_vpn_intro_button.res(),
             icon = R.drawable.ic_help_outline.res(),
             action = {
-                runBlocking { modalManager.openModal() }
+                GlobalScope.launch { modalManager.openModal() }
                 ktx.ctx.startActivity(Intent(ktx.ctx, WebViewActivity::class.java).apply {
                     putExtra(WebViewActivity.EXTRA_URL, whyPage().toExternalForm())
                 })

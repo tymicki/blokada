@@ -12,7 +12,7 @@ import gs.property.newProperty
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -37,7 +37,7 @@ class SubscriptionActivity : Activity() {
                 javascript = true, forceEmbedded = true, big = true,
                 onLoadSpecificUrl = "app.blokada.org/#/success" to {
                     this@SubscriptionActivity.finish()
-                    runBlocking { showSnack(R.string.subscription_success) }
+                    GlobalScope.launch { showSnack(R.string.subscription_success) }
                     Unit
                 })
     }
@@ -62,7 +62,7 @@ class SubscriptionActivity : Activity() {
         view?.run { dash.detach(this) }
         container.removeAllViews()
         subscriptionUrl.cancel(listener)
-        runBlocking { modalManager.closeModal() }
+        GlobalScope.launch { modalManager.closeModal() }
     }
 
     override fun onStart() {

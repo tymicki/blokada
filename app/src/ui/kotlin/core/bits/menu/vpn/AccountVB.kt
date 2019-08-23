@@ -5,7 +5,8 @@ import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.pretty
 import gs.property.I18n
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -21,7 +22,7 @@ class AccountVB(
         view.alternative(true)
         view.icon(R.drawable.ic_account_circle_black_24dp.res())
         view.onTap {
-            runBlocking { modal.openModal() }
+            GlobalScope.launch { modal.openModal() }
             ktx.ctx.startActivity(Intent(ktx.ctx, SubscriptionActivity::class.java))
         }
         update(null)

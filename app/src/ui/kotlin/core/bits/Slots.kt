@@ -13,6 +13,7 @@ import filter.hostnameRegex
 import gs.property.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.*
@@ -115,7 +116,7 @@ class DomainForwarderVB(
                     )
                     tunnelManager.putFilter(ktx, f)
                     view.fold()
-                    runBlocking { showSnack(R.string.panel_domain_blocked_toast) }
+                    GlobalScope.launch { showSnack(R.string.panel_domain_blocked_toast) }
                 }
                 //action2 = Slot.Action(i18n.getString(R.string.slot_action_facts), view.ACTION_NONE)
         )
@@ -152,7 +153,7 @@ class DomainBlockedVB(
                     )
                     tunnelManager.putFilter(ktx, f)
                     view.fold()
-                    runBlocking { showSnack(R.string.panel_domain_forwarded_toast) }
+                    GlobalScope.launch { showSnack(R.string.panel_domain_forwarded_toast) }
                 }
                 //action2 = Slot.Action(i18n.getString(R.string.slot_action_facts), view.ACTION_NONE)
         )
@@ -221,7 +222,7 @@ class DownloadListsVB(
                 description = i18n.getString(R.string.tunnel_config_refetch_now_description),
                 icon = ctx.getDrawable(R.drawable.ic_download),
                 action1 = Slot.Action(i18n.getString(R.string.tunnel_config_refetch_now)) {
-                    runBlocking { showSnack(R.string.tunnel_config_refetch_toast) }
+                    GlobalScope.launch { showSnack(R.string.tunnel_config_refetch_toast) }
                     filters.invalidateFilters(ktx)
                 }
         )
@@ -338,7 +339,7 @@ class NewFilterVB(
         view.type = Slot.Type.NEW
         view.content = Slot.Content(i18n.getString(nameResId))
         view.onTap = {
-            runBlocking { modal.openModal() }
+            GlobalScope.launch { modal.openModal() }
             ctx.startActivity(Intent(ctx, StepActivity::class.java).apply {
                 putExtra(StepActivity.EXTRA_WHITELIST, whitelist)
             })
@@ -488,7 +489,7 @@ class SearchBarVB(
         val onSearch: (String) -> Unit,
         private val modal: ModalManager = modalManager
 ) : SlotVB(onTap = {
-    runBlocking { modal.openModal() }
+    GlobalScope.launch { modal.openModal() }
     ctx.startActivity(Intent(ctx, SearchActivity::class.java))
     SearchActivity.setCallback { s ->
         onSearch(s)
@@ -628,7 +629,7 @@ class AppVB(
 
 class AddDnsVB(private val ktx: AndroidKontext,
                private val modal: ModalManager = modalManager): SlotVB({
-    runBlocking { modal.openModal() }
+    GlobalScope.launch { modal.openModal() }
     ktx.ctx.startActivity(Intent(ktx.ctx, AddDnsActivity::class.java))}){
     override fun attach(view: SlotView) {
         view.content = Slot.Content(ktx.ctx.resources.getString(R.string.dns_custom_add_slot))
@@ -677,7 +678,7 @@ class DnsChoiceVB(
                     onTap(view)
                     Handler {
                         if (item.id == "default") {
-                            runBlocking { showSnack(R.string.menu_dns_remove_default) }
+                            GlobalScope.launch { showSnack(R.string.menu_dns_remove_default) }
                         } else {
                             if (item.active) {
                                 dns.choices().firstOrNull()?.active = true
@@ -919,14 +920,14 @@ class DnsListControlVB(
                 label = i18n.getString(R.string.slot_dns_control_title),
                 description = i18n.getString(R.string.slot_dns_control_description),
                 icon = ctx.getDrawable(R.drawable.ic_reload),
-                action1 = Slot.Action(i18n.getString(R.string.slot_action_refresh), {
-                    runBlocking { showSnack(R.string.slot_action_refresh_toast) }
+                action1 = Slot.Action(i18n.getString(R.string.slot_action_refresh)) {
                     dns.choices.refresh(force = true)
-                }),
-                action2 = Slot.Action(i18n.getString(R.string.slot_action_restore), {
+                    GlobalScope.launch { showSnack(R.string.slot_action_refresh_toast) }
+                },
+                action2 = Slot.Action(i18n.getString(R.string.slot_action_restore)) {
                     dns.choices %= emptyList()
                     dns.choices.refresh()
-                })
+                }
         )
     }
 
@@ -950,7 +951,7 @@ class FiltersListControlVB(
                 description = i18n.getString(R.string.slot_filters_description),
                 icon = ctx.getDrawable(R.drawable.ic_reload),
                 action1 = Slot.Action(i18n.getString(R.string.slot_action_refresh)) {
-                    runBlocking { showSnack(R.string.slot_action_refresh_toast) }
+                    GlobalScope.launch { showSnack(R.string.slot_action_refresh_toast) }
                     val ktx = ctx.ktx("quickActions:refresh")
                     filters.apps.refresh(force = true)
                     tunnel.invalidateFilters(ktx)
@@ -1055,7 +1056,7 @@ class UpdateVB(
                         description = i18n.getString(R.string.update_notification_text, current.newestVersionName),
                         action1 = Slot.Action(i18n.getString(R.string.update_button)) {
                             if (clickCounter++ % 2 == 0) {
-                                runBlocking { showSnack(R.string.update_starting) }
+                                GlobalScope.launch { showSnack(R.string.update_starting) }
                                 updater.start(repo.content().downloadLinks)
                             } else {
                                 val intent = Intent(Intent.ACTION_VIEW)
@@ -1157,7 +1158,7 @@ class CleanupVB(
         view.label(R.string.home_cleanup.res())
         view.state(R.string.slot_cleanup_desc.res(), smallcap = false)
         view.onTap {
-            runBlocking { showSnack(R.string.welcome_cleanup_done) }
+            GlobalScope.launch { showSnack(R.string.welcome_cleanup_done) }
             val builds = getInstalledBuilds()
             for (b in builds.subList(1, builds.size).reversed()) {
                 uninstallPackage(b)

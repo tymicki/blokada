@@ -2,7 +2,8 @@ package core.bits.menu.vpn
 
 import android.content.Intent
 import core.*
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 
 class RestoreAccountVB(
@@ -15,7 +16,7 @@ class RestoreAccountVB(
         view.icon(R.drawable.ic_reload.res())
         view.label(R.string.slot_account_action_change_id.res())
         view.onTap {
-            runBlocking { modal.openModal() }
+            GlobalScope.launch { modal.openModal() }
             ktx.ctx.startActivity(Intent(ktx.ctx, RestoreAccountActivity::class.java))
         }
     }

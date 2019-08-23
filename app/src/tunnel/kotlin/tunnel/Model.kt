@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.text.format.DateUtils
+import android.view.ViewGroup
 import com.cloudflare.app.boringtun.BoringTunJNI
 import com.github.salomonbrys.kodein.instance
 import com.google.android.material.snackbar.Snackbar
@@ -242,7 +243,7 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
             e("check account api call error", t ?: "null")
             if (retry < MAX_RETRIES) checkAccountInfo(ktx, config, retry + 1, showError)
             else {
-                if (showError) runBlocking { showSnack(R.string.slot_account_name_api_error) }
+                if (showError) GlobalScope.launch { showSnack(R.string.slot_account_name_api_error) }
                 clearConnectedGateway(ktx, config, showError = false)
             }
         }
@@ -269,7 +270,7 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
                                 v("current account inactive")
                                 if (newCfg.blockaVpn) {
                                     displayAccountExpiredNotification(ktx.ctx)
-                                    runBlocking { showSnack(R.string.account_inactive) }
+                                    GlobalScope.launch { showSnack(R.string.account_inactive) }
                                 }
                                 clearConnectedGateway(ktx, newCfg, showError = false)
                             }
@@ -279,7 +280,7 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
                         e("check account api call response ${code()}")
                         if (retry < MAX_RETRIES) checkAccountInfo(ktx, config, retry + 1, showError)
                         else {
-                            if (showError) runBlocking { showSnack(R.string.slot_account_name_api_error) }
+                            if (showError) GlobalScope.launch { showSnack(R.string.slot_account_name_api_error) }
                             clearConnectedGateway(ktx, config, showError = false)
                         }
                         Unit
@@ -291,7 +292,8 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
 }
 
 suspend fun showSnack(msgResId: Int) = withContext(Dispatchers.Main.immediate) {
-    getActivityParentView()?.run {
+    val view = getActivity()?.findViewById<ViewGroup>(R.id.root)
+    view?.run {
         val snack = Snackbar.make(this, msgResId, 5000)
         snack.view.setBackgroundResource(R.drawable.snackbar)
         snack.view.setPadding(32, 32, 32, 32)
@@ -301,7 +303,8 @@ suspend fun showSnack(msgResId: Int) = withContext(Dispatchers.Main.immediate) {
 }
 
 suspend fun showSnack(resource: Resource) = withContext(Dispatchers.Main.immediate) {
-    getActivityParentView()?.run {
+    val view = getActivity()?.findViewById<ViewGroup>(R.id.root)
+    view?.run {
         if (resource.hasResId()) showSnack(resource.getResId())
         else {
             val snack = Snackbar.make(this, resource.getString(), 5000)
@@ -317,9 +320,9 @@ fun clearConnectedGateway(ktx: AndroidKontext, config: BlockaConfig, showError: 
     v("clearing connected gateway")
     if (config.blockaVpn && showError) {
         displayLeaseExpiredNotification(ktx.ctx)
-        runBlocking { showSnack(R.string.slot_lease_cant_connect) }
+        GlobalScope.launch { showSnack(R.string.slot_lease_cant_connect) }
     } else if (config.accountId.isBlank() && showError) {
-        runBlocking { showSnack(R.string.slot_account_cant_create) }
+        GlobalScope.launch { showSnack(R.string.slot_account_cant_create) }
     }
 
     deleteLease(ktx, config)
@@ -404,7 +407,7 @@ private fun checkLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0
                                     publicKey = it.publicKey,
                                     gatewayId = it.gatewayId
                             )) }
-                            if (obsoleteLeases.isNotEmpty()) runBlocking { showSnack(R.string.slot_lease_deleted_information) }
+                            if (obsoleteLeases.isNotEmpty()) GlobalScope.launch { showSnack(R.string.slot_lease_deleted_information) }
 
                             val lease = leases.firstOrNull {
                                 it.publicKey == config.publicKey && it.gatewayId == config.gatewayId

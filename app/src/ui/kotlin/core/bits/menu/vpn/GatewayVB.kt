@@ -4,7 +4,8 @@ import android.content.Intent
 import com.github.salomonbrys.kodein.instance
 import core.*
 import gs.property.I18n
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.*
 import java.util.*
@@ -46,11 +47,11 @@ class GatewayVB(
                         clearConnectedGateway(ktx, cfg, showError = false)
                     }
                     cfg.activeUntil.before(Date()) -> {
-                        runBlocking { modal.openModal() }
+                        GlobalScope.launch { modal.openModal() }
                         ktx.ctx.startActivity(Intent(ktx.ctx, SubscriptionActivity::class.java))
                     }
                     gateway.overloaded() -> {
-                        runBlocking { showSnack(R.string.slot_gateway_overloaded) }
+                        GlobalScope.launch { showSnack(R.string.slot_gateway_overloaded) }
                         // Resend event to re-select same gateway
                         core.emit(BLOCKA_CONFIG, cfg)
                     }

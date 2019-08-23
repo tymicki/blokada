@@ -8,7 +8,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.withContext
-import org.blokada.R
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
@@ -120,10 +119,6 @@ suspend fun getActivityContext() = withContext(ctx) {
 
 suspend fun getActivity() = withContext(ctx) {
     activityContext.get()
-}
-
-suspend fun getActivityParentView() = withContext(ctx) {
-    activityContext.get()?.findViewById<android.view.View>(R.id.root)
 }
 
 suspend fun getApplicationContext() = withContext(ctx) {
