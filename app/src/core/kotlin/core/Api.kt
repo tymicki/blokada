@@ -120,7 +120,7 @@ suspend fun getActivity() = withContext(Dispatchers.Main.immediate) {
 }
 
 suspend fun getActivityParentView() = withContext(Dispatchers.Main.immediate) {
-    activityContext.get()?.findViewById<android.view.View>(R.id.view)
+    activityContext.get()?.findViewById<android.view.View>(R.id.root)
 }
 
 suspend fun getApplicationContext() = withContext(Dispatchers.Main.immediate) {
@@ -134,11 +134,13 @@ suspend fun Context.setApplicationContext() {
 }
 
 suspend fun Activity.setActivityContext() {
+    v("setting activity context", this@setActivityContext)
     withContext(Dispatchers.Main.immediate) {
         activityContext = WeakReference(this@setActivityContext)
     }
 }
 
 suspend fun unsetActivity() = withContext(Dispatchers.Main.immediate) {
+    v("unsetting activity context")
     activityContext = WeakReference(null)
 }
