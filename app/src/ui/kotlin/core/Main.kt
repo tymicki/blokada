@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import tunnel.blokadaUserAgent
 import tunnel.initTunnel
-import tunnel.newRestApiModule
 
 
 /**
@@ -49,9 +48,6 @@ class MainApplication: Application(), KodeinAware {
         import(newWelcomeModule(this@MainApplication))
         import(newUpdateModule(this@MainApplication))
         import(newKeepAliveModule(this@MainApplication))
-        import(newBatteryModule(this@MainApplication))
-        import(newRestApiModule(this@MainApplication))
-        import(newAppModule(this@MainApplication), allowOverride = true)
     }
 
     override fun onCreate() {
@@ -68,6 +64,7 @@ class MainApplication: Application(), KodeinAware {
             initFilters()
             initDns()
             //update
+            initApp()
             initFlavor()
             initBuildType()
         }

@@ -15,9 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.salomonbrys.kodein.instance
 import gs.presentation.ViewBinder
-import gs.presentation.ViewBinderHolder
 import org.blokada.R
 
 
@@ -47,7 +45,6 @@ class VBListView(
     private var landscapeMode = false
 
     val ktx = ctx.ktx("VBListView")
-    val viewBinderHolder: ViewBinderHolder = ktx.di().instance()
 
     init {
         listView.addItemDecoration(VerticalSpace(context.dpToPx(6)))

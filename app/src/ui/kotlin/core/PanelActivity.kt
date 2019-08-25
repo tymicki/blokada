@@ -10,8 +10,6 @@ import android.util.DisplayMetrics
 import android.view.View
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
-import com.github.salomonbrys.kodein.instance
-import gs.presentation.ViewBinderHolder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -25,7 +23,6 @@ class PanelActivity : Activity() {
 
     private val ktx = ktx("PanelActivity")
     private val dashboardView by lazy { findViewById<DashboardView>(R.id.DashboardView) }
-    private val viewBinderHolder by lazy { ktx.di().instance<ViewBinderHolder>() }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)

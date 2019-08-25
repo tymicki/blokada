@@ -8,9 +8,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
-import com.github.salomonbrys.kodein.instance
 import gs.presentation.ViewBinder
-import gs.presentation.ViewBinderHolder
 
 class VBPagesView(
         ctx: Context,
@@ -19,7 +17,6 @@ class VBPagesView(
     var lock = false
 
     val ktx = ctx.ktx("VBPagesView")
-    val viewBinderHolder: ViewBinderHolder = ktx.di().instance()
 
     private val dashAdapter = object : PagerAdapter() {
         override fun instantiateItem(container: ViewGroup, position: Int): Any {

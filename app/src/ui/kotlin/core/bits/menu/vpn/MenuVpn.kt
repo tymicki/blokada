@@ -15,7 +15,7 @@ private fun createMenuVpn(ktx: AndroidKontext): NamedViewBinder {
     return MenuItemsVB(ktx,
             items = listOf(
                 LabelVB(ktx, label = R.string.menu_vpn_intro.res()),
-                VpnVB(ktx),
+                VpnVB(),
                 createWhyVpnMenuItem(ktx),
                 LabelVB(ktx, label = R.string.menu_vpn_account_label.res()),
                 createManageAccountMenuItem(ktx),

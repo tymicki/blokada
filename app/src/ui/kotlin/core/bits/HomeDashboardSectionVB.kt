@@ -32,7 +32,6 @@ class HomeDashboardSectionVB(
         val ktx: AndroidKontext,
         val ctx: Context = ktx.ctx,
         val welcome: Welcome = ktx.di().instance(),
-        val manager: TunnelStateManager = ktx.di().instance(),
         override val name: Resource = R.string.panel_section_home.res()
 ) : ListViewBinder(), NamedViewBinder {
 
@@ -71,9 +70,9 @@ class HomeDashboardSectionVB(
     }
 
     private var items = listOf<ViewBinder>(
-            MasterSwitchVB(ktx),
-            AdsBlockedVB(ktx),
-            VpnStatusVB(ktx),
+            MasterSwitchVB(),
+            AdsBlockedVB(),
+            VpnStatusVB(),
             ActiveDnsVB(ktx),
             ShareVB(ktx)
     )
@@ -124,10 +123,7 @@ class HomeDashboardSectionVB(
     }
 }
 
-class VpnVB(
-        private val ktx: AndroidKontext,
-        private val tunManager: TunnelStateManager = ktx.di().instance()
-) : BitVB() {
+class VpnVB() : BitVB() {
 
     override fun attach(view: BitView) {
         core.on(BLOCKA_CONFIG, configListener)
@@ -156,7 +152,7 @@ class VpnVB(
             }
             switch(config.blockaVpn)
             onSwitch { turnOn ->
-                tunManager.turnVpn(turnOn)
+                tunnelStateManager.turnVpn(turnOn)
             }
         }
         Unit

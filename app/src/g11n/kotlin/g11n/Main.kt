@@ -1,9 +1,6 @@
 package g11n
 
-import core.COMMON
-import core.Kontext
-import core.Result
-import core.Url
+import core.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -30,4 +27,16 @@ class Main(
     fun invalidateCache(ktx: Kontext) = GlobalScope.async(COMMON) {
         fetcher.invalidateCache(ktx)
     }
+}
+
+val g11Manager by lazy {
+    g11n.Main(
+            urls = { mapOf(
+                    pages.filtersStringsFallback().toExternalForm() to "filters",
+                    pages.filtersStrings().toExternalForm() to "filters"
+            ) },
+            doPutTranslation = { key, value ->
+                core.Result.of { i18n.set(key, value); true }
+            }
+    )
 }

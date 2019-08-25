@@ -2,14 +2,13 @@ package tunnel
 
 import android.content.Context
 import android.os.Build
-import com.github.salomonbrys.kodein.Kodein
-import com.github.salomonbrys.kodein.bind
-import com.github.salomonbrys.kodein.singleton
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.GsonBuilder
 import com.google.gson.annotations.SerializedName
 import core.ProductType
+import core.getApplicationContext
 import core.v
+import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.blokada.BuildConfig
@@ -104,34 +103,31 @@ fun blokadaUserAgent(ctx: Context) = "blokada/%s (android-%s %s %s %s %s-%s %s)"
         if (ctx.packageManager.hasSystemFeature("android.hardware.touchscreen")) "touch" else "donttouch"
 )
 
-fun newRestApiModule(ctx: Context): Kodein.Module {
-    return Kodein.Module(init = {
-        bind<RestApi>() with singleton {
-            val clientBuilder = OkHttpClient.Builder()
-                    .addNetworkInterceptor { chain ->
-                        val request = chain.request()
-                        chain.connection()?.socket()?.let {
-                            v("protecting okhttp socket")
-                            tunnelManager.protect(it)
-                        }
-                        chain.proceed(request)
-                    }
-                    .addInterceptor { chain ->
-                        val request = chain.request().newBuilder().header("User-Agent", blokadaUserAgent(ctx)).build()
-                        chain.proceed(request)
-                    }
-            if (!ProductType.isPublic()) clientBuilder.addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
-            val client = clientBuilder.build()
-            val gson = GsonBuilder()
-                    .setDateFormat(DateFormat.FULL)
-                    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES)
-                    .create()
-            val retrofit = Retrofit.Builder()
-                    .baseUrl("https://api.blocka.net")
-                    .addConverterFactory(GsonConverterFactory.create(gson))
-                    .client(client)
-                    .build()
-            retrofit.create(RestApi::class.java)
-        }
-    })
+val restApi by lazy {
+    val ctx = runBlocking { getApplicationContext()!! }
+    val clientBuilder = OkHttpClient.Builder()
+            .addNetworkInterceptor { chain ->
+                val request = chain.request()
+                chain.connection()?.socket()?.let {
+                    v("protecting okhttp socket")
+                    tunnelManager.protect(it)
+                }
+                chain.proceed(request)
+            }
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder().header("User-Agent", blokadaUserAgent(ctx)).build()
+                chain.proceed(request)
+            }
+    if (!ProductType.isPublic()) clientBuilder.addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+    val client = clientBuilder.build()
+    val gson = GsonBuilder()
+            .setDateFormat(DateFormat.FULL)
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES)
+            .create()
+    val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.blocka.net")
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .client(client)
+            .build()
+    retrofit.create(RestApi::class.java)
 }

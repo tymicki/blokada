@@ -1,25 +1,21 @@
 package core.bits
 
-import com.github.salomonbrys.kodein.instance
 import core.*
 import org.blokada.R
 
-class MasterSwitchVB(
-        private val ktx: AndroidKontext,
-        private val tunnelStatus: EnabledStateActor = ktx.di().instance()
-) : ByteVB() {
+class MasterSwitchVB() : ByteVB() {
 
     private var active = false
     private var activating = false
 
     override fun attach(view: ByteView) {
-        tunnelStatus.listeners.add(tunnelListener)
-        tunnelStatus.update()
+        enabledStateActor.listeners.add(tunnelListener)
+        enabledStateActor.update()
         update()
     }
 
     override fun detach(view: ByteView) {
-        tunnelStatus.listeners.remove(tunnelListener)
+        enabledStateActor.listeners.remove(tunnelListener)
     }
 
     private val update = {

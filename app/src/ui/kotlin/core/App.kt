@@ -1,14 +1,12 @@
 package core
 
 import android.content.Context
-import com.github.salomonbrys.kodein.*
+import g11n.g11Manager
 import g11n.i18n
 import gs.environment.Worker
 import gs.presentation.ViewBinderHolder
 import gs.property.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.blokada.BuildConfig
 import org.blokada.R
 import tunnel.tunnelManager
@@ -44,68 +42,46 @@ class AUiState(
     )
 }
 
-fun newAppModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
-        bind<EnabledStateActor>() with singleton {
-            EnabledStateActor(this.lazy)
-        }
-        bind<g11n.Main>() with singleton {
-            g11n.Main(
-                    urls = { mapOf(
-                            pages.filtersStringsFallback().toExternalForm() to "filters",
-                            pages.filtersStrings().toExternalForm() to "filters"
-                    ) },
-                    doPutTranslation = { key, value ->
-                        core.Result.of { i18n.set(key, value); true }
-                    }
-            )
-        }
-        bind<ViewBinderHolder>() with singleton {
-            ViewBinderHolder()
-        }
-        bind<TunnelStateManager>() with singleton {
-            TunnelStateManager(ctx.ktx("tunnelStateManager"))
-        }
+val viewBinderHolder = ViewBinderHolder()
+val enabledStateActor = EnabledStateActor()
+val tunnelStateManager = TunnelStateManager()
 
-        onReady {
-            val g11: g11n.Main = instance()
+suspend fun initApp() = withContext(Dispatchers.Main.immediate) {
+    val ctx = runBlocking { getApplicationContext()!! }
+    GlobalScope.launch {
+        g11Manager.load("translations:firstLoad".ktx())
 
-            GlobalScope.launch {
-                g11.load("translations:firstLoad".ktx())
-
-                val ktx = ctx.ktx("translations:sync:filters")
-                core.on(tunnel.Events.FILTERS_CHANGED) {
-                    g11.sync(ktx)
-                }
-            }
-
-            i18n.locale.doWhenChanged().then {
-                v("refresh filters on locale set")
-                g11.sync("translations:sync:locale".ktx())
-            }
-
-            // Since having filters is really important, poke whenever we get connectivity
-            var wasConnected = false
-            device.connected.doWhenChanged().then {
-                if (device.connected() && !wasConnected) {
-                    repo.content.refresh()
-                    tunnelManager.sync(ctx.ktx("connected:sync"))
-                }
-                wasConnected = device.connected()
-            }
-
-            version.appName %= ctx.getString(R.string.branding_app_name)
-
-            val p = BuildConfig.VERSION_NAME.split('.')
-            version.name %= if (p.size == 3) "%s.%s (%s)".format(p[0], p[1], p[2])
-            else BuildConfig.VERSION_NAME
-
-            version.name %= version.name() + " " + BuildConfig.BUILD_TYPE.capitalize()
-
-            // This will fetch repo unless already cached
-            repo.url %= "https://blokada.org/api/v4/${BuildConfig.FLAVOR}/${BuildConfig.BUILD_TYPE}/repo.txt"
+        val ktx = ctx.ktx("translations:sync:filters")
+        core.on(tunnel.Events.FILTERS_CHANGED) {
+            g11Manager.sync(ktx)
         }
     }
+
+    i18n.locale.doWhenChanged().then {
+        v("refresh filters on locale set")
+        g11Manager.sync("translations:sync:locale".ktx())
+    }
+
+    // Since having filters is really important, poke whenever we get connectivity
+    var wasConnected = false
+    device.connected.doWhenChanged().then {
+        if (device.connected() && !wasConnected) {
+            repo.content.refresh()
+            tunnelManager.sync(ctx.ktx("connected:sync"))
+        }
+        wasConnected = device.connected()
+    }
+
+    version.appName %= ctx.getString(R.string.branding_app_name)
+
+    val p = BuildConfig.VERSION_NAME.split('.')
+    version.name %= if (p.size == 3) "%s.%s (%s)".format(p[0], p[1], p[2])
+    else BuildConfig.VERSION_NAME
+
+    version.name %= version.name() + " " + BuildConfig.BUILD_TYPE.capitalize()
+
+    // This will fetch repo unless already cached
+    repo.url %= "https://blokada.org/api/v4/${BuildConfig.FLAVOR}/${BuildConfig.BUILD_TYPE}/repo.txt"
 }
 
 class APrefsPersistence<T>(

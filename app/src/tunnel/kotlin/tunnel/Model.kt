@@ -8,7 +8,6 @@ import android.content.Intent
 import android.text.format.DateUtils
 import android.view.ViewGroup
 import com.cloudflare.app.boringtun.BoringTunJNI
-import com.github.salomonbrys.kodein.instance
 import com.google.android.material.snackbar.Snackbar
 import core.*
 import gs.property.device
@@ -176,9 +175,7 @@ fun registerBlockaConfigEvent(ktx: AndroidKontext) {
 
 val MAX_RETRIES = 3
 private fun newAccount(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
-    val api: RestApi = ktx.di().instance()
-
-    api.newAccount().enqueue(object: retrofit2.Callback<RestModel.Account> {
+    restApi.newAccount().enqueue(object: retrofit2.Callback<RestModel.Account> {
         override fun onFailure(call: Call<RestModel.Account>?, t: Throwable?) {
             e("new account api call error", t ?: "null")
             if (retry < MAX_RETRIES) newAccount(ktx, config, retry + 1)
@@ -238,9 +235,8 @@ fun checkAccountInfo(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0, 
 
     v("check account api call")
 
-    val api: RestApi = ktx.di().instance()
     val accountId = if (config.restoredAccountId.isBlank()) config.accountId else config.restoredAccountId
-    api.getAccountInfo(accountId).enqueue(object: retrofit2.Callback<RestModel.Account> {
+    restApi.getAccountInfo(accountId).enqueue(object: retrofit2.Callback<RestModel.Account> {
         override fun onFailure(call: Call<RestModel.Account>?, t: Throwable?) {
             e("check account api call error", t ?: "null")
             if (retry < MAX_RETRIES) checkAccountInfo(ktx, config, retry + 1, showError)
@@ -339,8 +335,7 @@ fun clearConnectedGateway(ktx: AndroidKontext, config: BlockaConfig, showError: 
 
 fun checkGateways(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
     v("check gateway api call")
-    val api: RestApi = ktx.di().instance()
-    api.getGateways().enqueue(object: retrofit2.Callback<RestModel.Gateways> {
+    restApi.getGateways().enqueue(object: retrofit2.Callback<RestModel.Gateways> {
         override fun onFailure(call: Call<RestModel.Gateways>?, t: Throwable?) {
             e("gateways api call error", t ?: "null")
             if (retry < MAX_RETRIES) checkGateways(ktx, config, retry + 1)
@@ -390,8 +385,7 @@ fun checkLeaseIfNeeded(ktx: AndroidKontext) {
 
 private fun checkLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
     v("check lease api call")
-    val api: RestApi = ktx.di().instance()
-    api.getLeases(config.accountId).enqueue(object: retrofit2.Callback<RestModel.Leases> {
+    restApi.getLeases(config.accountId).enqueue(object: retrofit2.Callback<RestModel.Leases> {
         override fun onFailure(call: Call<RestModel.Leases>?, t: Throwable?) {
             e("leases api call error", t ?: "null")
             if (retry < MAX_RETRIES) checkLease(ktx, config, retry + 1)
@@ -444,10 +438,9 @@ private fun checkLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0
 
 private fun deleteLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
     if (config.gatewayId.isBlank()) return
-    val api: RestApi = ktx.di().instance()
 
     // TODO: rewrite it to sync version, or use callback on finish
-    api.deleteLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<Void> {
+    restApi.deleteLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<Void> {
 
         override fun onFailure(call: Call<Void>?, t: Throwable?) {
             e("delete lease api call error", t ?: "null")
@@ -463,9 +456,8 @@ private fun deleteLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 
 
 private fun newLease(ktx: AndroidKontext, config: BlockaConfig, retry: Int = 0) {
     v("new lease api call")
-    val api: RestApi = ktx.di().instance()
 
-    api.newLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<RestModel.Lease> {
+    restApi.newLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<RestModel.Lease> {
         override fun onFailure(call: Call<RestModel.Lease>?, t: Throwable?) {
             e("new lease api call error", t ?: "null")
             if (retry < MAX_RETRIES) newLease(ktx, config, retry + 1)

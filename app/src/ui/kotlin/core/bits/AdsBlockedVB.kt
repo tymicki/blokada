@@ -1,6 +1,5 @@
 package core.bits
 
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import g11n.i18n
@@ -9,11 +8,7 @@ import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
 
-class AdsBlockedVB(
-        private val ktx: AndroidKontext,
-        private val tunnelStatus: EnabledStateActor = ktx.di().instance(),
-        private val tunManager: TunnelStateManager = ktx.di().instance()
-) : ByteVB() {
+class AdsBlockedVB() : ByteVB() {
 
     private var droppedCountListener: IWhen? = null
     private var dropped: Int = 0
@@ -26,15 +21,15 @@ class AdsBlockedVB(
             dropped = tunnelState.tunnelDropCount()
             update()
         }
-        tunnelStatus.listeners.add(tunnelListener)
-        tunnelStatus.update()
+        enabledStateActor.listeners.add(tunnelListener)
+        enabledStateActor.update()
         core.on(BLOCKA_CONFIG, configListener)
         update()
     }
 
     override fun detach(view: ByteView) {
         tunnelState.tunnelDropCount.cancel(droppedCountListener)
-        tunnelStatus.listeners.remove(tunnelListener)
+        enabledStateActor.listeners.remove(tunnelListener)
         core.cancel(BLOCKA_CONFIG, configListener)
     }
 
@@ -48,10 +43,10 @@ class AdsBlockedVB(
                     switch(false)
                     arrow(null)
                     onTap {
-                        tunManager.turnAdblocking(true)
+                        tunnelStateManager.turnAdblocking(true)
                     }
                     onSwitch {
-                        tunManager.turnAdblocking(it)
+                        tunnelStateManager.turnAdblocking(it)
                     }
                 }
                 activating || !active -> {
@@ -72,7 +67,7 @@ class AdsBlockedVB(
                     onTap {
                     }
                     onSwitch {
-                        tunManager.turnAdblocking(true)
+                        tunnelStateManager.turnAdblocking(true)
                     }
                 }
                 !config.adblocking -> {
@@ -84,7 +79,7 @@ class AdsBlockedVB(
                     onTap {
                     }
                     onSwitch {
-                        tunManager.turnAdblocking(true)
+                        tunnelStateManager.turnAdblocking(true)
                     }
                 }
                 else -> {
@@ -99,7 +94,7 @@ class AdsBlockedVB(
                         core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_ads.res())
                     }
                     onSwitch {
-                        tunManager.turnAdblocking(it)
+                        tunnelStateManager.turnAdblocking(it)
                     }
                 }
            }

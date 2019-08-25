@@ -1,12 +1,9 @@
 package core
 
-import com.github.salomonbrys.kodein.LazyKodein
-
 /**
  * Translates internal MainState changes into higher level events used by topbar and fab.
  */
 class EnabledStateActor(
-        val di: LazyKodein,
         val listeners: MutableList<IEnabledStateActorListener> = mutableListOf()
 ) {
 

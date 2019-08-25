@@ -14,9 +14,7 @@ import java.util.*
  * state of adblocking, vpn, and DNS.
  */
 
-class TunnelStateManager(
-        private val ktx: AndroidKontext
-) {
+class TunnelStateManager() {
 
     private var latest: BlockaConfig = BlockaConfig()
         @Synchronized get
@@ -50,16 +48,17 @@ class TunnelStateManager(
                 }
                 else -> {
                     // Restore the state
+                    val ctx = runBlocking { getApplicationContext()!! }
                     val pause = runBlocking { TunnelPause().loadFromPersistence() }
 
                     val vpn = pause.vpn && latest.hasGateway() && latest.leaseActiveUntil.after(Date())
-                    var adblocking = pause.adblocking && Product.current(ktx.ctx) != Product.DNS
+                    var adblocking = pause.adblocking && Product.current(ctx) != Product.DNS
                     var dns = pause.dns
 
                     v("restoring features, is (vpn, adblocking, dns): $vpn $adblocking $dns")
 
                     if (!adblocking && !vpn && !dns) {
-                        if (Product.current(ktx.ctx) != Product.DNS) {
+                        if (Product.current(ctx) != Product.DNS) {
                             v("all features disabled, activating adblocking")
                             adblocking = true
                         } else {

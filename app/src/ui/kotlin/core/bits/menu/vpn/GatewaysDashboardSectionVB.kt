@@ -1,7 +1,6 @@
 package core.bits.menu.vpn
 
 import android.os.Handler
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.adblocking.SlotMutex
 import gs.presentation.ListViewBinder
@@ -13,12 +12,11 @@ import org.blokada.R
 import retrofit2.Call
 import retrofit2.Response
 import tunnel.MAX_RETRIES
-import tunnel.RestApi
 import tunnel.RestModel
+import tunnel.restApi
 
 class GatewaysDashboardSectionVB(
         val ktx: AndroidKontext,
-        val api: RestApi = ktx.di().instance(),
         override val name: Resource = R.string.menu_vpn_gateways.res()
 ) : ListViewBinder(), NamedViewBinder {
 
@@ -45,7 +43,7 @@ class GatewaysDashboardSectionVB(
     }
 
     private fun populateGateways(retry: Int = 0) {
-        api.getGateways().enqueue(object : retrofit2.Callback<RestModel.Gateways> {
+        restApi.getGateways().enqueue(object : retrofit2.Callback<RestModel.Gateways> {
             override fun onFailure(call: Call<RestModel.Gateways>?, t: Throwable?) {
                 e("gateways api call error", t ?: "null")
                 if (retry < MAX_RETRIES) populateGateways(retry + 1)

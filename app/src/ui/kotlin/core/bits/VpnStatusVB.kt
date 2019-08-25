@@ -1,6 +1,5 @@
 package core.bits
 
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import gs.property.IWhen
@@ -10,9 +9,6 @@ import tunnel.BlockaConfig
 import java.util.*
 
 class VpnStatusVB(
-        private val ktx: AndroidKontext,
-        private val tunnelStatus: EnabledStateActor = ktx.di().instance(),
-        private val tunManager: TunnelStateManager = ktx.di().instance()
 ) : ByteVB() {
 
     override fun attach(view: ByteView) {
@@ -20,13 +16,13 @@ class VpnStatusVB(
         stateListener = tunnelState.enabled.doOnUiWhenChanged().then {
             update()
         }
-        tunnelStatus.listeners.add(tunnelListener)
+        enabledStateActor.listeners.add(tunnelListener)
         update()
     }
 
     override fun detach(view: ByteView) {
         core.cancel(BLOCKA_CONFIG, configListener)
-        tunnelStatus.listeners.remove(tunnelListener)
+        enabledStateActor.listeners.remove(tunnelListener)
         tunnelState.enabled.cancel(stateListener)
     }
 
@@ -57,7 +53,7 @@ class VpnStatusVB(
                         core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
-                        if (!tunManager.turnVpn(it)) {
+                        if (!tunnelStateManager.turnVpn(it)) {
                             core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }
@@ -81,7 +77,7 @@ class VpnStatusVB(
                         core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
-                        if (!tunManager.turnVpn(it)) {
+                        if (!tunnelStateManager.turnVpn(it)) {
                             core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }
@@ -96,7 +92,7 @@ class VpnStatusVB(
                         core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
-                        if (!tunManager.turnVpn(it)) {
+                        if (!tunnelStateManager.turnVpn(it)) {
                             core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }
@@ -111,7 +107,7 @@ class VpnStatusVB(
                         core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                     }
                     onSwitch {
-                        if (!tunManager.turnVpn(it)) {
+                        if (!tunnelStateManager.turnVpn(it)) {
                             core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
                     }

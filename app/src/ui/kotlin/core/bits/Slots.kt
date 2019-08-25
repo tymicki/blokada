@@ -9,6 +9,7 @@ import android.widget.EditText
 import com.github.salomonbrys.kodein.instance
 import core.*
 import filter.hostnameRegex
+import g11n.g11Manager
 import g11n.i18n
 import gs.property.IWhen
 import gs.property.device
@@ -898,7 +899,6 @@ class DnsListControlVB(
 class FiltersListControlVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val translations: g11n.Main = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -914,15 +914,15 @@ class FiltersListControlVB(
                     val ktx = ctx.ktx("quickActions:refresh")
                     filtersManager.apps.refresh(force = true)
                     tunnelManager.invalidateFilters(ktx)
-                    translations.invalidateCache(ktx)
-                    translations.sync(ktx)
+                    g11Manager.invalidateCache(ktx)
+                    g11Manager.sync(ktx)
                 },
                 action2 = Slot.Action(i18n.getString(R.string.slot_action_restore)) {
                     val ktx = ctx.ktx("quickActions:restore")
                     filtersManager.apps.refresh(force = true)
                     tunnelManager.deleteAllFilters(ktx)
-                    translations.invalidateCache(ktx)
-                    translations.sync(ktx)
+                    g11Manager.invalidateCache(ktx)
+                    g11Manager.sync(ktx)
                 }
         )
     }

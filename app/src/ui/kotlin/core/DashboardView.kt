@@ -67,8 +67,6 @@ class DashboardView(
 
     private val ktx = ctx.ktx("dashboard")
 
-    private val tunnelEvents by lazy { ctx.inject().instance<EnabledStateActor>() }
-
     private var scrolledView: View? = null
 
     private var lastSubsectionTab = 0
@@ -269,7 +267,7 @@ class DashboardView(
             bg_packets.addToHistory(it)
         }
 
-        tunnelEvents.listeners.add(object : IEnabledStateActorListener {
+        enabledStateActor.listeners.add(object : IEnabledStateActorListener {
             override fun startActivating() {
                 bg_packets.setTunnelState(TunnelState.ACTIVATING)
                 bg_logo_icon.setColorFilter(resources.getColor(R.color.colorLogoWaiting))

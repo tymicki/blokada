@@ -3,8 +3,6 @@ package core
 import android.annotation.TargetApi
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import com.github.salomonbrys.kodein.instance
-import gs.environment.inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -16,7 +14,6 @@ import org.blokada.R
 @TargetApi(24)
 class QuickSettingsService : TileService(), IEnabledStateActorListener {
 
-    private val enabledStateActor by lazy { inject().instance<EnabledStateActor>() }
     private var waiting = false
 
     override fun onStartListening() {
