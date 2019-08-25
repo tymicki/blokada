@@ -5,6 +5,7 @@ import core.*
 import g11n.i18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.*
 import java.util.*
@@ -17,13 +18,14 @@ class GatewayVB(
 ) : SlotVB(onTap) {
 
     private fun update(cfg: BlockaConfig) {
+        val ctx = runBlocking { getActivity()!! }
         view?.apply {
             content = Slot.Content(
                     label = i18n.getString(
                             (if (gateway.overloaded()) R.string.slot_gateway_label_overloaded
                             else R.string.slot_gateway_label),
                             gateway.niceName()),
-                    icon = ktx.ctx.getDrawable(
+                    icon = ctx.getDrawable(
                             if (gateway.overloaded()) R.drawable.ic_shield_outline
                             else R.drawable.ic_verified
                     ),
@@ -42,11 +44,11 @@ class GatewayVB(
                 when {
                     gateway.publicKey == cfg.gatewayId -> {
                         // Turn off VPN feature
-                        clearConnectedGateway(ktx, cfg, showError = false)
+                        clearConnectedGateway(cfg, showError = false)
                     }
                     cfg.activeUntil.before(Date()) -> {
                         GlobalScope.launch { modal.openModal() }
-                        ktx.ctx.startActivity(Intent(ktx.ctx, SubscriptionActivity::class.java))
+                        ctx.startActivity(Intent(ctx, SubscriptionActivity::class.java))
                     }
                     gateway.overloaded() -> {
                         GlobalScope.launch { showSnack(R.string.slot_gateway_overloaded) }
@@ -54,7 +56,7 @@ class GatewayVB(
                         core.emit(BLOCKA_CONFIG, cfg)
                     }
                     else -> {
-                        checkGateways(ktx, cfg.copy(
+                        checkGateways(cfg.copy(
                                 gatewayId = gateway.publicKey,
                                 gatewayIp = gateway.ipv4,
                                 gatewayPort = gateway.port,

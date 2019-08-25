@@ -3,7 +3,6 @@ package tunnel
 import android.system.ErrnoException
 import android.system.OsConstants
 import com.github.michaelbull.result.mapError
-import core.Kontext
 import core.Result
 import core.w
 import org.pcap4j.packet.*
@@ -14,8 +13,8 @@ import java.net.*
 import java.util.*
 
 interface Proxy {
-    fun fromDevice(ktx: Kontext, packetBytes: ByteArray, length: Int)
-    fun toDevice(ktx: Kontext, response: ByteArray, length: Int, originEnvelope: Packet?)
+    fun fromDevice(packetBytes: ByteArray, length: Int)
+    fun toDevice(response: ByteArray, length: Int, originEnvelope: Packet?)
 }
 
 internal class DnsProxy(
@@ -28,7 +27,7 @@ internal class DnsProxy(
         private val doCreateSocket: () -> DatagramSocket = { DatagramSocket() }
 ) : Proxy {
 
-    override fun fromDevice(ktx: Kontext, packetBytes: ByteArray, length: Int) {
+    override fun fromDevice(packetBytes: ByteArray, length: Int) {
         val originEnvelope = try {
             IpSelector.newPacket(packetBytes, 0, packetBytes.size) as IpPacket
         } catch (e: Exception) {
@@ -46,7 +45,7 @@ internal class DnsProxy(
             // Some apps use empty UDP packets for something good
             val proxiedUdp = DatagramPacket(ByteArray(0), 0, 0, destination.getAddress(),
                     udp.header.dstPort.valueAsInt())
-            forward(ktx, proxiedUdp)
+            forward(proxiedUdp)
             return
         }
 
@@ -63,18 +62,18 @@ internal class DnsProxy(
         if (blockade.allowed(host) || !blockade.denied(host)) {
             val proxiedDns = DatagramPacket(udpRaw, 0, udpRaw.size, destination.getAddress(),
                     destination.getPort())
-            forward(ktx, proxiedDns, originEnvelope)
+            forward(proxiedDns, originEnvelope)
             core.emit(Events.REQUEST, Request(host))
         } else {
             dnsMessage.header.setFlag(Flags.QR.toInt())
             dnsMessage.header.rcode = Rcode.NOERROR
             dnsMessage.addRecord(denyResponse, Section.AUTHORITY)
-            toDevice(ktx, dnsMessage.toWire(), -1, originEnvelope)
+            toDevice(dnsMessage.toWire(), -1, originEnvelope)
             core.emit(Events.REQUEST, Request(host, blocked = true))
         }
     }
 
-    override fun toDevice(ktx: Kontext, response: ByteArray, length: Int, originEnvelope: Packet?) {
+    override fun toDevice(response: ByteArray, length: Int, originEnvelope: Packet?) {
         originEnvelope as IpPacket
         val udp = originEnvelope.payload as UdpPacket
         val udpResponse = UdpPacket.Builder(udp)
@@ -103,14 +102,14 @@ internal class DnsProxy(
                     .payloadBuilder(udpResponse)
                     .build()
         }
-        loopback(ktx, envelope.rawData)
+        loopback(envelope.rawData)
     }
 
-    private fun forward(ktx: Kontext, udp: DatagramPacket, originEnvelope: IpPacket? = null) {
+    private fun forward(udp: DatagramPacket, originEnvelope: IpPacket? = null) {
         val socket = doCreateSocket()
         Result.of {
             socket.send(udp)
-            if (originEnvelope != null) forwarder.add(ktx, socket, originEnvelope)
+            if (originEnvelope != null) forwarder.add(socket, originEnvelope)
             else Result.of { socket.close() }
         }.mapError { ex ->
             w("failed sending forwarded udp", ex.message ?: "")
@@ -120,7 +119,7 @@ internal class DnsProxy(
         }
     }
 
-    private fun loopback(ktx: Kontext, response: ByteArray) = loopback.add(Triple(response, 0, response.size))
+    private fun loopback(response: ByteArray) = loopback.add(Triple(response, 0, response.size))
 
     private fun resolveActualDestination(packet: IpPacket): InetSocketAddress {
         val servers = dnsServers

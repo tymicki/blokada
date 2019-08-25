@@ -1,6 +1,9 @@
 package g11n
 
-import core.*
+import core.COMMON
+import core.Result
+import core.Url
+import core.pages
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
@@ -15,17 +18,17 @@ class Main(
 
     private val fetcher = TranslationsFetcher(urls, doPutTranslation = doPutTranslation)
 
-    fun load(ktx: Kontext) = GlobalScope.async(COMMON) {
-        fetcher.load(ktx)
+    fun load() = GlobalScope.async(COMMON) {
+        fetcher.load()
     }
 
-    fun sync(ktx: Kontext) = GlobalScope.async(COMMON) {
-        fetcher.sync(ktx)
-        fetcher.save(ktx)
+    fun sync() = GlobalScope.async(COMMON) {
+        fetcher.sync()
+        fetcher.save()
     }
 
-    fun invalidateCache(ktx: Kontext) = GlobalScope.async(COMMON) {
-        fetcher.invalidateCache(ktx)
+    fun invalidateCache() = GlobalScope.async(COMMON) {
+        fetcher.invalidateCache()
     }
 }
 

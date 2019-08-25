@@ -38,8 +38,8 @@ class DnsDashboardSection(
                 view.add(AddDnsVB(ktx), 2)
                 view.add(LabelVB(ktx, label = R.string.menu_dns_recommended.res()), 3)
                 view.add(LabelVB(ktx, label = R.string.menu_manage.res()))
-                view.add(DnsListControlVB(ktx, onTap = defaultOnTap))
-                view.add(DnsFallbackVB(ktx, onTap = defaultOnTap))
+                view.add(DnsListControlVB(onTap = defaultOnTap))
+                view.add(DnsFallbackVB(onTap = defaultOnTap))
             }
         }
     }

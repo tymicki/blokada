@@ -111,7 +111,7 @@ class DomainForwarderVB(
                             active = true,
                             whitelist = false
                     )
-                    tunnelManager.putFilter(ktx, f)
+                    tunnelManager.putFilter(f)
                     view.fold()
                     GlobalScope.launch { showSnack(R.string.panel_domain_blocked_toast) }
                 }
@@ -146,7 +146,7 @@ class DomainBlockedVB(
                             active = true,
                             whitelist = true
                     )
-                    tunnelManager.putFilter(ktx, f)
+                    tunnelManager.putFilter(f)
                     view.fold()
                     GlobalScope.launch { showSnack(R.string.panel_domain_forwarded_toast) }
                 }
@@ -174,11 +174,11 @@ class FilterVB(
         view.content = Slot.Content(
                 label = name,
                 description = comment,
-                icon = ctx.getDrawable(R.drawable.ic_hexagon_multiple),
+                icon = view.context.getDrawable(R.drawable.ic_hexagon_multiple),
                 switched = filter.active,
                 detail = filter.source.source,
                 action2 = Slot.Action(i18n.getString(R.string.slot_action_remove)) {
-                    tunnelManager.removeFilter(ktx, filter)
+                    tunnelManager.removeFilter(filter)
                 },
                 action3 = Slot.Action(i18n.getString(R.string.slot_action_author)) {
                     try {
@@ -193,7 +193,7 @@ class FilterVB(
         )
 
         view.onSwitch = { on ->
-            tunnelManager.putFilter(ktx, filter.copy(active = on))
+            tunnelManager.putFilter(filter.copy(active = on))
         }
     }
 
@@ -211,10 +211,10 @@ class DownloadListsVB(
         view.content = Slot.Content(
                 label = i18n.getString(R.string.tunnel_config_refetch_now_title),
                 description = i18n.getString(R.string.tunnel_config_refetch_now_description),
-                icon = ctx.getDrawable(R.drawable.ic_download),
+                icon = view.context.getDrawable(R.drawable.ic_download),
                 action1 = Slot.Action(i18n.getString(R.string.tunnel_config_refetch_now)) {
                     GlobalScope.launch { showSnack(R.string.tunnel_config_refetch_toast) }
-                    tunnelManager.invalidateFilters(ktx)
+                    tunnelManager.invalidateFilters()
                 }
         )
     }
@@ -271,7 +271,7 @@ class ListDownloadFrequencyVB(
         view.content = Slot.Content(
                 label = i18n.getString(R.string.tunnel_config_refetch_frequency_title),
                 description = i18n.getString(R.string.tunnel_config_refetch_frequency_description),
-                icon = ctx.getDrawable(R.drawable.ic_timer),
+                icon = view.context.getDrawable(R.drawable.ic_timer),
                 values = listOf(
                         i18n.getString(R.string.tunnel_config_refetch_frequency_1),
                         i18n.getString(R.string.tunnel_config_refetch_frequency_2),
@@ -301,7 +301,7 @@ class DownloadOnWifiVB(
         view.content = Slot.Content(
                 label = i18n.getString(R.string.tunnel_config_wifi_only_title),
                 description = i18n.getString(R.string.tunnel_config_wifi_only_description),
-                icon = ctx.getDrawable(R.drawable.ic_wifi),
+                icon = view.context.getDrawable(R.drawable.ic_wifi),
                 switched = runBlocking { TunnelConfig().loadFromPersistence() }.wifiOnly
         )
         view.onSwitch = { switched ->
@@ -439,38 +439,13 @@ class EnterNameVB(
 
 }
 
-class HomeAppVB(
-        private val app: Filter,
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
-        onTap: (SlotView) -> Unit
-) : SlotVB(onTap) {
-
-    override fun attach(view: SlotView) {
-        view.type = Slot.Type.APP
-        view.content = Slot.Content(
-                label = i18n.getString(R.string.slot_app_label, sourceToName(ctx, app.source)),
-                header = i18n.getString(R.string.slot_whitelist_title),
-                description = sourceToName(ctx, app.source),
-                info = i18n.getString(R.string.slot_app_desc),
-                detail = app.source.source,
-                icon = sourceToIcon(ctx, app.source.source),
-                action1 = Slot.Action(i18n.getString(R.string.slot_action_unwhitelist)) {
-                    tunnelManager.removeFilter(ktx, app)
-                }
-                //action2 = Slot.Action(i18n.getString(R.string.slot_action_facts), view.ACTION_NONE)
-        )
-    }
-
-}
-
 class SearchBarVB(
         private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         val onSearch: (String) -> Unit,
         private val modal: ModalManager = modalManager
 ) : SlotVB(onTap = {
     GlobalScope.launch { modal.openModal() }
+    val ctx = runBlocking { getActivity()!! }
     ctx.startActivity(Intent(ctx, SearchActivity::class.java))
     SearchActivity.setCallback { s ->
         onSearch(s)
@@ -490,12 +465,12 @@ class SearchBarVB(
         if (view.content == null) {
             view.content = Slot.Content(
                     label = i18n.getString(R.string.search_header),
-                    icon = ctx.getDrawable(R.drawable.ic_search)
+                    icon = view.context.getDrawable(R.drawable.ic_search)
             )
         } else {
             view.content = Slot.Content(
                     label = view.content!!.label,
-                    icon = ctx.getDrawable(R.drawable.ic_search)
+                    icon = view.context.getDrawable(R.drawable.ic_search)
             )
         }
     }
@@ -511,7 +486,7 @@ class EnterSearchVB(
         view.type = Slot.Type.EDIT
         view.content = Slot.Content(
                 label = i18n.getString(R.string.search_title),
-                icon = ctx.getDrawable(R.drawable.ic_search),
+                icon = view.context.getDrawable(R.drawable.ic_search),
                 description = i18n.getString(R.string.search_description),
                 action1 = Slot.Action(i18n.getString(R.string.search_action_confirm)) {
                     onSearch((view.findViewById<EditText>(R.id.unfolded_edit)).text.toString())
@@ -542,7 +517,7 @@ class AppVB(
                     active = true,
                     whitelist = true
             )
-            tunnelManager.putFilter(ktx, filter)
+            tunnelManager.putFilter(filter)
         }
     }
 
@@ -556,7 +531,7 @@ class AppVB(
                     active = false,
                     whitelist = true
             )
-            tunnelManager.putFilter(ktx, filter)
+            tunnelManager.putFilter(filter)
         }
     }
 
@@ -638,7 +613,7 @@ class DnsChoiceVB(
                 header = name,
                 description = description,
                 detail = serversString,
-                icon = ctx.getDrawable(R.drawable.ic_server),
+                icon = view.context.getDrawable(R.drawable.ic_server),
                 switched = item.active,
                 action2 = Slot.Action(i18n.getString(R.string.slot_action_author)) {
                     try {
@@ -695,7 +670,7 @@ class StartOnBootVB(
         view.content = Slot.Content(
                 label = i18n.getString(R.string.main_autostart_text),
                 description = i18n.getString(R.string.slot_start_on_boot_description),
-                icon = ctx.getDrawable(R.drawable.ic_power),
+                icon = view.context.getDrawable(R.drawable.ic_power),
                 switched = tunnelState.startOnBoot()
         )
         view.onSwitch = { tunnelState.startOnBoot %= it }
@@ -714,7 +689,7 @@ class KeepAliveVB(
         view.type = Slot.Type.INFO
         view.content = Slot.Content(
                 label = i18n.getString(R.string.notification_keepalive_text),
-                icon = ctx.getDrawable(R.drawable.ic_heart_box),
+                icon = view.context.getDrawable(R.drawable.ic_heart_box),
                 description = i18n.getString(R.string.notification_keepalive_description),
                 switched = keepAlive.keepAlive()
         )
@@ -734,7 +709,7 @@ class WatchdogVB(
         view.type = Slot.Type.INFO
         view.content = Slot.Content(
                 label = i18n.getString(R.string.tunnel_config_watchdog_title),
-                icon = ctx.getDrawable(R.drawable.ic_earth),
+                icon = view.context.getDrawable(R.drawable.ic_earth),
                 description = i18n.getString(R.string.tunnel_config_watchdog_description),
                 switched = device.watchdogOn()
         )
@@ -754,7 +729,7 @@ class PowersaveVB(
         view.type = Slot.Type.INFO
         view.content = Slot.Content(
                 label = i18n.getString(R.string.tunnel_config_powersave_title),
-                icon = ctx.getDrawable(R.drawable.ic_power),
+                icon = view.context.getDrawable(R.drawable.ic_power),
                 description = i18n.getString(R.string.tunnel_config_powersave_description),
                 switched = runBlocking { TunnelConfig().loadFromPersistence() }.powersave
         )
@@ -767,8 +742,6 @@ class PowersaveVB(
 }
 
 class DnsFallbackVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -777,7 +750,7 @@ class DnsFallbackVB(
         view.type = Slot.Type.INFO
         view.content = Slot.Content(
                 label = i18n.getString(R.string.tunnel_config_fallback_title),
-                icon = ctx.getDrawable(R.drawable.ic_server),
+                icon = view.context.getDrawable(R.drawable.ic_server),
                 description = i18n.getString(R.string.tunnel_config_fallback_description),
                 switched = runBlocking { TunnelConfig().loadFromPersistence() }.dnsFallback
         )
@@ -790,8 +763,6 @@ class DnsFallbackVB(
 }
 
 class ReportVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -800,7 +771,7 @@ class ReportVB(
         view.type = Slot.Type.INFO
         view.content = Slot.Content(
                 label = i18n.getString(R.string.tunnel_config_reports_title),
-                icon = ctx.getDrawable(R.drawable.ic_heart_box),
+                icon = view.context.getDrawable(R.drawable.ic_heart_box),
                 description = i18n.getString(R.string.tunnel_config_reports_description),
                 switched = runBlocking { TunnelConfig().loadFromPersistence() }.report
         )
@@ -813,7 +784,6 @@ class ReportVB(
 }
 
 class NotificationsVB(
-        private val ktx: AndroidKontext,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -830,7 +800,6 @@ class NotificationsVB(
 }
 
 class BackgroundAnimationVB(
-        private val ktx: AndroidKontext,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -838,7 +807,7 @@ class BackgroundAnimationVB(
         view.enableAlternativeBackground()
         view.type = Slot.Type.INFO
         view.content = Slot.Content(
-                icon = ktx.ctx.getDrawable(R.drawable.ic_wifi),
+                icon = view.context.getDrawable(R.drawable.ic_wifi),
                 label = i18n.getString(R.string.slot_background_animation),
                 description = i18n.getString(R.string.slot_background_animation_description),
                 switched = ui.showBgAnim()
@@ -848,14 +817,14 @@ class BackgroundAnimationVB(
 
 }
 
-class ResetCounterVB(private val ktx: AndroidKontext,
-                     onTap: (SlotView) -> Unit
+class ResetCounterVB(
+     onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
         view.type = Slot.Type.INFO
         view.content = Slot.Content(
-                icon = ktx.ctx.getDrawable(R.drawable.ic_delete),
+                icon = view.context.getDrawable(R.drawable.ic_delete),
                 label = i18n.getString(R.string.slot_reset_counter_label),
                 description = i18n.getString(R.string.slot_reset_counter_description),
                 action1 = Slot.Action(i18n.getString(R.string.slot_reset_counter_action)) {
@@ -868,8 +837,6 @@ class ResetCounterVB(private val ktx: AndroidKontext,
 }
 
 class DnsListControlVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -879,7 +846,7 @@ class DnsListControlVB(
         view.content = Slot.Content(
                 label = i18n.getString(R.string.slot_dns_control_title),
                 description = i18n.getString(R.string.slot_dns_control_description),
-                icon = ctx.getDrawable(R.drawable.ic_reload),
+                icon = view.context.getDrawable(R.drawable.ic_reload),
                 action1 = Slot.Action(i18n.getString(R.string.slot_action_refresh)) {
                     dnsManager.choices.refresh(force = true)
                     GlobalScope.launch { showSnack(R.string.slot_action_refresh_toast) }
@@ -894,8 +861,6 @@ class DnsListControlVB(
 }
 
 class FiltersListControlVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -905,21 +870,19 @@ class FiltersListControlVB(
         view.content = Slot.Content(
                 label = i18n.getString(R.string.slot_filters_title),
                 description = i18n.getString(R.string.slot_filters_description),
-                icon = ctx.getDrawable(R.drawable.ic_reload),
+                icon = view.context.getDrawable(R.drawable.ic_reload),
                 action1 = Slot.Action(i18n.getString(R.string.slot_action_refresh)) {
                     GlobalScope.launch { showSnack(R.string.slot_action_refresh_toast) }
-                    val ktx = ctx.ktx("quickActions:refresh")
                     filtersManager.apps.refresh(force = true)
-                    tunnelManager.invalidateFilters(ktx)
-                    g11Manager.invalidateCache(ktx)
-                    g11Manager.sync(ktx)
+                    tunnelManager.invalidateFilters()
+                    g11Manager.invalidateCache()
+                    g11Manager.sync()
                 },
                 action2 = Slot.Action(i18n.getString(R.string.slot_action_restore)) {
-                    val ktx = ctx.ktx("quickActions:restore")
                     filtersManager.apps.refresh(force = true)
-                    tunnelManager.deleteAllFilters(ktx)
-                    g11Manager.invalidateCache(ktx)
-                    g11Manager.sync(ktx)
+                    tunnelManager.deleteAllFilters()
+                    g11Manager.invalidateCache()
+                    g11Manager.sync()
                 }
         )
     }
@@ -962,7 +925,7 @@ class StorageLocationVB(
         view.content = Slot.Content(
                 label = i18n.getString(R.string.slot_export_title),
                 description = i18n.getString(R.string.slot_export_description),
-                icon = ctx.getDrawable(R.drawable.ic_settings_outline),
+                icon = view.context.getDrawable(R.drawable.ic_settings_outline),
                 values = listOf(
                         i18n.getString(R.string.slot_action_internal),
                         i18n.getString(R.string.slot_action_external)
@@ -1016,7 +979,7 @@ class UpdateVB(
                                 next = next++ % repo.content().downloadLinks.size
                             }
                         },
-                        icon = ctx.getDrawable(R.drawable.ic_new_releases)
+                        icon = view.context.getDrawable(R.drawable.ic_new_releases)
                 )
                 view.date = Date()
             } else {
@@ -1026,7 +989,7 @@ class UpdateVB(
                         action1 = Slot.Action(i18n.getString(R.string.slot_update_action_refresh), {
                             repo.content.refresh(force = true)
                         }),
-                        icon = ctx.getDrawable(R.drawable.ic_reload)
+                        icon = view.context.getDrawable(R.drawable.ic_reload)
                 )
                 view.date = Date(repo.lastRefreshMillis())
             }

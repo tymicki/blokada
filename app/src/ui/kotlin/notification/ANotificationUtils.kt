@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import core.*
 import g11n.i18n
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 
 
@@ -154,7 +155,8 @@ class DisplayToastRunnable(private val mContext: Context, private var mText: Str
     }
 }
 
-fun displayAccountExpiredNotification(ctx: Context) {
+fun displayAccountExpiredNotification() {
+    val ctx = runBlocking { getApplicationContext()!! }
     val b = NotificationCompat.Builder(ctx)
     b.setContentTitle(ctx.getString(R.string.notification_expired_title))
     b.setContentText(ctx.getString(R.string.notification_expired_description))
@@ -175,7 +177,8 @@ fun displayAccountExpiredNotification(ctx: Context) {
     notif.notify(3, b.build())
 }
 
-fun displayLeaseExpiredNotification(ctx: Context) {
+fun displayLeaseExpiredNotification() {
+    val ctx = runBlocking { getApplicationContext()!! }
     val b = NotificationCompat.Builder(ctx)
     b.setContentTitle(ctx.getString(R.string.notification_lease_expired_title))
     b.setContentText(ctx.getString(R.string.notification_lease_expired_description))

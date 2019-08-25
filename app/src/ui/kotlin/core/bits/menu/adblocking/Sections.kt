@@ -91,7 +91,7 @@ private fun createMenuHostsDownload(ktx: AndroidKontext): NamedViewBinder {
                     LabelVB(ktx, label = R.string.menu_host_list_status.res()),
                     FiltersStatusVB(onTap = defaultOnTap),
                     LabelVB(ktx, label = R.string.menu_host_list_download.res()),
-                    FiltersListControlVB(ktx, onTap = defaultOnTap),
+                    FiltersListControlVB(onTap = defaultOnTap),
                     ListDownloadFrequencyVB(ktx, onTap = defaultOnTap),
                     DownloadOnWifiVB(ktx, onTap = defaultOnTap),
                     DownloadListsVB(ktx, onTap = defaultOnTap)

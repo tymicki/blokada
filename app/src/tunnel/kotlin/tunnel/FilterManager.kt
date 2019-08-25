@@ -50,14 +50,14 @@ internal class FilterManager(
         )
     }
 
-    fun save(ktx: Kontext) {
+    fun save() {
         doSaveFilterStore(store).mapBoth(
                 success = { v("saved FilterStore to persistence", store.cache.size, store.url) },
                 failure = { e("failed saving FilterStore to persistence", it) }
         )
     }
 
-    fun setUrl(ktx: Kontext, url: String) {
+    fun setUrl(url: String) {
         if (store.url != url) {
             store = store.copy(lastFetch = 0, url = url)
             v("changed FilterStore url", url)
@@ -68,7 +68,7 @@ internal class FilterManager(
         return store.cache.find { it.source.id == "app" && it.source.source == source }
     }
 
-    fun put(ktx: Kontext, new: Filter) {
+    fun put(new: Filter) {
         val old = store.cache.firstOrNull { it == new }
         store = if (old == null) {
             v("adding filter", new.id)
@@ -86,19 +86,19 @@ internal class FilterManager(
         core.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
-    fun remove(ktx: Kontext, old: Filter) {
+    fun remove(old: Filter) {
         v("removing filter", old.id)
         store = store.copy(cache = store.cache.minus(old))
         core.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
-    fun removeAll(ktx: Kontext) {
+    fun removeAll() {
         v("removing all filters")
         store = store.copy(cache = emptySet())
         core.emit(Events.FILTERS_CHANGED, store.cache)
     }
 
-    fun invalidateCache(ktx: Kontext) {
+    fun invalidateCache() {
         v("invalidating filters cache")
         val invalidatedFilters = store.cache.map { it.copy(lastFetch = 0) }.toSet()
         store = store.copy(cache = invalidatedFilters, lastFetch = 0)
@@ -110,15 +110,15 @@ internal class FilterManager(
         }
     }()
 
-    fun sync(ktx: Kontext) = {
-        if (syncFiltersWithRepo(ktx)) {
-            val success = syncRules(ktx)
+    fun sync() = {
+        if (syncFiltersWithRepo()) {
+            val success = syncRules()
             core.emit(Events.MEMORY_CAPACITY, Memory.linesAvailable())
             success
         } else false
     }()
 
-    private fun syncFiltersWithRepo(ktx: Kontext): Boolean {
+    private fun syncFiltersWithRepo(): Boolean {
         if (store.url.isEmpty()) {
             w("trying to sync without url set, ignoring")
             return false
@@ -162,7 +162,7 @@ internal class FilterManager(
         return true
     }
 
-    private fun syncRules(ktx: Kontext) = {
+    private fun syncRules() = {
         val active = store.cache.filter { it.active }
         val downloaded = mutableSetOf<Filter>()
         active.forEach { filter ->
@@ -171,7 +171,7 @@ internal class FilterManager(
                 core.emit(Events.FILTERS_CHANGING)
                 doFetchRuleset(doResolveFilterSource(filter), doGetMemoryLimit()).mapBoth(
                         success = {
-                            blockade.set(ktx, filter.id, it)
+                            blockade.set(filter.id, it)
                             downloaded.add(filter.copy(lastFetch = System.currentTimeMillis()))
                             v("saved", filter.id, it.size)
                         },
@@ -188,7 +188,7 @@ internal class FilterManager(
         val denied = store.cache.filter { !it.whitelist && it.active }.map { it.id }
 
         v("attempting to build rules, denied/allowed", denied.size, allowed.size)
-        blockade.build(ktx, denied, allowed)
+        blockade.build(denied, allowed)
         allowed.size > 0 || denied.size > 0
     }()
 

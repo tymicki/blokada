@@ -63,7 +63,7 @@ class StepActivity : Activity() {
                         customName = name
                 )
             }.apply {
-                tunnelManager.putFilters(ktx, this)
+                tunnelManager.putFilters(this)
             }
             finish()
         }

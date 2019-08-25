@@ -74,7 +74,7 @@ class SubscriptionActivity : Activity() {
         GlobalScope.async {
             core.getMostRecent(BLOCKA_CONFIG)?.run {
                 delay(3000)
-                tunnel.checkAccountInfo(ktx, this)
+                tunnel.checkAccountInfo(this)
             }
         }
     }

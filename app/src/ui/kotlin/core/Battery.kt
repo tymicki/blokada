@@ -52,7 +52,7 @@ import org.blokada.R
 //        view.content = Slot.Content(
 //                label = i18n.getBrandedString(R.string.battery_title),
 //                description = i18n.getBrandedString(R.string.battery_description),
-//                icon = ctx.getDrawable(R.drawable.ic_battery),
+//                icon = view.context.getDrawable(R.drawable.ic_battery),
 //                action1 = Slot.Action(i18n.getString(R.string.battery_action), {
 //                    battery.openWhitelistingScreen()
 //                    onRemove()

@@ -15,17 +15,17 @@ private fun createMenuAdvanced(ktx: AndroidKontext): NamedViewBinder {
     return MenuItemsVB(ktx,
             items = listOf(
                     LabelVB(ktx, label = R.string.label_basic.res()),
-                    NotificationsVB(ktx, onTap = defaultOnTap),
+                    NotificationsVB(onTap = defaultOnTap),
                     StartOnBootVB(ktx, onTap = defaultOnTap),
                     StorageLocationVB(ktx, onTap = defaultOnTap),
                     LabelVB(ktx, label = R.string.label_advanced.res()),
-                    BackgroundAnimationVB(ktx, onTap = defaultOnTap),
-                    ResetCounterVB(ktx, onTap = defaultOnTap),
+                    BackgroundAnimationVB(onTap = defaultOnTap),
+                    ResetCounterVB(onTap = defaultOnTap),
                     LoggerVB(ktx, onTap = defaultOnTap),
                     KeepAliveVB(ktx, onTap = defaultOnTap),
                     WatchdogVB(ktx, onTap = defaultOnTap),
                     PowersaveVB(ktx, onTap = defaultOnTap),
-                    ReportVB(ktx, onTap = defaultOnTap)
+                    ReportVB(onTap = defaultOnTap)
             ),
             name = R.string.panel_section_advanced_settings.res()
     )

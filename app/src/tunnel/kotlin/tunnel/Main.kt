@@ -156,7 +156,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
             if (!tunnelState.tunnelState(TunnelState.ACTIVE)) {
                 tunnelState.tunnelState %= TunnelState.DEACTIVATING
                 hasCompleted({
-                    tunnelManager.stop(ctx.ktx("tunnel:stop:failStarting"))
+                    tunnelManager.stop()
                 })
                 tunnelState.tunnelState %= TunnelState.DEACTIVATED
             }
@@ -218,7 +218,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
             watchdog.stop()
             tunnelState.tunnelState %= TunnelState.DEACTIVATING
             hasCompleted({
-                tunnelManager.stop(ctx.ktx("tunnel:stop"))
+                tunnelManager.stop()
             })
             tunnelState.tunnelState %= TunnelState.DEACTIVATED
         }
@@ -345,7 +345,7 @@ class Main(
 
     fun setup(ktx: AndroidKontext, servers: List<InetSocketAddress>, config: BlockaConfig? = null, start: Boolean = false) = GlobalScope.async(CTRL) {
         val cfg = config ?: blockaConfig
-        val processedServers = processServers(ktx, servers, cfg)
+        val processedServers = processServers(servers, cfg)
         v("setup tunnel, start = $start, enabled = $enabled", processedServers, config ?: "no blocka config")
         enabled = start or enabled
         when {
@@ -353,7 +353,7 @@ class Main(
                 v("empty dns servers, will disable tunnel")
                 currentServers = emptyList()
                 maybeStopVpn()
-                maybeStopTunnelThread(ktx)
+                maybeStopTunnelThread()
                 if (start) enabled = true
             }
             isVpnOn() && currentServers == processedServers && (config == null ||
@@ -380,18 +380,18 @@ class Main(
                 })
 
                 v("will sync filters")
-                if (filters.sync(ktx)) {
-                    filters.save(ktx)
+                if (filters.sync()) {
+                    filters.save()
 
                     v("will restart vpn and tunnel")
-                    maybeStopTunnelThread(ktx)
+                    maybeStopTunnelThread()
                     maybeStopVpn()
                     v("done stopping vpn and tunnel")
 
                     if (enabled) {
                         v("will start vpn")
                         startVpn()
-                        startTunnelThread(ktx)
+                        startTunnelThread()
                     }
                 }
             }
@@ -399,7 +399,7 @@ class Main(
         Unit
     }
 
-    private fun processServers(ktx: Kontext, servers: List<InetSocketAddress>, config: BlockaConfig?) = when {
+    private fun processServers(servers: List<InetSocketAddress>, config: BlockaConfig?) = when {
         // Dont do anything other than it used to be, in non-vpn mode
         config?.blockaVpn != true -> servers
         servers.isEmpty() || !dnsManager.hasCustomDnsSelected(checkEnabled = true) -> {
@@ -412,10 +412,10 @@ class Main(
     fun reloadConfig(ktx: AndroidKontext, onWifi: Boolean) = GlobalScope.async(CTRL) {
         v("reloading config")
         createComponents(ktx, onWifi)
-        filters.setUrl(ktx, currentUrl)
-        if (filters.sync(ktx)) {
-            filters.save(ktx)
-            restartTunnelThread(ktx)
+        filters.setUrl(currentUrl)
+        if (filters.sync()) {
+            filters.save()
+            restartTunnelThread()
         }
     }
 
@@ -426,20 +426,20 @@ class Main(
             val cfg = config.loadFromPersistence()
             v("setting url, firstLoad: ${cfg.firstLoad}", url)
             createComponents(ktx, onWifi)
-            filters.setUrl(ktx, url)
-            if (filters.sync(ktx)) {
+            filters.setUrl(url)
+            if (filters.sync()) {
                 v("first fetch successful, unsetting firstLoad flag")
                 cfg.copy(firstLoad = false).saveToPersistence()
             }
-            filters.save(ktx)
-            restartTunnelThread(ktx)
+            filters.save()
+            restartTunnelThread()
         } else w("ignoring setUrl, same url already set")
     }
 
 
-    fun stop(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
+    fun stop() = GlobalScope.async(CTRL) {
         v("stopping tunnel")
-        maybeStopTunnelThread(ktx)
+        maybeStopTunnelThread()
         maybeStopVpn()
         currentServers = emptyList()
         enabled = false
@@ -447,15 +447,15 @@ class Main(
 
     fun load(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
         filters.load(ktx)
-        restartTunnelThread(ktx)
+        restartTunnelThread()
     }
 
-    fun sync(ktx: AndroidKontext, restartVpn: Boolean = false) = GlobalScope.async(CTRL) {
+    fun sync(restartVpn: Boolean = false) = GlobalScope.async(CTRL) {
         v("syncing on request")
-        if (filters.sync(ktx)) {
-            filters.save(ktx)
+        if (filters.sync()) {
+            filters.save()
             if (restartVpn) restartVpn()
-            restartTunnelThread(ktx)
+            restartTunnelThread()
         }
     }
 
@@ -463,43 +463,43 @@ class Main(
         filters.findBySource(source)
     }
 
-    fun putFilter(ktx: AndroidKontext, filter: Filter, sync: Boolean = true) = GlobalScope.async(CTRL) {
+    fun putFilter(filter: Filter, sync: Boolean = true) = GlobalScope.async(CTRL) {
         v("putting filter", filter.id)
-        filters.put(ktx, filter)
-        if (sync) sync(ktx, restartVpn = filter.source.id == "app")
+        filters.put(filter)
+        if (sync) sync(restartVpn = filter.source.id == "app")
     }
 
-    fun putFilters(ktx: AndroidKontext, newFilters: Collection<Filter>) = GlobalScope.async(CTRL) {
+    fun putFilters(newFilters: Collection<Filter>) = GlobalScope.async(CTRL) {
         v("batch putting filters", newFilters.size)
-        newFilters.forEach { filters.put(ktx, it) }
-        if (filters.sync(ktx)) {
-            filters.save(ktx)
+        newFilters.forEach { filters.put(it) }
+        if (filters.sync()) {
+            filters.save()
             if (newFilters.any { it.source.id == "app" }) restartVpn()
-            restartTunnelThread(ktx)
+            restartTunnelThread()
         }
     }
 
-    fun removeFilter(ktx: AndroidKontext, filter: Filter) = GlobalScope.async(CTRL) {
-        filters.remove(ktx, filter)
-        if (filters.sync(ktx)) {
-            filters.save(ktx)
-            restartTunnelThread(ktx)
+    fun removeFilter(filter: Filter) = GlobalScope.async(CTRL) {
+        filters.remove(filter)
+        if (filters.sync()) {
+            filters.save()
+            restartTunnelThread()
         }
     }
 
-    fun invalidateFilters(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
+    fun invalidateFilters() = GlobalScope.async(CTRL) {
         v("invalidating filters")
-        filters.invalidateCache(ktx)
-        if(filters.sync(ktx)) {
-            filters.save(ktx)
-            restartTunnelThread(ktx)
+        filters.invalidateCache()
+        if(filters.sync()) {
+            filters.save()
+            restartTunnelThread()
         }
     }
 
-    fun deleteAllFilters(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
-        filters.removeAll(ktx)
-        if (filters.sync(ktx)) {
-            restartTunnelThread(ktx)
+    fun deleteAllFilters() = GlobalScope.async(CTRL) {
+        filters.removeAll()
+        if (filters.sync()) {
+            restartTunnelThread()
         }
     }
 
@@ -544,20 +544,20 @@ class Main(
         }
     }
 
-    private fun startTunnelThread(ktx: AndroidKontext) {
+    private fun startTunnelThread() {
         proxy = createProxy()
         tunnel = createTunnel()
         val f = fd
         if (f != null) {
-            tunnelThread = Thread({ tunnel.runWithRetry(ktx, f) }, "tunnel-${threadCounter++}")
+            tunnelThread = Thread({ tunnel.runWithRetry(f) }, "tunnel-${threadCounter++}")
             tunnelThread?.start()
             v("tunnel thread started", tunnelThread!!)
         } else w("attempting to start tunnel thread with no fd")
     }
 
-    private fun stopTunnelThread(ktx: Kontext) {
+    private fun stopTunnelThread() {
         v("stopping tunnel thread", tunnelThread!!)
-        tunnel.stop(ktx)
+        tunnel.stop()
         Result.of { tunnelThread?.interrupt() }.onFailure { ex ->
             w("could not interrupt tunnel thread", ex)
         }
@@ -577,10 +577,10 @@ class Main(
         v("vpn stopped")
     }
 
-    private fun restartTunnelThread(ktx: AndroidKontext) {
+    private fun restartTunnelThread() {
         if (tunnelThread != null) {
-            stopTunnelThread(ktx)
-            startTunnelThread(ktx)
+            stopTunnelThread()
+            startTunnelThread()
         }
     }
 
@@ -591,8 +591,8 @@ class Main(
         }
     }
 
-    private fun maybeStopTunnelThread(ktx: Kontext) = if (tunnelThread != null) {
-        stopTunnelThread(ktx); true
+    private fun maybeStopTunnelThread() = if (tunnelThread != null) {
+        stopTunnelThread(); true
     } else false
 
     private fun maybeStopVpn() = if (isVpnOn()) {

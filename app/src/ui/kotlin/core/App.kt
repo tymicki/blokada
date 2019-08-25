@@ -49,17 +49,17 @@ val tunnelStateManager = TunnelStateManager()
 suspend fun initApp() = withContext(Dispatchers.Main.immediate) {
     val ctx = runBlocking { getApplicationContext()!! }
     GlobalScope.launch {
-        g11Manager.load("translations:firstLoad".ktx())
+        g11Manager.load()
 
         val ktx = ctx.ktx("translations:sync:filters")
         core.on(tunnel.Events.FILTERS_CHANGED) {
-            g11Manager.sync(ktx)
+            g11Manager.sync()
         }
     }
 
     i18n.locale.doWhenChanged().then {
         v("refresh filters on locale set")
-        g11Manager.sync("translations:sync:locale".ktx())
+        g11Manager.sync()
     }
 
     // Since having filters is really important, poke whenever we get connectivity
@@ -67,7 +67,7 @@ suspend fun initApp() = withContext(Dispatchers.Main.immediate) {
     device.connected.doWhenChanged().then {
         if (device.connected() && !wasConnected) {
             repo.content.refresh()
-            tunnelManager.sync(ctx.ktx("connected:sync"))
+            tunnelManager.sync()
         }
         wasConnected = device.connected()
     }

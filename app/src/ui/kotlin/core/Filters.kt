@@ -58,7 +58,7 @@ suspend fun initFilters() = withContext(Dispatchers.Main.immediate) {
     // Compile filters every time they change
     filtersManager.changed.doWhenChanged(withInit = true).then {
         if (filtersManager.changed()) {
-            tunnelManager.sync(ctx.ktx("filters:sync:after:change"))
+            tunnelManager.sync()
             filtersManager.changed %= false
         }
     }

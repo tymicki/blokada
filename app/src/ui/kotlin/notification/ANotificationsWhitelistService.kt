@@ -4,7 +4,6 @@ import android.app.IntentService
 import android.content.Intent
 import android.os.Handler
 import core.id
-import core.ktx
 import org.blokada.R
 import tunnel.Filter
 import tunnel.FilterSourceDescriptor
@@ -24,7 +23,7 @@ class ANotificationsWhitelistService : IntentService("notificationsWhitelist") {
                 whitelist = true
         )
 
-        tunnelManager.putFilter(ktx("whitelistFromNotification"), f)
+        tunnelManager.putFilter(f)
 
         mHandler.post(DisplayToastRunnable(this, getString(R.string.notification_blocked_whitelist_applied)))
         hideNotification(this)

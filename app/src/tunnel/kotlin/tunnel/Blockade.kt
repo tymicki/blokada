@@ -1,7 +1,6 @@
 package tunnel
 
 import com.github.michaelbull.result.mapBoth
-import core.Kontext
 import core.Result
 import core.e
 import core.v
@@ -15,16 +14,16 @@ internal class Blockade(
         private var allowRuleset: Ruleset = Ruleset()
 ) {
 
-    fun build(ktx: Kontext, deny: List<FilterId>, allow: List<FilterId>) {
+    fun build(deny: List<FilterId>, allow: List<FilterId>) {
         core.emit(Events.RULESET_BUILDING)
         denyRuleset.clear()
-        denyRuleset = buildRuleset(ktx, deny)
+        denyRuleset = buildRuleset(deny)
         allowRuleset.clear()
-        allowRuleset = buildRuleset(ktx, allow)
+        allowRuleset = buildRuleset(allow)
         core.emit(Events.RULESET_BUILT, denyRuleset.size to allowRuleset.size)
     }
 
-    private fun buildRuleset(ktx: Kontext, filters: List<FilterId>): Ruleset {
+    private fun buildRuleset(filters: List<FilterId>): Ruleset {
         var ruleset = Ruleset()
         if (filters.isEmpty()) return ruleset
         doLoadRuleset(filters.first()).mapBoth(
@@ -49,7 +48,7 @@ internal class Blockade(
         return ruleset
     }
 
-    fun set(ktx: Kontext, id: FilterId, ruleset: Ruleset) {
+    fun set(id: FilterId, ruleset: Ruleset) {
         doSaveRuleset(id, ruleset).mapBoth(
                 success = { v("saved ruleset", id, ruleset.size) },
                 failure = { e("failed to save ruleset", id, it) }
