@@ -1,11 +1,7 @@
 package filter
 
-interface IHostlineProcessor {
-    fun process(line: String): String?
-}
-
-class DefaultHostlineProcessor: IHostlineProcessor {
-    override fun process(line: String): String? {
+class DefaultHostlineProcessor {
+    fun process(line: String): String? {
         var l = line
         if (l.startsWith("#")) return null
         if (l.startsWith("<")) return null

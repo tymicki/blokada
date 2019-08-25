@@ -2,7 +2,6 @@ package core
 
 import android.content.Context
 import com.github.salomonbrys.kodein.*
-import filter.DefaultSourceProvider
 import g11n.i18n
 import gs.environment.Worker
 import gs.presentation.ViewBinderHolder
@@ -12,36 +11,35 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
 import org.blokada.R
+import tunnel.tunnelManager
 
-abstract class UiState {
-
-    abstract val seenWelcome: IProperty<Boolean>
-    abstract val notifications: IProperty<Boolean>
-    abstract val showSystemApps: IProperty<Boolean>
-    abstract val showBgAnim: IProperty<Boolean>
+val ui by lazy {
+    runBlocking {
+        AUiState(kctx)
+    }
 }
 
 class AUiState(
         private val kctx: Worker
-) : UiState() {
+) {
 
     private val ctx by lazy {
         runBlocking { getApplicationContext()!! }
     }
 
-    override val seenWelcome = newPersistedProperty(kctx, APrefsPersistence(ctx, "seenWelcome"),
+    val seenWelcome = newPersistedProperty(kctx, APrefsPersistence(ctx, "seenWelcome"),
             { false }
     )
 
-    override val notifications = newPersistedProperty(kctx, APrefsPersistence(ctx, "notifications"),
+    val notifications = newPersistedProperty(kctx, APrefsPersistence(ctx, "notifications"),
             { false } // By default, have notifications off. 
     )
 
-    override val showSystemApps = newPersistedProperty(kctx, APrefsPersistence(ctx, "showSystemApps"),
+    val showSystemApps = newPersistedProperty(kctx, APrefsPersistence(ctx, "showSystemApps"),
             { true }
     )
 
-    override val showBgAnim = newPersistedProperty(kctx, APrefsPersistence(ctx, "backgroundAnimation"),
+    val showBgAnim = newPersistedProperty(kctx, APrefsPersistence(ctx, "backgroundAnimation"),
             { true }
     )
 }
@@ -51,12 +49,7 @@ fun newAppModule(ctx: Context): Kodein.Module {
         bind<EnabledStateActor>() with singleton {
             EnabledStateActor(this.lazy)
         }
-        bind<UiState>() with singleton { AUiState(kctx = with("gscore").instance(10)) }
-        bind<DefaultSourceProvider>() with singleton {
-            DefaultSourceProvider(ctx = ctx, processor = instance(), f = instance())
-        }
         bind<g11n.Main>() with singleton {
-            val pages: Pages = instance()
             g11n.Main(
                     urls = { mapOf(
                             pages.filtersStringsFallback().toExternalForm() to "filters",
@@ -75,7 +68,6 @@ fun newAppModule(ctx: Context): Kodein.Module {
         }
 
         onReady {
-            val t: tunnel.Main = instance()
             val g11: g11n.Main = instance()
 
             GlobalScope.launch {
@@ -97,7 +89,7 @@ fun newAppModule(ctx: Context): Kodein.Module {
             device.connected.doWhenChanged().then {
                 if (device.connected() && !wasConnected) {
                     repo.content.refresh()
-                    t.sync(ctx.ktx("connected:sync"))
+                    tunnelManager.sync(ctx.ktx("connected:sync"))
                 }
                 wasConnected = device.connected()
             }

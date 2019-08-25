@@ -1,7 +1,6 @@
 package core.bits.menu.apps
 
 import android.content.Context
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.AppVB
 import core.bits.SearchBarVB
@@ -20,8 +19,6 @@ class AllAppsDashboardSectionVB(
 ) : ListViewBinder(), NamedViewBinder {
 
     private val ktx = ctx.ktx("AllAppsDashboard")
-    private val filters by lazy { ktx.di().instance<Filters>() }
-    private val filterManager by lazy { ktx.di().instance<tunnel.Main>() }
 
     private val slotMutex = SlotMutex()
 
@@ -57,9 +54,9 @@ class AllAppsDashboardSectionVB(
     override fun attach(view: VBListView) {
         view.enableAlternativeMode()
         core.on(Events.FILTERS_CHANGED, updateApps)
-        filters.apps.refresh()
-        getApps = filters.apps.doOnUiWhenSet().then {
-            apps = filters.apps().filter { it.system == system }
+        filtersManager.apps.refresh()
+        getApps = filtersManager.apps.doOnUiWhenSet().then {
+            apps = filtersManager.apps().filter { it.system == system }
             updateListing()
         }
     }
@@ -67,7 +64,7 @@ class AllAppsDashboardSectionVB(
     override fun detach(view: VBListView) {
         slotMutex.detach()
         core.cancel(Events.FILTERS_CHANGED, updateApps)
-        filters.apps.cancel(getApps)
+        filtersManager.apps.cancel(getApps)
     }
 
 }

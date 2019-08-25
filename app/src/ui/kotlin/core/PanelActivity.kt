@@ -25,8 +25,6 @@ class PanelActivity : Activity() {
 
     private val ktx = ktx("PanelActivity")
     private val dashboardView by lazy { findViewById<DashboardView>(R.id.DashboardView) }
-    private val tunnelManager by lazy { ktx.di().instance<tunnel.Main>() }
-    private val filters by lazy { ktx.di().instance<Filters>() }
     private val viewBinderHolder by lazy { ktx.di().instance<ViewBinderHolder>() }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
@@ -35,7 +33,7 @@ class PanelActivity : Activity() {
         runBlocking { setActivityContext() }
 //        setFullScreenWindowLayoutInDisplayCutout(window)
         dashboardView.onSectionClosed = {
-            filters.changed %= true
+            filtersManager.changed %= true
         }
 //        getNotch()
 //        if (hasSoftKeys(getSystemService(Context.WINDOW_SERVICE) as WindowManager))

@@ -1,7 +1,6 @@
 package core.bits.menu.vpn
 
 import android.content.Intent
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.VpnVB
 import core.bits.menu.MenuItemVB
@@ -52,7 +51,7 @@ fun createGatewaysMenuItem(ktx: AndroidKontext): NamedViewBinder {
 }
 
 fun createWhyVpnMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    val whyPage = ktx.di().instance<Pages>().vpn
+    val whyPage = pages.vpn
     return SimpleMenuItemVB(ktx,
             label = R.string.menu_vpn_intro_button.res(),
             icon = R.drawable.ic_help_outline.res(),

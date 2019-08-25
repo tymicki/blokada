@@ -4,18 +4,13 @@ import android.content.res.Resources
 import core.*
 import gs.environment.Worker
 import gs.main.getPreferredLocales
-import gs.property.Persistence
-import gs.property.PersistenceWithSerialiser
-import gs.property.newPersistedProperty2
-import gs.property.repo
+import gs.property.*
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import java.util.*
 
 typealias LanguageTag = String
 typealias Localised = String
-
-private val kctx = workerFor("gscore")
 
 val i18n by lazy {
     runBlocking {
@@ -25,7 +20,7 @@ val i18n by lazy {
 
 private val persistences = mutableMapOf<String, I18nPersistence>()
 @Synchronized fun persistenceFor(name: String) : I18nPersistence {
-    if (!persistences.containsKey(name)) I18nPersistence(name)
+    if (!persistences.containsKey(name)) persistences[name] = I18nPersistence(name)
     return persistences[name]!!
 }
 

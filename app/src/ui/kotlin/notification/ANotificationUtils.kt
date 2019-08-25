@@ -10,10 +10,8 @@ import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import com.github.salomonbrys.kodein.instance
 import core.*
 import g11n.i18n
-import gs.environment.inject
 import org.blokada.R
 
 
@@ -67,27 +65,26 @@ fun hideNotification(ctx: Context) {
 fun createNotificationKeepAlive(ctx: Context, count: Int, last: String): Notification {
     val b = NotificationCompat.Builder(ctx)
     if (Product.current(ctx) == Product.DNS) {
-        val choice = ctx.inject().instance<Dns>().choices().first { it.active }
+        val choice = dnsManager.choices().first { it.active }
         val id = if (choice.id.startsWith("custom")) "custom" else choice.id
         val provider = i18n.localisedOrNull("dns_${id}_name") ?: id.capitalize()
-        val servers = printServers(ctx.inject().instance<Dns>().dnsServers())
+        val servers = printServers(dnsManager.dnsServers())
 
         b.setContentTitle(provider)
         b.setContentText(ctx.getString(R.string.dns_keepalive_content, servers))
     } else {
-        val t: Tunnel = ctx.inject().instance()
         val domainList = NotificationCompat.InboxStyle()
         val duplicates =ArrayList<String>(0)
-        t.tunnelRecentDropped().asReversed().forEach { s ->
+        tunnelState.tunnelRecentDropped().asReversed().forEach { s ->
             if(!duplicates.contains(s)){
                 duplicates.add(s)
                 domainList.addLine(s)
             }
         }
 
-        val intent = Intent(ctx, ANotificationsToggleService::class.java).putExtra("new_state",!t.enabled())
+        val intent = Intent(ctx, ANotificationsToggleService::class.java).putExtra("new_state",!tunnelState.enabled())
         val statePendingIntent = PendingIntent.getService(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        if(t.enabled()) {
+        if(tunnelState.enabled()) {
             b.addAction(R.drawable.ic_stat_blokada, ctx.resources.getString(R.string.notification_keepalive_deactivate), statePendingIntent)
         }else{
             b.addAction(R.drawable.ic_stat_blokada, ctx.resources.getString(R.string.notification_keepalive_activate), statePendingIntent)

@@ -28,16 +28,13 @@ fun newUpdateModule(ctx: Context): Kodein.Module {
             UpdateImpl(w = with("gscore").instance())
         }
         bind<UpdateCoordinator>() with singleton {
-            UpdateCoordinator(xx = lazy, downloader = AUpdateDownloader(ctx = ctx))
+            UpdateCoordinator(downloader = AUpdateDownloader(ctx = ctx))
         }
         onReady {
-            val s: Filters = instance()
-            val t: Tunnel = instance()
-            val ui: UiState = instance()
             val u: Update = instance()
 
             // Check for update periodically
-            t.tunnelState.doWhen { t.tunnelState(TunnelState.ACTIVE) }.then {
+            tunnelState.tunnelState.doWhen { tunnelState.tunnelState(TunnelState.ACTIVE) }.then {
                 // This "pokes" the cache and refreshes if needed
                 repo.content.refresh()
             }

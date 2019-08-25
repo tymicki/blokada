@@ -11,21 +11,18 @@ import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import com.github.michaelbull.result.mapError
 import core.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.FileDescriptor
 
 class ServiceBinder(
         val service: Service,
-        var onClose: (ktx: Kontext) -> Unit = {},
-        var onConfigure: (ktx: Kontext, vpn: VpnService.Builder) -> Time = { _, _ -> 0L }
+        var onClose: () -> Unit = {},
+        var onConfigure: (vpn: VpnService.Builder) -> Time = { _ -> 0L }
 ) : Binder()
 
 internal class ServiceConnector(
-        var onClose: (ktx: Kontext) -> Unit = {},
-        var onConfigure: (ktx: Kontext, vpn: VpnService.Builder) -> Time = { _, _ -> 0L }
+        var onClose: () -> Unit = {},
+        var onConfigure: (vpn: VpnService.Builder) -> Time = { _ -> 0L }
 ) {
 
     private var deferred = CompletableDeferred<ServiceBinder>()
@@ -47,11 +44,12 @@ internal class ServiceConnector(
         }
     }
 
-    fun bind(ktx: AndroidKontext) = {
+    fun bind() = {
+        val ctx = runBlocking { getApplicationContext()!! }
         this.deferred = CompletableDeferred()
-        val intent = Intent(ktx.ctx, Service::class.java)
+        val intent = Intent(ctx, Service::class.java)
         intent.action = Service.BINDER_ACTION
-        if (!ktx.ctx.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE
+        if (!ctx.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE
                 or Context.BIND_ABOVE_CLIENT or Context.BIND_IMPORTANT)) {
             deferred.completeExceptionally(Exception("could not bind to service"))
         } else GlobalScope.launch {
@@ -62,7 +60,10 @@ internal class ServiceConnector(
         deferred
     }()
 
-    fun unbind(ktx: AndroidKontext) = Result.of { ktx.ctx.unbindService(serviceConnection) }
+    fun unbind() = Result.of {
+        val ctx = runBlocking { getApplicationContext()!! }
+        ctx.unbindService(serviceConnection)
+    }
 }
 
 class Service : VpnService() {
@@ -96,21 +97,19 @@ class Service : VpnService() {
     }
 
     override fun onDestroy() {
-        val ktx = "service:onDestroy".ktx()
-        turnOff(ktx)
-        binder?.onClose?.invoke(ktx)
+        turnOff()
+        binder?.onClose?.invoke()
         super.onDestroy()
     }
 
     override fun onRevoke() {
-        val ktx = "service:onRevoke".ktx()
-        turnOff(ktx)
-        binder?.onClose?.invoke(ktx)
+        turnOff()
+        binder?.onClose?.invoke()
         super.onRevoke()
     }
 
-    fun turnOn(ktx: Kontext): FileDescriptor {
-        tunDescriptor = establishTunnel(ktx)
+    fun turnOn(): FileDescriptor {
+        tunDescriptor = establishTunnel()
         if (tunDescriptor != null) {
             tunFd = tunDescriptor?.fd ?: -1
             v("vpn established")
@@ -121,9 +120,9 @@ class Service : VpnService() {
         return tunDescriptor?.fileDescriptor!!
     }
 
-    private fun establishTunnel(ktx: Kontext): ParcelFileDescriptor? {
+    private fun establishTunnel(): ParcelFileDescriptor? {
         val tunnel = super.Builder()
-        val cooldownMillis = binder?.onConfigure?.invoke(ktx, tunnel) ?: 0L
+        val cooldownMillis = binder?.onConfigure?.invoke(tunnel) ?: 0L
 
         val timeSinceLastReleased = SystemClock.uptimeMillis() - lastReleasedMillis - cooldownMillis
         if (timeSinceLastReleased < 0) {
@@ -135,7 +134,7 @@ class Service : VpnService() {
         return tunnel.establish()
     }
 
-    fun turnOff(ktx: Kontext) {
+    fun turnOff() {
         if (tunDescriptor != null) {
             Result.of { tunDescriptor?.close() ?: Unit }
                     .mapError {

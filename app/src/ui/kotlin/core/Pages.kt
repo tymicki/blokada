@@ -1,43 +1,19 @@
 package core
 
-import android.content.Context
-import com.github.salomonbrys.kodein.*
 import g11n.i18n
-import gs.environment.Environment
 import gs.environment.Worker
-import gs.property.IProperty
+import gs.property.kctx
 import gs.property.newProperty
 import java.net.HttpURLConnection
 import java.net.URL
 
-abstract class Pages {
-    abstract val loaded: IProperty<Boolean>
-    abstract val intro: IProperty<URL>
-    abstract val updated: IProperty<URL>
-    abstract val obsolete: IProperty<URL>
-    abstract val download: IProperty<URL>
-    abstract val cleanup: IProperty<URL>
-    abstract val patron: IProperty<URL>
-    abstract val patronAbout: IProperty<URL>
-    abstract val cta: IProperty<URL>
-    abstract val donate: IProperty<URL>
-    abstract val news: IProperty<URL>
-    abstract val help: IProperty<URL>
-    abstract val feedback: IProperty<URL>
-    abstract val changelog: IProperty<URL>
-    abstract val credits: IProperty<URL>
-    abstract val filters: IProperty<URL>
-    abstract val filtersStrings: IProperty<URL>
-    abstract val filtersStringsFallback: IProperty<URL>
-    abstract val chat: IProperty<URL>
-    abstract val dns: IProperty<URL>
-    abstract val dnsStrings: IProperty<URL>
-    abstract val vpn: IProperty<URL>
+val pages by lazy {
+    PagesImpl(kctx)
 }
+
 class PagesImpl (
-        w: Worker,
-        xx: Environment
-) : Pages() {
+        w: Worker
+) {
 
     init {
         i18n.locale.doWhenSet().then {
@@ -69,39 +45,32 @@ class PagesImpl (
         }
     }
 
-    override val loaded = newProperty(w, { false })
-    override val intro = newProperty(w, { URL("http://localhost") })
-    override val updated = newProperty(w, { URL("http://localhost") })
-    override val patronAbout = newProperty(w, { URL("http://localhost") })
-    override val cleanup = newProperty(w, { URL("http://localhost") })
-    override val cta = newProperty(w, { URL("http://localhost") })
-    override val donate = newProperty(w, { URL("http://localhost") })
-    override val help = newProperty(w, { URL("http://localhost") })
-    override val changelog = newProperty(w, { URL("http://localhost") })
-    override val credits = newProperty(w, { URL("http://localhost") })
-    override val filters = newProperty(w, { URL("http://localhost") })
-    override val filtersStrings = newProperty(w, { URL("http://localhost") })
-    override val filtersStringsFallback = newProperty(w, { URL("http://localhost") })
-    override val dns = newProperty(w, { URL("http://localhost") })
-    override val dnsStrings = newProperty(w, { URL("http://localhost") })
-    override val chat = newProperty(w, { URL("http://go.blokada.org/chat") })
-    override val vpn = newProperty(w, { URL("http://localhost") })
+    val loaded = newProperty(w, { false })
+    val intro = newProperty(w, { URL("http://localhost") })
+    val updated = newProperty(w, { URL("http://localhost") })
+    val patronAbout = newProperty(w, { URL("http://localhost") })
+    val cleanup = newProperty(w, { URL("http://localhost") })
+    val cta = newProperty(w, { URL("http://localhost") })
+    val donate = newProperty(w, { URL("http://localhost") })
+    val help = newProperty(w, { URL("http://localhost") })
+    val changelog = newProperty(w, { URL("http://localhost") })
+    val credits = newProperty(w, { URL("http://localhost") })
+    val filters = newProperty(w, { URL("http://localhost") })
+    val filtersStrings = newProperty(w, { URL("http://localhost") })
+    val filtersStringsFallback = newProperty(w, { URL("http://localhost") })
+    val dns = newProperty(w, { URL("http://localhost") })
+    val dnsStrings = newProperty(w, { URL("http://localhost") })
+    val chat = newProperty(w, { URL("http://go.blokada.org/chat") })
+    val vpn = newProperty(w, { URL("http://localhost") })
 
-    override val news = newProperty(w, { URL("http://go.blokada.org/news") })
-    override val feedback = newProperty(w, { URL("http://go.blokada.org/feedback") })
-    override val patron = newProperty(w, { URL("http://go.blokada.org/patron_redirect") })
-    override val obsolete = newProperty(w, { URL("https://blokada.org/api/legacy/content/en/obsolete.html") })
-    override val download = newProperty(w, { URL("https://blokada.org/#download") })
+    val news = newProperty(w, { URL("http://go.blokada.org/news") })
+    val feedback = newProperty(w, { URL("http://go.blokada.org/feedback") })
+    val patron = newProperty(w, { URL("http://go.blokada.org/patron_redirect") })
+    val obsolete = newProperty(w, { URL("https://blokada.org/api/legacy/content/en/obsolete.html") })
+    val download = newProperty(w, { URL("https://blokada.org/#download") })
 
 }
 
-fun newPagesModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
-        bind<Pages>() with singleton {
-            PagesImpl(with("gscore").instance(), lazy)
-        }
-    }
-}
 private fun resolveRedirect(url: URL): URL {
     return try {
         val ucon = url.openConnection() as HttpURLConnection

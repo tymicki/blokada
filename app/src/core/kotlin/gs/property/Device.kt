@@ -20,7 +20,6 @@ import nl.komponents.kovenant.task
 import java.net.InetSocketAddress
 import java.net.Socket
 
-private val kctx = workerFor("gscore") // Was 2 threads
 private val kctxWatchdog = workerFor("watchdog")
 
 val device by lazy {

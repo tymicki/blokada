@@ -1,6 +1,5 @@
 package core
 
-import com.github.salomonbrys.kodein.instance
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -16,9 +15,7 @@ import java.util.*
  */
 
 class TunnelStateManager(
-        private val ktx: AndroidKontext,
-        private val s: Tunnel = ktx.di().instance(),
-        private val d: Dns = ktx.di().instance()
+        private val ktx: AndroidKontext
 ) {
 
     private var latest: BlockaConfig = BlockaConfig()
@@ -31,25 +28,25 @@ class TunnelStateManager(
             check(it)
         }
 
-        d.enabled.doWhenChanged(withInit = true).then {
+        dnsManager.enabled.doWhenChanged(withInit = true).then {
             check(latest)
         }
 
-        s.enabled.doWhenChanged(withInit = true).then {
+       tunnelState.enabled.doWhenChanged(withInit = true).then {
             when {
-                !s.enabled() -> {
+                !tunnelState.enabled() -> {
                     // Save state before pausing
                     runBlocking {
                         TunnelPause(
                                 vpn = latest.blockaVpn,
                                 adblocking = latest.adblocking,
-                                dns = d.enabled()
+                                dns = dnsManager.enabled()
                         ).saveToPersistence()
                     }
 
                     v("pausing features.")
                     core.emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
-                    d.enabled %= false
+                    dnsManager.enabled %= false
                 }
                 else -> {
                     // Restore the state
@@ -71,7 +68,7 @@ class TunnelStateManager(
                         }
                     }
 
-                    d.enabled %= dns
+                    dnsManager.enabled %= dns
                     core.emit(BLOCKA_CONFIG, latest.copy(adblocking = adblocking, blockaVpn = vpn))
                 }
             }
@@ -80,17 +77,17 @@ class TunnelStateManager(
 
     private fun check(it: BlockaConfig) {
         when {
-            !s.enabled() -> Unit
-            !it.adblocking && !it.blockaVpn && !d.enabled() -> {
+            !tunnelState.enabled() -> Unit
+            !it.adblocking && !it.blockaVpn && !dnsManager.enabled() -> {
                 v("turning off because no features enabled")
-                s.enabled %= false
+               tunnelState.enabled %= false
             }
             !it.adblocking && it.blockaVpn && !it.hasGateway() -> {
                 v("turning off everything because no gateway selected")
                 core.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
-                s.enabled %= false
+               tunnelState.enabled %= false
             }
-            (it.adblocking || d.enabled()) && it.blockaVpn && !it.hasGateway() -> {
+            (it.adblocking || dnsManager.enabled()) && it.blockaVpn && !it.hasGateway() -> {
                 v("turning off vpn because no gateway selected")
                 core.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
             }

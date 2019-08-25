@@ -9,59 +9,53 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import com.github.salomonbrys.kodein.Kodein
-import com.github.salomonbrys.kodein.instance
-import core.Tunnel
-import core.UiState
+import core.getApplicationContext
 import core.loadFromPersistence
+import core.tunnelState
+import core.ui
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import notification.displayNotification
 import notification.hideNotification
 
-fun newFlavorModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
-        onReady {
-            val s: Tunnel = instance()
-            val ui: UiState = instance()
+suspend fun initFlavor() = withContext(Dispatchers.Main.immediate) {
+    val ctx = runBlocking { getApplicationContext()!! }
 
-            // Display notifications for dropped
-            s.tunnelRecentDropped.doOnUiWhenSet().then {
-                if (s.tunnelRecentDropped().isEmpty()) hideNotification(ctx)
-                else if (ui.notifications()) displayNotification(ctx, s.tunnelRecentDropped().last())
-            }
-
-            s.tunnelRecentDropped.doWhenChanged().then{
-                updateListWidget(ctx)
-            }
-            s.enabled.doWhenChanged().then{
-                updateListWidget(ctx)
-            }
-            updateListWidget(ctx)
-
-            // Hide notification when disabled
-            ui.notifications.doOnUiWhenSet().then {
-                hideNotification(ctx)
-            }
-
-            val config = runBlocking { LoggerConfig().loadFromPersistence() }
-            val wm: AppWidgetManager = AppWidgetManager.getInstance(ctx)
-            val ids = wm.getAppWidgetIds(ComponentName(ctx, ActiveWidgetProvider::class.java))
-            if(((ids != null) and (ids.isNotEmpty())) or config.active) {
-                val serviceIntent = Intent(ctx.applicationContext,
-                        ForegroundStartService::class.java)
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    ctx.startForegroundService(serviceIntent)
-                } else {
-                    ctx.startService(serviceIntent)
-                }
-            }
-
-            // Initialize default values for properties that need it (async)
-            s.tunnelDropCount {}
-        }
-
-
+    // Display notifications for dropped
+   tunnelState.tunnelRecentDropped.doOnUiWhenSet().then {
+        if (tunnelState.tunnelRecentDropped().isEmpty()) hideNotification(ctx)
+        else if (ui.notifications()) displayNotification(ctx,tunnelState.tunnelRecentDropped().last())
     }
+
+   tunnelState.tunnelRecentDropped.doWhenChanged().then{
+        updateListWidget(ctx)
+    }
+   tunnelState.enabled.doWhenChanged().then{
+        updateListWidget(ctx)
+    }
+    updateListWidget(ctx)
+
+    // Hide notification when disabled
+    ui.notifications.doOnUiWhenSet().then {
+        hideNotification(ctx)
+    }
+
+    val config = runBlocking { LoggerConfig().loadFromPersistence() }
+    val wm: AppWidgetManager = AppWidgetManager.getInstance(ctx)
+    val ids = wm.getAppWidgetIds(ComponentName(ctx, ActiveWidgetProvider::class.java))
+    if(((ids != null) and (ids.isNotEmpty())) or config.active) {
+        val serviceIntent = Intent(ctx.applicationContext,
+                ForegroundStartService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ctx.startForegroundService(serviceIntent)
+        } else {
+            ctx.startService(serviceIntent)
+        }
+    }
+
+    // Initialize default values for properties that need it (async)
+   tunnelState.tunnelDropCount {}
 }
 
 fun updateListWidget(ctx: Context){

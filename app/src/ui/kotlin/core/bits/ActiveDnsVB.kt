@@ -1,7 +1,6 @@
 package core.bits
 
 import android.util.Base64
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import g11n.i18n
@@ -14,32 +13,31 @@ import java.nio.charset.Charset
 
 class ActiveDnsVB(
         private val ktx: AndroidKontext,
-        private val simple: Boolean = false,
-        private val dns: Dns = ktx.di().instance()
+        private val simple: Boolean = false
 ) : ByteVB() {
 
     private var dnsServersChanged: IWhen? = null
     private var dnsEnabledChanged: IWhen? = null
 
     override fun attach(view: ByteView) {
-        dnsServersChanged = dns.dnsServers.doOnUiWhenSet().then(update)
-        dnsEnabledChanged = dns.enabled.doOnUiWhenSet().then(update)
+        dnsServersChanged = dnsManager.dnsServers.doOnUiWhenSet().then(update)
+        dnsEnabledChanged = dnsManager.enabled.doOnUiWhenSet().then(update)
         update()
     }
 
     override fun detach(view: ByteView) {
-        dns.dnsServers.cancel(dnsServersChanged)
-        dns.enabled.cancel(dnsEnabledChanged)
+        dnsManager.dnsServers.cancel(dnsServersChanged)
+        dnsManager.enabled.cancel(dnsEnabledChanged)
     }
 
     private val update = {
         view?.run {
-            val item = dns.choices().firstOrNull { it.active }
+            val item = dnsManager.choices().firstOrNull { it.active }
             if (item != null) {
                 val id = if (item.id.startsWith("custom-dns:")) Base64.decode(item.id.removePrefix("custom-dns:"), Base64.NO_WRAP).toString(Charset.defaultCharset()) else item.id
                 val name = i18n.localisedOrNull("dns_${id}_name") ?: item.comment ?: id.capitalize()
 
-                if (dns.enabled() && dns.hasCustomDnsSelected()) {
+                if (dnsManager.enabled() && dnsManager.hasCustomDnsSelected(checkEnabled = false)) {
                     setTexts(name)
                 } else {
                     setTexts(null)
@@ -58,16 +56,16 @@ class ActiveDnsVB(
             onTap {
                 core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
             }
-            switch(dns.enabled())
+            switch(dnsManager.enabled())
             onSwitch { enabled ->
                 when {
-                    enabled && !dns.hasCustomDnsSelected(checkEnabled = false) -> {
+                    enabled && !dnsManager.hasCustomDnsSelected(checkEnabled = false) -> {
                         GlobalScope.launch { showSnack(R.string.menu_dns_select.res()) }
                         core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
                         switch(false)
                     }
                     else -> {
-                        dns.enabled %= enabled
+                        dnsManager.enabled %= enabled
                     }
                 }
             }
@@ -102,33 +100,30 @@ class ActiveDnsVB(
     }
 }
 
-class MenuActiveDnsVB(
-        private val ktx: AndroidKontext,
-        private val dns: Dns = ktx.di().instance()
-) : BitVB() {
+class MenuActiveDnsVB() : BitVB() {
 
     private var dnsServersChanged: IWhen? = null
     private var dnsEnabledChanged: IWhen? = null
 
     override fun attach(view: BitView) {
-        dnsServersChanged = dns.dnsServers.doOnUiWhenSet().then(update)
-        dnsEnabledChanged = dns.enabled.doOnUiWhenSet().then(update)
+        dnsServersChanged = dnsManager.dnsServers.doOnUiWhenSet().then(update)
+        dnsEnabledChanged = dnsManager.enabled.doOnUiWhenSet().then(update)
         update()
     }
 
     override fun detach(view: BitView) {
-        dns.dnsServers.cancel(dnsServersChanged)
-        dns.enabled.cancel(dnsEnabledChanged)
+        dnsManager.dnsServers.cancel(dnsServersChanged)
+        dnsManager.enabled.cancel(dnsEnabledChanged)
     }
 
     private val update = {
         view?.run {
-            val item = dns.choices().firstOrNull() { it.active }
+            val item = dnsManager.choices().firstOrNull() { it.active }
             if (item != null) {
                 val id = if (item.id.startsWith("custom-dns:")) Base64.decode(item.id.removePrefix("custom-dns:"), Base64.NO_WRAP).toString(Charset.defaultCharset()) else item.id
                 val name = i18n.localisedOrNull("dns_${id}_name") ?: item.comment ?: id.capitalize()
 
-                if (dns.enabled() && dns.hasCustomDnsSelected()) {
+                if (dnsManager.enabled() && dnsManager.hasCustomDnsSelected(checkEnabled = false)) {
                     icon(R.drawable.ic_server.res(), color = R.color.switch_on.res())
                     label(i18n.getString(R.string.slot_dns_name, name).res())
                 } else {
@@ -140,16 +135,16 @@ class MenuActiveDnsVB(
                 label(R.string.slot_dns_name_disabled.res())
             }
 
-            switch(dns.enabled())
+            switch(dnsManager.enabled())
             onSwitch { enabled ->
                 when {
-                    enabled && !dns.hasCustomDnsSelected(checkEnabled = false) -> {
+                    enabled && !dnsManager.hasCustomDnsSelected(checkEnabled = false) -> {
                         GlobalScope.launch { showSnack(R.string.menu_dns_select.res()) }
                         core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_advanced_dns.res())
                         switch(false)
                     }
                     else -> {
-                        dns.enabled %= enabled
+                        dnsManager.enabled %= enabled
                     }
                 }
             }

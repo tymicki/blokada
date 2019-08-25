@@ -11,14 +11,13 @@ import java.util.*
 
 class VpnStatusVB(
         private val ktx: AndroidKontext,
-        private val s: Tunnel = ktx.di().instance(),
         private val tunnelStatus: EnabledStateActor = ktx.di().instance(),
         private val tunManager: TunnelStateManager = ktx.di().instance()
 ) : ByteVB() {
 
     override fun attach(view: ByteView) {
         core.on(BLOCKA_CONFIG, configListener)
-        stateListener = s.enabled.doOnUiWhenChanged().then {
+        stateListener = tunnelState.enabled.doOnUiWhenChanged().then {
             update()
         }
         tunnelStatus.listeners.add(tunnelListener)
@@ -28,7 +27,7 @@ class VpnStatusVB(
     override fun detach(view: ByteView) {
         core.cancel(BLOCKA_CONFIG, configListener)
         tunnelStatus.listeners.remove(tunnelListener)
-        s.enabled.cancel(stateListener)
+        tunnelState.enabled.cancel(stateListener)
     }
 
     private var wasActive = false
@@ -48,7 +47,7 @@ class VpnStatusVB(
     private val update = { ->
         view?.run {
             when {
-                !s.enabled() -> {
+                !tunnelState.enabled() -> {
                     icon(R.drawable.ic_shield_outline.res())
                     arrow(null)
                     switch(false)

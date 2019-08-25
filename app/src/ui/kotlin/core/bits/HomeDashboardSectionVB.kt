@@ -126,7 +126,6 @@ class HomeDashboardSectionVB(
 
 class VpnVB(
         private val ktx: AndroidKontext,
-        private val s: Tunnel = ktx.di().instance(),
         private val tunManager: TunnelStateManager = ktx.di().instance()
 ) : BitVB() {
 
@@ -164,10 +163,7 @@ class VpnVB(
     }
 }
 
-class Adblocking2VB(
-        private val ktx: AndroidKontext,
-        private val s: Tunnel = ktx.di().instance()
-) : BitVB() {
+class Adblocking2VB() : BitVB() {
 
     override fun attach(view: BitView) {
         core.on(BLOCKA_CONFIG, configListener)
@@ -196,7 +192,7 @@ class Adblocking2VB(
             }
             switch(config.adblocking)
             onSwitch { adblocking ->
-                if (!adblocking && !config.blockaVpn) s.enabled %= false
+                if (!adblocking && !config.blockaVpn) tunnelState.enabled %= false
                 core.emit(BLOCKA_CONFIG, config.copy(adblocking = adblocking))
             }
         }
@@ -233,7 +229,6 @@ fun createOneTimeBytes(ktx: AndroidKontext) = mapOf(
                 label = R.string.home_whats_new.res(),
                 description = R.string.slot_updated_desc.res(),
                 onTap = { ktx ->
-                    val pages: Pages = ktx.di().instance()
                     GlobalScope.launch { modalManager.openModal() }
                     ktx.ctx.startActivity(Intent(ktx.ctx, WebViewActivity::class.java).apply {
                         putExtra(WebViewActivity.EXTRA_URL, pages.updated().toExternalForm())
@@ -244,7 +239,6 @@ fun createOneTimeBytes(ktx: AndroidKontext) = mapOf(
                 label = R.string.home_update_required.res(),
                 description = R.string.slot_obsolete_desc.res(),
                 onTap = { ktx ->
-                    val pages: Pages = ktx.di().instance()
                     openInBrowser(ktx.ctx, pages.download())
                 }
         ),
@@ -252,7 +246,6 @@ fun createOneTimeBytes(ktx: AndroidKontext) = mapOf(
                 label = R.string.home_donate.res(),
                 description = R.string.slot_donate_desc.res(),
                 onTap = { ktx ->
-                    val pages: Pages = ktx.di().instance()
                     openInBrowser(ktx.ctx, pages.donate())
                 }
         )
@@ -260,8 +253,7 @@ fun createOneTimeBytes(ktx: AndroidKontext) = mapOf(
 
 
 class ShareVB(
-        val ktx: AndroidKontext,
-        private val tunnelEvents: Tunnel = ktx.di().instance()
+        val ktx: AndroidKontext
 ) : ByteVB() {
     override fun attach(view: ByteView) {
         view.run {
@@ -279,7 +271,7 @@ class ShareVB(
             val shareIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
                 putExtra(Intent.EXTRA_TEXT, getMessage(ktx.ctx,
-                        tunnelEvents.tunnelDropStart(), Format.counter(tunnelEvents.tunnelDropCount())))
+                        tunnelState.tunnelDropStart(), Format.counter(tunnelState.tunnelDropCount())))
                 type = "text/plain"
             }
             ktx.ctx.startActivity(Intent.createChooser(shareIntent,

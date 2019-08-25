@@ -1,7 +1,6 @@
 package core
 
 import com.github.salomonbrys.kodein.LazyKodein
-import com.github.salomonbrys.kodein.instance
 
 /**
  * Translates internal MainState changes into higher level events used by topbar and fab.
@@ -17,20 +16,18 @@ class EnabledStateActor(
     private val listener3: Any
 
     init {
-        val s: Tunnel = di().instance()
-
-        listener1 = s.enabled.doOnUiWhenChanged().then { update(s) }
-        listener2 = s.active.doOnUiWhenChanged().then { update(s) }
-        listener3 = s.tunnelState.doOnUiWhenChanged().then { update(s) }
-        update(s)
+        listener1 =tunnelState.enabled.doOnUiWhenChanged().then { update() }
+        listener2 =tunnelState.active.doOnUiWhenChanged().then { update() }
+        listener3 =tunnelState.tunnelState.doOnUiWhenChanged().then { update() }
+        update()
     }
 
-    fun update(s: Tunnel) {
+    fun update() {
         when {
-            s.tunnelState(TunnelState.ACTIVATING) -> startActivating()
-            s.tunnelState(TunnelState.DEACTIVATING) -> startDeactivating()
-            s.tunnelState(TunnelState.ACTIVE) -> finishActivating()
-            s.active() -> startActivating()
+           tunnelState.tunnelState(TunnelState.ACTIVATING) -> startActivating()
+           tunnelState.tunnelState(TunnelState.DEACTIVATING) -> startDeactivating()
+           tunnelState.tunnelState(TunnelState.ACTIVE) -> finishActivating()
+           tunnelState.active() -> startActivating()
             else -> finishDeactivating()
         }
     }

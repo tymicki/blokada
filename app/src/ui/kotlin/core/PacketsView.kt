@@ -7,7 +7,6 @@ import android.graphics.Paint
 import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.View
-import com.github.salomonbrys.kodein.instance
 import org.blokada.R
 import tunnel.Request
 import java.util.*
@@ -37,7 +36,6 @@ class PacketsView(
     private var on = false
 
     private val ktx = ctx.ktx("colorfulBackground")
-    private val uiState by lazy { ktx.di().instance<UiState>() }
 
 
     init {
@@ -52,8 +50,8 @@ class PacketsView(
         barrierPaint.setStyle(Paint.Style.STROKE)
         barrierPaint.setColor(color)
 
-        uiState.showBgAnim.doOnUiWhenSet().then {
-            showAnim = uiState.showBgAnim()
+        ui.showBgAnim.doOnUiWhenSet().then {
+            showAnim = ui.showBgAnim()
             on = tunnelOn && showAnim
             if (!on) items.clear()
         }

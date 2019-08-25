@@ -16,7 +16,7 @@ class AdvancedDashboardSectionVB(
 
     private var items = listOf(
             UpdateVB(ctx.ktx("updateVB"), onTap = slotMutex.openOneAtATime),
-            FiltersStatusVB(ctx.ktx("FiltersStatusSlotVB"), onTap = slotMutex.openOneAtATime),
+            FiltersStatusVB(onTap = slotMutex.openOneAtATime),
             //ActiveDnsVB(ctx.ktx("currentDns"), onTap = slotMutex.openOneAtATime),
 //            VpnStatusVB(ctx.ktx("VpnStatusVB"), onTap = slotMutex.openOneAtATime),
             AboutVB(ctx.ktx("aboutVB"), onTap = slotMutex.openOneAtATime)

@@ -68,7 +68,6 @@ class DashboardView(
     private val ktx = ctx.ktx("dashboard")
 
     private val tunnelEvents by lazy { ctx.inject().instance<EnabledStateActor>() }
-    private val tun by lazy { ctx.inject().instance<Tunnel>() }
 
     private var scrolledView: View? = null
 
@@ -131,7 +130,6 @@ class DashboardView(
 
     fun createDashboardSections(ktx: AndroidKontext): List<NamedViewBinder> {
         val di = ktx.di()
-        val pages: Pages = di.instance()
 
         return listOf(
                 HomeDashboardSectionVB(ktx),
@@ -165,8 +163,8 @@ class DashboardView(
             }
         }, recentValue = false)
 
-        tun.enabled.doOnUiWhenSet().then {
-            if (tun.enabled()) bg_colors.onScroll(1f, 4, model.getOpenedSectionIndex() + 1)
+        tunnelState.enabled.doOnUiWhenSet().then {
+            if (tunnelState.enabled()) bg_colors.onScroll(1f, 4, model.getOpenedSectionIndex() + 1)
             else bg_colors.onScroll(1f, model.getOpenedSectionIndex() + 1, 4)
         }
     }
@@ -333,10 +331,10 @@ class DashboardView(
                         PanelState.ANCHORED -> {
                             v("panel anchored")
                             model.menuClosed()
-                            if (previousMeaningfulState == PanelState.COLLAPSED && !tun.enabled()) {
+                            if (previousMeaningfulState == PanelState.COLLAPSED && !tunnelState.enabled()) {
                                 v("enabling app as panel got anchored from collapsed state")
-                                tun.error %= false
-                                tun.enabled %= true
+                                tunnelState.error %= false
+                                tunnelState.enabled %= true
                             }
                             previousMeaningfulState = PanelState.ANCHORED
                         }
@@ -347,10 +345,10 @@ class DashboardView(
                         PanelState.EXPANDED -> {
                             v("panel expanded")
                             model.menuOpened()
-                            if (previousMeaningfulState == PanelState.COLLAPSED && !tun.enabled()) {
+                            if (previousMeaningfulState == PanelState.COLLAPSED && !tunnelState.enabled()) {
                                 v("enabling app as panel got expanded from collapsed state")
-                                tun.error %= false
-                                tun.enabled %= true
+                                tunnelState.error %= false
+                                tunnelState.enabled %= true
                             }
                             previousMeaningfulState = PanelState.EXPANDED
                         }
@@ -374,7 +372,7 @@ class DashboardView(
             override fun onPageScrollStateChanged(state: Int) {}
 
             override fun onPageScrolled(position: Int, positionOffset: Float, posPixels: Int) {
-                if (tun.enabled()) {
+                if (tunnelState.enabled()) {
                     val next = position + 1
                     bg_colors.onScroll(positionOffset, next, next + 1)
                 }
@@ -399,7 +397,7 @@ class DashboardView(
             bg_pager.currentItem = model.getOpenedSectionIndex()
         }
 
-        bg_packets.setTunnelState(tun.tunnelState())
+        bg_packets.setTunnelState(tunnelState.tunnelState())
 
         fg_pager.offscreenPageLimit = 5
 

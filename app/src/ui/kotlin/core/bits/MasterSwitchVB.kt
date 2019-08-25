@@ -6,7 +6,6 @@ import org.blokada.R
 
 class MasterSwitchVB(
         private val ktx: AndroidKontext,
-        private val tunnelEvents: Tunnel = ktx.di().instance(),
         private val tunnelStatus: EnabledStateActor = ktx.di().instance()
 ) : ByteVB() {
 
@@ -15,7 +14,7 @@ class MasterSwitchVB(
 
     override fun attach(view: ByteView) {
         tunnelStatus.listeners.add(tunnelListener)
-        tunnelStatus.update(tunnelEvents)
+        tunnelStatus.update()
         update()
     }
 
@@ -26,13 +25,13 @@ class MasterSwitchVB(
     private val update = {
         view?.run {
             when {
-                !tunnelEvents.enabled() -> {
+                !tunnelState.enabled() -> {
                     icon(R.drawable.ic_play_arrow.res())
                     label(R.string.home_touch_to_turn_on.res())
                     state(R.string.home_blokada_disabled.res())
                     important(true)
                     onTap {
-                        tunnelEvents.enabled %= true
+                        tunnelState.enabled %= true
                     }
                 }
                 else -> {
@@ -41,7 +40,7 @@ class MasterSwitchVB(
                     state(R.string.home_masterswitch_enabled.res())
                     important(false)
                     onTap {
-                        tunnelEvents.enabled %= false
+                        tunnelState.enabled %= false
                     }
                 }
            }

@@ -1,7 +1,6 @@
 package core.bits.menu.dns
 
 import android.content.Context
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.*
 import core.bits.menu.adblocking.SlotMutex
@@ -15,21 +14,18 @@ class DnsDashboardSection(
         override val name: Resource = R.string.panel_section_advanced_dns.res()
 ) : ListViewBinder(), NamedViewBinder {
 
-    private val ktx = ctx.ktx("DnsDashboard")
-    private val filters by lazy { ktx.di().instance<Filters>() }
-    private val dns by lazy { ktx.di().instance<Dns>() }
-
+    private val ktx by lazy { ctx.ktx("dns-dash") }
     private val slotMutex = SlotMutex()
 
     private var get: IWhen? = null
 
     override fun attach(view: VBListView) {
         view.enableAlternativeMode()
-        filters.apps.refresh()
-        get = dns.choices.doOnUiWhenSet().then {
-            val default = dns.choices().firstOrNull()
-            val active = dns.choices().filter { it.active }
-            val inactive = dns.choices().filter { !it.active }
+        filtersManager.apps.refresh()
+        get = dnsManager.choices.doOnUiWhenSet().then {
+            val default = dnsManager.choices().firstOrNull()
+            val active = dnsManager.choices().filter { it.active }
+            val inactive = dnsManager.choices().filter { !it.active }
 
             val defaultList = if (default != null) listOf(default) else emptyList()
 
@@ -38,7 +34,7 @@ class DnsDashboardSection(
             }.apply {
                 view.set(this)
                 view.add(LabelVB(ktx, label = R.string.menu_dns_intro.res()), 0)
-                view.add(MenuActiveDnsVB(ktx), 1)
+                view.add(MenuActiveDnsVB(), 1)
                 view.add(AddDnsVB(ktx), 2)
                 view.add(LabelVB(ktx, label = R.string.menu_dns_recommended.res()), 3)
                 view.add(LabelVB(ktx, label = R.string.menu_manage.res()))
@@ -50,7 +46,7 @@ class DnsDashboardSection(
 
     override fun detach(view: VBListView) {
         slotMutex.detach()
-        dns.choices.cancel(get)
+        dnsManager.choices.cancel(get)
     }
 
 }

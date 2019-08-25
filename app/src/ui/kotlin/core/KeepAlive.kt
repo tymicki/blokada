@@ -12,7 +12,6 @@ import android.os.Binder
 import android.os.IBinder
 import com.github.salomonbrys.kodein.*
 import gs.environment.Worker
-import gs.environment.inject
 import gs.property.IProperty
 import gs.property.IWhen
 import gs.property.newPersistedProperty2
@@ -37,13 +36,12 @@ fun newKeepAliveModule(ctx: Context): Kodein.Module {
         }
         onReady {
             val s: KeepAlive = instance()
-            val t: Tunnel = instance()
 
             // Start / stop the keep alive service depending on the configuration flag
             val keepAliveNotificationUpdater = { dropped: Int ->
                 val nm: NotificationManager = instance()
                 val n = createNotificationKeepAlive(ctx = ctx, count = dropped,
-                        last = t.tunnelRecentDropped().lastOrNull() ?:
+                        last = tunnelState.tunnelRecentDropped().lastOrNull() ?:
                         ctx.getString(R.string.notification_keepalive_none)
                 )
                 nm.notify(3, n)
@@ -52,18 +50,18 @@ fun newKeepAliveModule(ctx: Context): Kodein.Module {
             var w2: IWhen? = null
             s.keepAlive.doWhenSet().then {
                 if (s.keepAlive()) {
-                    t.tunnelDropCount.cancel(w1)
-                    w1 = t.tunnelDropCount.doOnUiWhenSet().then {
-                        keepAliveNotificationUpdater(t.tunnelDropCount())
+                    tunnelState.tunnelDropCount.cancel(w1)
+                    w1 = tunnelState.tunnelDropCount.doOnUiWhenSet().then {
+                        keepAliveNotificationUpdater(tunnelState.tunnelDropCount())
                     }
-                    t.enabled.cancel(w2)
-                    w2 = t.enabled.doOnUiWhenSet().then {
-                        keepAliveNotificationUpdater(t.tunnelDropCount())
+                    tunnelState.enabled.cancel(w2)
+                    w2 = tunnelState.enabled.doOnUiWhenSet().then {
+                        keepAliveNotificationUpdater(tunnelState.tunnelDropCount())
                     }
                     keepAliveAgent.bind(ctx)
                 } else {
-                    t.tunnelDropCount.cancel(w1)
-                    t.enabled.cancel(w2)
+                    tunnelState.tunnelDropCount.cancel(w1)
+                    tunnelState.enabled.cancel(w2)
                     keepAliveAgent.unbind(ctx)
                 }
             }
@@ -126,9 +124,8 @@ class KeepAliveService : Service() {
         if (BINDER_ACTION.equals(intent?.action)) {
             binder = KeepAliveBinder()
 
-            val s: Tunnel = inject().instance()
-            val count = s.tunnelDropCount()
-            val last = s.tunnelRecentDropped().lastOrNull() ?: getString(R.string.notification_keepalive_none)
+            val count = tunnelState.tunnelDropCount()
+            val last = tunnelState.tunnelRecentDropped().lastOrNull() ?: getString(R.string.notification_keepalive_none)
             val n = createNotificationKeepAlive(this, count, last)
             startForeground(3, n)
 

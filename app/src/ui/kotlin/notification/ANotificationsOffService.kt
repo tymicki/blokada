@@ -2,9 +2,7 @@ package notification
 
 import android.app.IntentService
 import android.content.Intent
-import com.github.salomonbrys.kodein.instance
-import gs.environment.inject
-import core.UiState
+import core.ui
 
 
 /**
@@ -12,10 +10,8 @@ import core.UiState
  */
 class ANotificationsOffService : IntentService("notifications") {
 
-    private val state by lazy { inject().instance<UiState>() }
-
     override fun onHandleIntent(intent: Intent) {
-        state.notifications %= false
+        ui.notifications %= false
     }
 
 }

@@ -11,7 +11,6 @@ import tunnel.BlockaConfig
 
 class AdsBlockedVB(
         private val ktx: AndroidKontext,
-        private val tunnelEvents: Tunnel = ktx.di().instance(),
         private val tunnelStatus: EnabledStateActor = ktx.di().instance(),
         private val tunManager: TunnelStateManager = ktx.di().instance()
 ) : ByteVB() {
@@ -23,18 +22,18 @@ class AdsBlockedVB(
     private var config: BlockaConfig = BlockaConfig()
 
     override fun attach(view: ByteView) {
-        droppedCountListener = tunnelEvents.tunnelDropCount.doOnUiWhenSet().then {
-            dropped = tunnelEvents.tunnelDropCount()
+        droppedCountListener = tunnelState.tunnelDropCount.doOnUiWhenSet().then {
+            dropped = tunnelState.tunnelDropCount()
             update()
         }
         tunnelStatus.listeners.add(tunnelListener)
-        tunnelStatus.update(tunnelEvents)
+        tunnelStatus.update()
         core.on(BLOCKA_CONFIG, configListener)
         update()
     }
 
     override fun detach(view: ByteView) {
-        tunnelEvents.tunnelDropCount.cancel(droppedCountListener)
+        tunnelState.tunnelDropCount.cancel(droppedCountListener)
         tunnelStatus.listeners.remove(tunnelListener)
         core.cancel(BLOCKA_CONFIG, configListener)
     }
@@ -42,7 +41,7 @@ class AdsBlockedVB(
     private val update = {
         view?.run {
             when {
-                !tunnelEvents.enabled() -> {
+                !tunnelState.enabled() -> {
                     icon(R.drawable.ic_show.res())
                     label(R.string.home_touch_adblocking.res())
                     state(R.string.home_adblocking_disabled.res())

@@ -89,7 +89,7 @@ private fun createMenuHostsDownload(ktx: AndroidKontext): NamedViewBinder {
     return MenuItemsVB(ktx,
             items = listOf(
                     LabelVB(ktx, label = R.string.menu_host_list_status.res()),
-                    FiltersStatusVB(ktx, onTap = defaultOnTap),
+                    FiltersStatusVB(onTap = defaultOnTap),
                     LabelVB(ktx, label = R.string.menu_host_list_download.res()),
                     FiltersListControlVB(ktx, onTap = defaultOnTap),
                     ListDownloadFrequencyVB(ktx, onTap = defaultOnTap),

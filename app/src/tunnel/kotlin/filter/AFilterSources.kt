@@ -3,13 +3,9 @@ package filter
 import android.content.Context
 import android.net.Uri
 import android.util.Base64
-import com.github.salomonbrys.kodein.instance
-import core.Filters
-import core.load
-import core.loadGzip
-import core.openUrl
-import gs.environment.inject
+import core.*
 import gs.property.repo
+import kotlinx.coroutines.runBlocking
 import tunnel.FilterId
 import tunnel.IFilterSource
 import java.io.InputStreamReader
@@ -22,7 +18,6 @@ import java.net.URL
  */
 class FilterSourceLink(
         private val timeoutMillis: Int,
-        private val processor: IHostlineProcessor,
         var source: URL? = null,
         var backupSource: URL? = null
 ) : IFilterSource {
@@ -37,9 +32,9 @@ class FilterSourceLink(
 
     override fun fetch(): LinkedHashSet<String> {
         val list = try {
-            loadGzip(openUrl(source!!, timeoutMillis), { processor.process(it) })
+            loadGzip(openUrl(source!!, timeoutMillis), { hostlineProcessor.process(it) })
         } catch (e: Exception) { try {
-            loadGzip(openUrl(backupSource!!, timeoutMillis), { processor.process(it) })
+            loadGzip(openUrl(backupSource!!, timeoutMillis), { hostlineProcessor.process(it) })
         } catch (e: Exception) { emptyList<String>() }}
         return LinkedHashSet<String>().apply { addAll(list) }
     }
@@ -78,11 +73,13 @@ class FilterSourceLink(
 }
 
 class FilterSourceUri(
-        private val ctx: Context,
-        private val processor: IHostlineProcessor,
         var source: Uri? = null,
         var flags: Int = 0
 ) : IFilterSource {
+
+    private val ctx by lazy {
+        runBlocking { getApplicationContext()!! }
+    }
 
     override fun size(): Int {
         var lineReader: LineNumberReader? = null
@@ -106,7 +103,7 @@ class FilterSourceUri(
             load({
                 ctx.contentResolver.takePersistableUriPermission(source!!, flags)
                 openFile(ctx, source!!)
-            }, { processor.process(it) })
+            }, { hostlineProcessor.process(it) })
         } catch (e: Exception) {
             core.e(Exception("source file load failed", e))
             emptyList<String>()
@@ -152,7 +149,6 @@ class FilterSourceUri(
 }
 
 class FilterSourceApp(
-        private val ctx: Context,
         var source: String? = null
 ) : IFilterSource {
 
@@ -163,10 +159,8 @@ class FilterSourceApp(
     var system: Boolean = false
         private set
 
-    private val s by lazy { ctx.inject().instance<Filters>() }
-
     private val apps by lazy {
-        s.apps().flatMap { listOf(it.appId to it.appId, it.appId.toLowerCase() to it.appId,
+        filtersManager.apps().flatMap { listOf(it.appId to it.appId, it.appId.toLowerCase() to it.appId,
                 it.label to it.appId, it.label.toLowerCase() to it.label) }.toMap()
     }
 
@@ -182,7 +176,7 @@ class FilterSourceApp(
     override fun fromUserInput(vararg string: String): Boolean {
         return try {
             source = apps[string[0].toLowerCase()] ?: throw Exception("unknown app: ${string[0]}")
-            system = s.apps().first { it.appId == source }.system
+            system = filtersManager.apps().first { it.appId == source }.system
             true
         } catch (e: Exception) {
             core.v("FilterSourceApp: fromUserInput: fail", e)
@@ -217,27 +211,25 @@ private fun openFile(ctx: Context, uri: Uri): java.io.InputStream {
     return ctx.contentResolver.openInputStream(uri)
 }
 
-class DefaultSourceProvider(
-        val ctx: Context,
-        val f: Filters,
-        val processor: IHostlineProcessor
-) {
+val sourceProvider = DefaultSourceProvider()
+
+class DefaultSourceProvider {
 
     fun from(id: String, source: String? = null, filterId: FilterId? = null): IFilterSource {
         return when (id) {
             "app" -> {
-                f.apps.refresh(blocking = true)
-                val f = FilterSourceApp(ctx)
+                filtersManager.apps.refresh(blocking = true)
+                val f = FilterSourceApp()
                 if (source != null) f.fromUserInput(source)
                 f
             }
             "file" -> {
-                val f = FilterSourceUri(ctx, processor)
+                val f = FilterSourceUri()
                 if (source != null) f.fromUserInput(source)
                 f
             }
             "link" -> {
-                val f = FilterSourceLink(10000, processor)
+                val f = FilterSourceLink(10000)
                 if (source != null) {
                     if (filterId != null) f.fromUserInput(source, backupUrl(filterId))
                     else f.fromUserInput(source)

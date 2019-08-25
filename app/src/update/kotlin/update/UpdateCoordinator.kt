@@ -1,9 +1,7 @@
 package update
 
-import com.github.salomonbrys.kodein.instance
-import core.Tunnel
 import core.TunnelState
-import gs.environment.Environment
+import core.tunnelState
 import gs.property.IWhen
 import java.net.URL
 
@@ -11,9 +9,7 @@ import java.net.URL
  * It makes sure Blokada is inactive during update download.
  */
 class UpdateCoordinator(
-        private val xx: Environment,
-        private val downloader: AUpdateDownloader,
-        private val s: Tunnel = xx().instance()
+        private val downloader: AUpdateDownloader
 ) {
 
     private var w: IWhen? = null
@@ -21,26 +17,26 @@ class UpdateCoordinator(
 
     fun start(urls: List<URL>) {
         if (downloading) return
-        if (s.tunnelState(TunnelState.INACTIVE)) {
+        if (tunnelState.tunnelState(TunnelState.INACTIVE)) {
             download(urls)
         }
         else {
-            core.v("UpdateCoordinator: deactivate tunnel: ${s.tunnelState()}")
-            s.tunnelState.cancel(w)
-            w = s.tunnelState.doOnUiWhenChanged().then {
-                if (s.tunnelState(TunnelState.INACTIVE)) {
+            core.v("UpdateCoordinator: deactivate tunnel: ${tunnelState.tunnelState()}")
+           tunnelState.tunnelState.cancel(w)
+            w =tunnelState.tunnelState.doOnUiWhenChanged().then {
+                if (tunnelState.tunnelState(TunnelState.INACTIVE)) {
                     if (!downloading) {
                         core.v("UpdateCoordinator: tunnel deactivated")
-                        s.tunnelState.cancel(w)
+                       tunnelState.tunnelState.cancel(w)
                         w = null
                         download(urls)
                     }
                 }
             }
 
-            s.updating %= true
-            s.restart %= true
-            s.active %= false
+           tunnelState.updating %= true
+           tunnelState.restart %= true
+           tunnelState.active %= false
         }
     }
 
@@ -50,7 +46,7 @@ class UpdateCoordinator(
         downloader.downloadUpdate(urls) { uri ->
             core.v("UpdateCoordinator: downloaded: url $uri")
             if (uri != null) downloader.openInstall(uri)
-            s.updating %= false
+           tunnelState.updating %= false
             downloading = false
         }
     }

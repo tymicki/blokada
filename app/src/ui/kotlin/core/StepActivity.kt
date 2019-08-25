@@ -2,12 +2,12 @@ package core
 
 import android.app.Activity
 import android.util.Base64
-import com.github.salomonbrys.kodein.instance
 import core.bits.EnterDomainVB
 import core.bits.EnterNameVB
 import org.blokada.R
 import tunnel.Filter
 import tunnel.FilterSourceDescriptor
+import tunnel.tunnelManager
 
 
 class StepActivity : Activity() {
@@ -49,8 +49,6 @@ class StepActivity : Activity() {
 
     private var sources: List<FilterSourceDescriptor> = emptyList()
     private var name = ""
-
-    private val tunnelManager by lazy { ktx.di().instance<tunnel.Main>() }
 
     private fun saveNewFilter() = when {
         sources.isEmpty() || name.isBlank() -> Unit

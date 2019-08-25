@@ -1,7 +1,6 @@
 package tunnel
 
 import android.net.VpnService
-import core.Kontext
 import core.Result
 import core.e
 import core.v
@@ -21,7 +20,7 @@ internal class DnsVpnConfigurator(
 
     private var dnsIndex = 1
 
-    override fun configure(ktx: Kontext, builder: VpnService.Builder) {
+    override fun configure(builder: VpnService.Builder) {
         var format: String? = null
 
         // Those are TEST-NET IP ranges from RFC5735, so that we don't collide.
@@ -67,7 +66,7 @@ internal class DnsVpnConfigurator(
         }
 
         builder.addDisallowedApplication(packageName)
-        filterManager.getWhitelistedApps(ktx).forEach {
+        filterManager.getWhitelistedApps().forEach {
             builder.addDisallowedApplication(it)
         }
 
@@ -102,7 +101,7 @@ internal class PausedVpnConfigurator(
         private val filterManager: FilterManager
 ): Configurator {
 
-    override fun configure(ktx: Kontext, builder: VpnService.Builder) {
+    override fun configure(builder: VpnService.Builder) {
         for (address in dnsServers) {
             try {
                 builder.addDnsServer(address.getAddress())
@@ -111,7 +110,7 @@ internal class PausedVpnConfigurator(
             }
         }
 
-        filterManager.getWhitelistedApps(ktx).forEach {
+        filterManager.getWhitelistedApps().forEach {
             builder.addDisallowedApplication(it)
         }
 
@@ -144,7 +143,7 @@ internal class BlockaVpnConfigurator(
 
     private var dnsIndex = 1
 
-    override fun configure(ktx: Kontext, builder: VpnService.Builder) {
+    override fun configure(builder: VpnService.Builder) {
         // Set local IP addresses for the DNS proxy so we can easily catch them for inspection
         dnsIndex = 0
         for (address in dnsServers) {
@@ -162,7 +161,7 @@ internal class BlockaVpnConfigurator(
         //builder.addDnsServer("2606:4700:4700::1111")
 
         builder.addDisallowedApplication(packageName)
-        filterManager.getWhitelistedApps(ktx).forEach {
+        filterManager.getWhitelistedApps().forEach {
             builder.addDisallowedApplication(it)
         }
 
@@ -195,5 +194,5 @@ internal class BlockaVpnConfigurator(
 }
 
 interface Configurator {
-    fun configure(ktx: Kontext, builder: VpnService.Builder)
+    fun configure(builder: VpnService.Builder)
 }

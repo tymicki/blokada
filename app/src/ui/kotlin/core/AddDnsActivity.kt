@@ -3,7 +3,6 @@ package core
 import android.app.Activity
 import android.util.Base64
 import android.view.View
-import com.github.salomonbrys.kodein.instance
 import org.blokada.R
 import java.net.InetSocketAddress
 
@@ -47,8 +46,6 @@ class AddDnsActivity : Activity() {
     private val stepView by lazy { findViewById<VBStepView>(R.id.view) }
     private val ktx = ktx("AddDnsActivity")
 
-    private val dns by lazy { ktx.di().instance<Dns>() }
-
     private var servers = Array<InetSocketAddress?>(2) { null }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
@@ -58,8 +55,8 @@ class AddDnsActivity : Activity() {
         val nameVB = EnterDnsNameVB(ktx, accepted = { name ->
             if (servers[0] != null && servers[1] != null) {
                 val newDnsChoice = DnsChoice("custom-dns:" + Base64.encodeToString(name.toByteArray(), Base64.NO_WRAP), servers.filterNotNull())
-                if (!dns.choices().contains(newDnsChoice)) {
-                    dns.choices %= dns.choices() + newDnsChoice
+                if (!dnsManager.choices().contains(newDnsChoice)) {
+                    dnsManager.choices %= dnsManager.choices() + newDnsChoice
                 }
                 finish()
             }

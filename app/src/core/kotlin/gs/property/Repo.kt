@@ -15,8 +15,6 @@ data class RepoContent(
         internal val fetchedUrl: String
 )
 
-private val kctx = workerFor("gscore")
-
 val repo by lazy {
     runBlocking {
         RepoImpl(kctx)
@@ -44,8 +42,8 @@ class RepoImpl(
         val fetchTimeout = 10 * 10000
 
         try {
-            val repo = loadGzip(openUrl(repoURL, fetchTimeout))
-            val locales = repo[1].split(" ").map {
+            val repo2 = loadGzip(openUrl(repoURL, fetchTimeout))
+            val locales = repo2[1].split(" ").map {
                 // Because Java APIs suck
                 val parts = it.split("_")
                 when(parts.size) {
@@ -58,11 +56,11 @@ class RepoImpl(
 
             lastRefreshMillis %= gs.environment.time.now()
             RepoContent(
-                    contentPath = URL(repo[0]),
+                    contentPath = URL(repo2[0]),
                     locales = locales,
-                    newestVersionCode = repo[2].toInt(),
-                    newestVersionName = repo[3],
-                    downloadLinks = repo.subList(4, repo.size).map { URL(it) },
+                    newestVersionCode = repo2[2].toInt(),
+                    newestVersionName = repo2[3],
+                    downloadLinks = repo2.subList(4, repo2.size).map { URL(it) },
                     fetchedUrl = url()
             )
         } catch (ex: Exception) {

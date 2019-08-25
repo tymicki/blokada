@@ -104,7 +104,7 @@ internal class FilterManager(
         store = store.copy(cache = invalidatedFilters, lastFetch = 0)
     }
 
-    fun getWhitelistedApps(ktx: Kontext) = {
+    fun getWhitelistedApps() = {
         store.cache.filter { it.whitelist && it.active && it.source.id == "app" }.map {
             it.source.source
         }

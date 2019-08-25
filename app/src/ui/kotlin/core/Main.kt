@@ -12,10 +12,8 @@ import android.content.Intent
 import buildtype.initBuildType
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.KodeinAware
-import com.github.salomonbrys.kodein.instance
 import com.github.salomonbrys.kodein.lazy
-import flavor.newFlavorModule
-import gs.environment.inject
+import flavor.initFlavor
 import gs.environment.newGscoreModule
 import gs.property.IWhen
 import gs.property.device
@@ -25,6 +23,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import tunnel.blokadaUserAgent
+import tunnel.initTunnel
 import tunnel.newRestApiModule
 
 
@@ -47,17 +46,12 @@ class MainApplication: Application(), KodeinAware {
     override val kodein by Kodein.lazy {
         import(newGscoreModule(this@MainApplication))
         import(newDeviceModule(this@MainApplication))
-        import(newTunnelModule(this@MainApplication))
-        import(newFiltersModule(this@MainApplication))
-        import(newDnsModule(this@MainApplication))
         import(newWelcomeModule(this@MainApplication))
-        import(newPagesModule(this@MainApplication))
         import(newUpdateModule(this@MainApplication))
         import(newKeepAliveModule(this@MainApplication))
         import(newBatteryModule(this@MainApplication))
         import(newRestApiModule(this@MainApplication))
         import(newAppModule(this@MainApplication), allowOverride = true)
-        import(newFlavorModule(this@MainApplication), allowOverride = true)
     }
 
     override fun onCreate() {
@@ -69,6 +63,12 @@ class MainApplication: Application(), KodeinAware {
         setRestartAppOnCrash()
 
         GlobalScope.launch {
+            //welcome
+            initTunnel()
+            initFilters()
+            initDns()
+            //update
+            initFlavor()
             initBuildType()
         }
     }
@@ -98,7 +98,6 @@ class BootReceiver : BroadcastReceiver() {
 
 class BootJobService : JobService() {
 
-    private val t by lazy { inject().instance<Tunnel>() }
     private val ktx by lazy { "boot:service".ktx() }
 
     override fun onStartJob(params: JobParameters?): Boolean {
@@ -111,11 +110,11 @@ class BootJobService : JobService() {
     private fun scheduleJobFinish(params: JobParameters?): Boolean {
         return try {
             when {
-                t.active() -> {
+                tunnelState.active() -> {
                     v("boot job finnish immediately, already active")
                     false
                 }
-                !t.enabled() -> {
+                !tunnelState.enabled() -> {
                     v("boot job finnish immediately, not enabled")
                     false
                 }
@@ -125,8 +124,8 @@ class BootJobService : JobService() {
                 }
                 else -> {
                     v("boot job scheduling to stop when tunnel active")
-                    listener = t.active.doOnUiWhenChanged().then {
-                        t.active.cancel(listener)
+                    listener = tunnelState.active.doOnUiWhenChanged().then {
+                        tunnelState.active.cancel(listener)
                         listener = null
                         jobFinished(params, false)
                     }

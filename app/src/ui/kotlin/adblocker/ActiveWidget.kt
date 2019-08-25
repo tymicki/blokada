@@ -79,10 +79,9 @@ class ActiveWidgetProvider : AppWidgetProvider() {
                         return
                     }
                     if (extras.containsKey("changeBlokadaState")) {
-                        val t: Tunnel = context!!.inject().instance()
                         v("toggling enabled")
-                        t.error %= false
-                        t.enabled %= !t.enabled()
+                        tunnelState.error %= false
+                        tunnelState.enabled %= !tunnelState.enabled()
                     }
                 }
             }
@@ -158,8 +157,7 @@ class UpdateWidgetService : Service() {
 
             core.on(DELETE_WIDGET, onDeleteEvent)
 
-            val t: Tunnel = this.inject().instance()
-            val droppedlist = t.tunnelRecentDropped()
+            val droppedlist = tunnelState.tunnelRecentDropped()
             if (droppedlist.isEmpty()) {
                 onBlocked("")
             } else {
@@ -168,13 +166,12 @@ class UpdateWidgetService : Service() {
             core.on(Events.REQUEST, onBlockedEvent)
 
             onTunnelStateChanged()
-            onTunnelStateEvent = t.tunnelState.doOnUiWhenChanged(withInit = true).then {
+            onTunnelStateEvent = tunnelState.tunnelState.doOnUiWhenChanged(withInit = true).then {
                 onTunnelStateChanged()
             }
 
             onDnsChanged()
-            val d: Dns = this.inject().instance()
-            onDNSEvent = d.dnsServers.doOnUiWhenChanged(withInit = true).then {
+            onDNSEvent = dnsManager.dnsServers.doOnUiWhenChanged(withInit = true).then {
                 onDnsChanged()
             }
         }
@@ -186,10 +183,8 @@ class UpdateWidgetService : Service() {
         cancel(NEW_WIDGET, onNewWidgetEvent)
         cancel(RESTORE_WIDGET, onRestoreEvent)
         cancel(DELETE_WIDGET, onDeleteEvent)
-        val t: Tunnel = this.inject().instance()
-        t.tunnelState.cancel(onTunnelStateEvent)
-        val d: Dns = this.inject().instance()
-        d.dnsServers.cancel(onDNSEvent)
+        tunnelState.tunnelState.cancel(onTunnelStateEvent)
+        dnsManager.dnsServers.cancel(onDNSEvent)
         super.onDestroy()
     }
 
@@ -209,8 +204,7 @@ class UpdateWidgetService : Service() {
         pref.edit().putInt("widget-${data.id}", widgetConf).apply()
         setWidget(data)
         if (data.host or data.counter) {
-            val t: Tunnel = this.inject().instance()
-            val droppedlist = t.tunnelRecentDropped.invoke()
+            val droppedlist = tunnelState.tunnelRecentDropped.invoke()
             if (droppedlist.isEmpty()) {
                 onBlocked("")
             } else {
@@ -257,8 +251,7 @@ class UpdateWidgetService : Service() {
         val appWidgetManager = AppWidgetManager.getInstance(this)
         val remoteViews = RemoteViews(this.packageName, R.layout.widget_active)
         val thisWidget = ComponentName(this, ActiveWidgetProvider::class.java)
-        val t: Tunnel = this.inject().instance()
-        when (t.tunnelState()) {
+        when (tunnelState.tunnelState()) {
             TunnelState.ACTIVE ->
                 remoteViews.setInt(R.id.widget_active, "setColorFilter", color(active = true, waiting = false))
             TunnelState.ACTIVATING ->
@@ -286,8 +279,7 @@ class UpdateWidgetService : Service() {
     private fun onDnsChanged() {
         val appWidgetManager = AppWidgetManager.getInstance(this)
         val remoteViews = RemoteViews(this.packageName, R.layout.widget_active)
-        val d: Dns = this.inject().instance()
-        val dc = d.choices().find { it.active }
+        val dc = dnsManager.choices().find { it.active }
         val name = when {
             dc == null -> this.getString(R.string.dns_text_none)
             dc.servers.isEmpty() -> this.getString(R.string.dns_text_none)
@@ -303,12 +295,11 @@ class UpdateWidgetService : Service() {
         val appWidgetManager = AppWidgetManager.getInstance(this)
         var remoteViews = RemoteViews(this.packageName, R.layout.widget_active)
 
-        val t: Tunnel = this.inject().instance()
-        when (t.tunnelDropCount()) {
-            in 0..9999 -> remoteViews.setTextViewText(R.id.widget_counter, t.tunnelDropCount().toString())
-            in 10000..99999 -> remoteViews.setTextViewText(R.id.widget_counter, String.format("%.1fk", t.tunnelDropCount() / 1000.0))
-            in 100000..9999999 -> remoteViews.setTextViewText(R.id.widget_counter, String.format("%.2fm", t.tunnelDropCount() / 1000000.0))
-            else -> remoteViews.setTextViewText(R.id.widget_counter, String.format("%dm", t.tunnelDropCount() / 1000000))
+        when (tunnelState.tunnelDropCount()) {
+            in 0..9999 -> remoteViews.setTextViewText(R.id.widget_counter, tunnelState.tunnelDropCount().toString())
+            in 10000..99999 -> remoteViews.setTextViewText(R.id.widget_counter, String.format("%.1fk", tunnelState.tunnelDropCount() / 1000.0))
+            in 100000..9999999 -> remoteViews.setTextViewText(R.id.widget_counter, String.format("%.2fm", tunnelState.tunnelDropCount() / 1000000.0))
+            else -> remoteViews.setTextViewText(R.id.widget_counter, String.format("%dm", tunnelState.tunnelDropCount() / 1000000))
         }
 
         appWidgetManager.partiallyUpdateAppWidget(widgetList.mapNotNull { e -> if (e.counter) e.id else null }.toIntArray(), remoteViews)

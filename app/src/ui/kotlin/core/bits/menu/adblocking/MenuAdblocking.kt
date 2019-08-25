@@ -12,7 +12,7 @@ import org.blokada.R
 private fun createMenuAdblocking(ktx: AndroidKontext): NamedViewBinder {
     return MenuItemsVB(ktx,
             items = listOf(
-                Adblocking2VB(ktx),
+                Adblocking2VB(),
                 LabelVB(ktx, label = R.string.menu_ads_lists_label.res()),
                 createHostsListMenuItem(ktx),
                 createHostsListDownloadMenuItem(ktx),

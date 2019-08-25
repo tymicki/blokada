@@ -8,31 +8,32 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import com.github.salomonbrys.kodein.*
+import com.github.salomonbrys.kodein.instance
+import com.github.salomonbrys.kodein.with
 import filter.DefaultHostlineProcessor
-import filter.IHostlineProcessor
 import gs.environment.Worker
 import gs.environment.inject
-import gs.property.IProperty
+import gs.property.kctx
 import gs.property.newProperty
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import nl.komponents.kovenant.task
 import org.blokada.R
 import tunnel.FilterSourceDescriptor
+import tunnel.tunnelManager
 
-abstract class Filters {
-    abstract val changed: IProperty<Boolean>
-    abstract val apps: IProperty<List<App>>
+val filtersManager by lazy {
+    FiltersImpl(kctx)
 }
 
 class FiltersImpl(
         private val kctx: Worker
-) : Filters() {
+) {
 
-    override val changed = newProperty(kctx, { false })
+    val changed = newProperty(kctx, { false })
 
     private val appsRefresh = {
-        val ktx = "filters:apps:refresh".ktx()
         v("apps refresh start")
 
         val ctx = runBlocking { getApplicationContext()!! }
@@ -49,36 +50,26 @@ class FiltersImpl(
         a
     }
 
-    override val apps = newProperty(kctx, zeroValue = { emptyList<App>() }, refresh = { appsRefresh() },
+    val apps = newProperty(kctx, zeroValue = { emptyList<App>() }, refresh = { appsRefresh() },
             shouldRefresh = { it.isEmpty() })
 
 }
 
-fun newFiltersModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
-        bind<Filters>() with singleton {
-            FiltersImpl(kctx = with("gscore").instance(10))
-        }
-        bind<IHostlineProcessor>() with singleton { DefaultHostlineProcessor() }
-        bind<AppInstallReceiver>() with singleton { AppInstallReceiver() }
-        onReady {
-            val s: Filters = instance()
-            val m: tunnel.Main = instance()
+private val appInstallReceiver by lazy { AppInstallReceiver() }
+val hostlineProcessor = DefaultHostlineProcessor()
 
-            // Compile filters every time they change
-            s.changed.doWhenChanged(withInit = true).then {
-                if (s.changed()) {
-                    m.sync(ctx.ktx("filters:sync:after:change"))
-                    s.changed %= false
-                }
-            }
+suspend fun initFilters() = withContext(Dispatchers.Main.immediate) {
+    val ctx = runBlocking { getApplicationContext()!! }
 
-            task {
-                // In a task because we are in DI and using DI can lead to stack overflow
-                AppInstallReceiver.register(ctx)
-            }
+    // Compile filters every time they change
+    filtersManager.changed.doWhenChanged(withInit = true).then {
+        if (filtersManager.changed()) {
+            tunnelManager.sync(ctx.ktx("filters:sync:after:change"))
+            filtersManager.changed %= false
         }
     }
+
+    AppInstallReceiver.register(ctx)
 }
 
 data class App(
@@ -92,8 +83,7 @@ class AppInstallReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
         task(ctx.inject().with("AppInstallReceiver").instance()) {
             v("app install receiver ping")
-            val f: Filters = ctx.inject().instance()
-            f.apps.refresh(force = true)
+            filtersManager.apps.refresh(force = true)
         }
     }
 
@@ -103,7 +93,7 @@ class AppInstallReceiver : BroadcastReceiver() {
             filter.addAction(Intent.ACTION_PACKAGE_ADDED)
             filter.addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
             filter.addDataScheme("package")
-            ctx.registerReceiver(ctx.inject().instance<AppInstallReceiver>(), filter)
+            ctx.registerReceiver(appInstallReceiver, filter)
         }
 
     }

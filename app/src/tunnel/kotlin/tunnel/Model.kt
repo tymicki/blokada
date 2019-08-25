@@ -102,14 +102,16 @@ data class TunnelConfig(
         val dnsFallback: Boolean = true,
         val report: Boolean = false,
         val cacheTTL: Long = 86400
-)
+): Persistable {
+    override fun key() = "tunnel:config"
+}
 
 val TUNNEL_CONFIG = "TUNNEL_CONFIG".newEventOf<TunnelConfig>()
 
-fun registerTunnelConfigEvent(ktx: Kontext) {
-    val config = Persistence.config.load(ktx)
+fun registerTunnelConfigEvent() {
+    val config = runBlocking { TunnelConfig().loadFromPersistence() }
     core.emit(TUNNEL_CONFIG, config)
-    core.on(TUNNEL_CONFIG, { Persistence.config.save(it) })
+    core.on(TUNNEL_CONFIG) { runBlocking { it.saveToPersistence() } }
 }
 
 val EXPIRATION_OFFSET = 60 * 1000

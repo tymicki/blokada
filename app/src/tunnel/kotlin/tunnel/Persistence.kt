@@ -10,7 +10,6 @@ class Persistence {
     companion object {
         val rules = RulesPersistence()
         val filters = FiltersPersistence()
-        val config = TunnelConfigPersistence()
         val request = RequestPersistence()
         val blocka = BlockaConfigPersistence()
     }
@@ -88,23 +87,6 @@ class FiltersPersistence {
                     }
                 }
     }()
-}
-
-class TunnelConfigPersistence {
-    val load = { ktx: Kontext ->
-        Result.of { loadPersistence("tunnel:config", { TunnelConfig() }) }
-                .mapBoth(
-                        success = { it },
-                        failure = { ex ->
-                            w("failed loading TunnelConfig, reverting to defaults", ex)
-                            TunnelConfig()
-                        }
-                )
-    }
-
-    val save = { config: TunnelConfig ->
-        Result.of { savePersistence("tunnel:config", config) }
-    }
 }
 
 class RequestPersistence(
