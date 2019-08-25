@@ -33,11 +33,11 @@ class DnsDashboardSection(
                 DnsChoiceVB(it, ktx, onTap = slotMutex.openOneAtATime)
             }.apply {
                 view.set(this)
-                view.add(LabelVB(ktx, label = R.string.menu_dns_intro.res()), 0)
+                view.add(LabelVB(label = R.string.menu_dns_intro.res()), 0)
                 view.add(MenuActiveDnsVB(), 1)
                 view.add(AddDnsVB(ktx), 2)
-                view.add(LabelVB(ktx, label = R.string.menu_dns_recommended.res()), 3)
-                view.add(LabelVB(ktx, label = R.string.menu_manage.res()))
+                view.add(LabelVB(label = R.string.menu_dns_recommended.res()), 3)
+                view.add(LabelVB(label = R.string.menu_manage.res()))
                 view.add(DnsListControlVB(onTap = defaultOnTap))
                 view.add(DnsFallbackVB(onTap = defaultOnTap))
             }

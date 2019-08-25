@@ -11,7 +11,6 @@ import tunnel.*
 import java.util.*
 
 class GatewayVB(
-        private val ktx: AndroidKontext,
         private val gateway: RestModel.GatewayInfo,
         private val modal: ModalManager = modalManager,
         onTap: (SlotView) -> Unit

@@ -1,6 +1,5 @@
 package core.bits.menu.apps
 
-import android.content.Context
 import core.*
 import core.bits.AppVB
 import core.bits.SearchBarVB
@@ -13,12 +12,9 @@ import tunnel.Events
 import tunnel.Filter
 
 class AllAppsDashboardSectionVB(
-        val ctx: Context,
         val system: Boolean,
         override val name: Resource = if (system) R.string.panel_section_apps_system.res() else R.string.panel_section_apps_all.res()
 ) : ListViewBinder(), NamedViewBinder {
-
-    private val ktx = ctx.ktx("AllAppsDashboard")
 
     private val slotMutex = SlotMutex()
 
@@ -41,12 +37,12 @@ class AllAppsDashboardSectionVB(
         val whitelisted = apps.filter { (it.appId in fil) && (keyword.isEmpty() || it.label.toLowerCase().contains(keyword.toLowerCase())) }.sortedBy { it.label.toLowerCase() }
         val notWhitelisted = apps.filter { (it.appId !in fil) && (keyword.isEmpty() || it.label.toLowerCase().contains(keyword.toLowerCase())) }.sortedBy { it.label.toLowerCase() }
 
-        val listing = listOf(LabelVB(ktx, label = R.string.slot_allapp_whitelisted.res())) +
-                whitelisted.map { AppVB(it, true, ktx, onTap = slotMutex.openOneAtATime) } +
-                LabelVB(ktx, label = R.string.slot_allapp_normal.res()) +
-                notWhitelisted.map { AppVB(it, false, ktx, onTap = slotMutex.openOneAtATime) }
+        val listing = listOf(LabelVB(label = R.string.slot_allapp_whitelisted.res())) +
+                whitelisted.map { AppVB(it, true,  onTap = slotMutex.openOneAtATime) } +
+                LabelVB(label = R.string.slot_allapp_normal.res()) +
+                notWhitelisted.map { AppVB(it, false, onTap = slotMutex.openOneAtATime) }
         view?.set(listing)
-        view?.add(SearchBarVB(ktx, onSearch = { s ->
+        view?.add(SearchBarVB(onSearch = { s ->
             updateListing(s)
         }), 0)
     }

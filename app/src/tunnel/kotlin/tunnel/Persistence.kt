@@ -29,9 +29,9 @@ class RulesPersistence {
 }
 
 class FiltersPersistence {
-    val load = { ktx: AndroidKontext ->
-        loadLegacy34(ktx)
-                .or { loadLegacy35(ktx) }
+    val load = {
+        loadLegacy34()
+                .or { loadLegacy35() }
                 .or {
                     Result.of { loadPersistence("filters2", { FilterStore() }) }
                             .orElse { ex ->
@@ -48,11 +48,12 @@ class FiltersPersistence {
         Result.of { savePersistence("filters2", filterStore) }
     }
 
-    private fun loadLegacy34(ktx: AndroidKontext) = {
+    private fun loadLegacy34() = {
         if (isCustomPersistencePath())
             Err(Exception("custom persistence path detected, skipping legacy import"))
         else {
-            val prefs = ktx.ctx.getSharedPreferences("filters", Context.MODE_PRIVATE)
+            val ctx = runBlocking { getApplicationContext()!! }
+            val prefs = ctx.getSharedPreferences("filters", Context.MODE_PRIVATE)
             val legacy = prefs.getString("filters", "").split("^")
             prefs.edit().putString("filters", "").apply()
             val old = FilterSerializer().deserialise(legacy)
@@ -63,7 +64,7 @@ class FiltersPersistence {
         }
     }()
 
-    private fun loadLegacy35(ktx: AndroidKontext) = {
+    private fun loadLegacy35() = {
         Result.of { loadPersistence("filters2", { FiltersCache() }) }
                 .andThen {
                     if (it.cache.isEmpty()) Err(Exception("no 3.5 legacy persistence found"))

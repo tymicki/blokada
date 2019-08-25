@@ -13,7 +13,6 @@ import g11n.i18n
 import gs.property.IWhen
 import gs.property.device
 import gs.property.repo
-import gs.property.version
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -90,7 +89,6 @@ class FiltersStatusVB(
 class DomainForwarderVB(
         private val domain: String,
         private val date: Date,
-        private val ktx: AndroidKontext,
         private val alternative: Boolean = false,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -125,7 +123,6 @@ class DomainForwarderVB(
 class DomainBlockedVB(
         private val domain: String,
         private val date: Date,
-        private val ktx: AndroidKontext,
         private val alternative: Boolean = false,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
@@ -159,14 +156,12 @@ class DomainBlockedVB(
 
 class FilterVB(
         private val filter: Filter,
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
     override fun attach(view: SlotView) {
         val name = filter.customName ?: i18n.localisedOrNull("filters_${filter.id}_name") ?: filter.customComment
-        ?: sourceToName(ctx, filter.source)
+        ?: sourceToName(view.context, filter.source)
         val comment = filter.customComment ?: i18n.localisedOrNull("filters_${filter.id}_comment")
 
         view.enableAlternativeBackground()
@@ -187,7 +182,7 @@ class FilterVB(
                         null
                     }?.apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        ctx.startActivity(this)
+                        view.context.startActivity(this)
                     }
                 }
         )
@@ -200,8 +195,6 @@ class FilterVB(
 }
 
 class DownloadListsVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -246,12 +239,12 @@ class ConfigHelper {
 
         private fun idToString(id: Int) = i18n.getString(id)
 
-        fun getFrequencyString(ktx: Kontext) = {
+        fun getFrequencyString() = {
             val config = runBlocking { TunnelConfig().loadFromPersistence() }
             idToString(ttlToId(config.cacheTTL))
         }()
 
-        fun setFrequency(ktx: Kontext, string: String) = {
+        fun setFrequency(string: String) = {
             val config = runBlocking { TunnelConfig().loadFromPersistence() }
             val new = config.copy(cacheTTL = idToTtl(stringToId(string)))
             runBlocking { new.saveToPersistence() }
@@ -260,8 +253,6 @@ class ConfigHelper {
 }
 
 class ListDownloadFrequencyVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -278,11 +269,11 @@ class ListDownloadFrequencyVB(
                         i18n.getString(R.string.tunnel_config_refetch_frequency_3),
                         i18n.getString(R.string.tunnel_config_refetch_frequency_4)
                 ),
-                selected = ConfigHelper.getFrequencyString(ktx)
+                selected = ConfigHelper.getFrequencyString()
         )
         view.onSelect = { selected ->
-            ConfigHelper.setFrequency(ktx, selected)
-            tunnelManager.reloadConfig(ktx, device.onWifi())
+            ConfigHelper.setFrequency(selected)
+            tunnelManager.reloadConfig(device.onWifi())
             view.fold()
         }
     }
@@ -290,8 +281,6 @@ class ListDownloadFrequencyVB(
 }
 
 class DownloadOnWifiVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -307,26 +296,23 @@ class DownloadOnWifiVB(
         view.onSwitch = { switched ->
             val new = runBlocking { TunnelConfig().loadFromPersistence() }.copy(wifiOnly = switched)
             runBlocking { new.saveToPersistence() }
-            tunnelManager.reloadConfig(ktx, device.onWifi())
+            tunnelManager.reloadConfig(device.onWifi())
         }
     }
 
 }
 
 class NewFilterVB(
-        private val ktx: AndroidKontext,
         private val whitelist: Boolean = false,
-        private val ctx: Context = ktx.ctx,
-        private val nameResId: Int = R.string.slot_new_filter,
-        private val modal: ModalManager = modalManager
+        private val nameResId: Int = R.string.slot_new_filter
 ) : SlotVB() {
 
     override fun attach(view: SlotView) {
         view.type = Slot.Type.NEW
         view.content = Slot.Content(i18n.getString(nameResId))
         view.onTap = {
-            GlobalScope.launch { modal.openModal() }
-            ctx.startActivity(Intent(ctx, StepActivity::class.java).apply {
+            GlobalScope.launch { modalManager.openModal() }
+            view.context.startActivity(Intent(view.context, StepActivity::class.java).apply {
                 putExtra(StepActivity.EXTRA_WHITELIST, whitelist)
             })
         }
@@ -440,11 +426,9 @@ class EnterNameVB(
 }
 
 class SearchBarVB(
-        private val ktx: AndroidKontext,
-        val onSearch: (String) -> Unit,
-        private val modal: ModalManager = modalManager
+        val onSearch: (String) -> Unit
 ) : SlotVB(onTap = {
-    GlobalScope.launch { modal.openModal() }
+    GlobalScope.launch { modalManager.openModal() }
     val ctx = runBlocking { getActivity()!! }
     ctx.startActivity(Intent(ctx, SearchActivity::class.java))
     SearchActivity.setCallback { s ->
@@ -502,8 +486,6 @@ class EnterSearchVB(
 class AppVB(
         private val app: App,
         private val whitelisted: Boolean,
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -538,11 +520,11 @@ class AppVB(
     override fun attach(view: SlotView) {
         view.enableAlternativeBackground()
         view.type = Slot.Type.APP
-        refresh()
+        refresh(view)
     }
 
-    private fun refresh() {
-        view?.apply {
+    private fun refresh(view: SlotView) {
+        view.apply {
             val c = Slot.Content(
                     label = app.label,
                     header = app.label,
@@ -557,7 +539,7 @@ class AppVB(
                     //action2 = Slot.Action(i18n.getString(R.string.slot_action_facts), ACTION_NONE)
             )
             content = c
-            setAppIcon(AppIconRequest(ctx, app, c, this))
+            setAppIcon(AppIconRequest(view.context, app, c, this))
         }
     }
 
@@ -659,8 +641,6 @@ class DnsChoiceVB(
 }
 
 class StartOnBootVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -679,8 +659,6 @@ class StartOnBootVB(
 }
 
 class KeepAliveVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -699,8 +677,6 @@ class KeepAliveVB(
 }
 
 class WatchdogVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -719,8 +695,6 @@ class WatchdogVB(
 }
 
 class PowersaveVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -890,8 +864,6 @@ class FiltersListControlVB(
 }
 
 class StorageLocationVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -899,10 +871,10 @@ class StorageLocationVB(
         v("set persistence path", getExternalPath())
         setPersistencePath(getExternalPath())
 
-        if (!checkStoragePermissions(ktx)) {
+        if (!checkStoragePermissions()) {
             runBlocking {
                 getActivity()?.apply {
-                    askStoragePermission(ktx, this)
+                    askStoragePermission(this)
                 }
             }
         }
@@ -916,7 +888,7 @@ class StorageLocationVB(
     }
 
     private val actionImport = Slot.Action(i18n.getString(R.string.slot_action_import)) {
-        tunnelManager.reloadConfig(ktx, device.onWifi())
+        tunnelManager.reloadConfig(device.onWifi())
     }
 
     override fun attach(view: SlotView) {
@@ -939,10 +911,11 @@ class StorageLocationVB(
 
 }
 
-fun openInBrowser(ctx: Context, url: URL) {
+fun openInBrowser(url: URL) {
     val intent = Intent(Intent.ACTION_VIEW)
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     intent.setData(Uri.parse(url.toString()))
+    val ctx = runBlocking { getApplicationContext()!! }
     ctx.startActivity(intent)
 }
 
@@ -1001,65 +974,13 @@ class UpdateVB(
     }
 }
 
-class AboutVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
-        onTap: (SlotView) -> Unit
-) : SlotVB(onTap) {
-
-    private val creditsAction = Slot.Action(i18n.getString(R.string.main_credits)) {
-        openInBrowser(ctx, pages.credits())
-    }
-
-    override fun attach(view: SlotView) {
-        view.enableAlternativeBackground()
-        view.type = Slot.Type.INFO
-
-        view.content = Slot.Content(
-                label = i18n.getString(R.string.slot_about),
-                description = "${version.appName} ${version.name}",
-                detail = blokadaUserAgent(ctx),
-                action2 = creditsAction,
-                action3 = Slot.Action(i18n.getString(R.string.update_button_appinfo)) {
-                },
-                action1 = Slot.Action(i18n.getString(R.string.slot_about_share_log)) {
-                }
-        )
-
-        Handler {
-            view.unfold()
-            true
-        }.sendEmptyMessageDelayed(0, 100)
-    }
-
-    private fun newAppDetailsIntent(packageName: String): Intent {
-        val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        intent.data = Uri.parse("package:" + packageName)
-        return intent
-    }
-
-    private fun askForExternalStoragePermissionsIfNeeded(): Boolean {
-        return if (!checkStoragePermissions(ktx)) {
-            runBlocking {
-                getActivity()?.apply {
-                    askStoragePermission(ktx, this)
-                }
-            }
-            false
-        } else true
-    }
-}
 
 private val prettyFormat = SimpleDateFormat("MMMM dd, HH:mm")
-fun Date.pretty(ktx: Kontext): String {
+fun Date.pretty(): String {
     return prettyFormat.format(this)
 }
 
-class CleanupVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx
-) : ByteVB() {
+class CleanupVB : ByteVB() {
 
     override fun attach(view: ByteView) {
         view.icon(null)
@@ -1081,6 +1002,7 @@ class CleanupVB(
     }
 
     private fun isPackageInstalled(appId: String): Boolean {
+        val ctx = runBlocking { getApplicationContext()!! }
         val intent = ctx.packageManager.getLaunchIntentForPackage(appId) as Intent? ?: return false
         val activities = ctx.packageManager.queryIntentActivities(intent, 0)
         return activities.size > 0
@@ -1088,6 +1010,7 @@ class CleanupVB(
 
     private fun uninstallPackage(appId: String) {
         try {
+            val ctx = runBlocking { getApplicationContext()!! }
             val intent = Intent(Intent.ACTION_DELETE)
             intent.data = Uri.parse("package:" + appId)
             ctx.startActivity(intent)

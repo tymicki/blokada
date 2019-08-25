@@ -1,7 +1,6 @@
 package core.bits.menu.advanced
 
 import adblocker.LoggerVB
-import core.AndroidKontext
 import core.LabelVB
 import core.bits.*
 import core.bits.menu.MenuItemVB
@@ -11,30 +10,30 @@ import core.res
 import gs.presentation.NamedViewBinder
 import org.blokada.R
 
-private fun createMenuAdvanced(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemsVB(ktx,
+private fun createMenuAdvanced(): NamedViewBinder {
+    return MenuItemsVB(
             items = listOf(
-                    LabelVB(ktx, label = R.string.label_basic.res()),
+                    LabelVB(label = R.string.label_basic.res()),
                     NotificationsVB(onTap = defaultOnTap),
-                    StartOnBootVB(ktx, onTap = defaultOnTap),
-                    StorageLocationVB(ktx, onTap = defaultOnTap),
-                    LabelVB(ktx, label = R.string.label_advanced.res()),
+                    StartOnBootVB(onTap = defaultOnTap),
+                    StorageLocationVB(onTap = defaultOnTap),
+                    LabelVB(label = R.string.label_advanced.res()),
                     BackgroundAnimationVB(onTap = defaultOnTap),
                     ResetCounterVB(onTap = defaultOnTap),
-                    LoggerVB(ktx, onTap = defaultOnTap),
-                    KeepAliveVB(ktx, onTap = defaultOnTap),
-                    WatchdogVB(ktx, onTap = defaultOnTap),
-                    PowersaveVB(ktx, onTap = defaultOnTap),
+                    LoggerVB(onTap = defaultOnTap),
+                    KeepAliveVB(onTap = defaultOnTap),
+                    WatchdogVB(onTap = defaultOnTap),
+                    PowersaveVB(onTap = defaultOnTap),
                     ReportVB(onTap = defaultOnTap)
             ),
             name = R.string.panel_section_advanced_settings.res()
     )
 }
 
-fun createAdvancedMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createAdvancedMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.panel_section_advanced_settings.res(),
             icon = R.drawable.ic_tune.res(),
-            opens = createMenuAdvanced(ktx)
+            opens = createMenuAdvanced()
     )
 }

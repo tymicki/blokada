@@ -6,12 +6,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat.checkSelfPermission
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 
 internal var deferred = CompletableDeferred<Boolean>()
 
 internal const val REQUEST_STORAGE = 2
 
-fun askStoragePermission(ktx: Kontext, act: Activity) = {
+fun askStoragePermission(act: Activity) = {
     v("asking for storage permissions")
     if (Build.VERSION.SDK_INT >= 23) {
         deferred.completeExceptionally(Exception("new permission request"))
@@ -25,7 +26,7 @@ fun askStoragePermission(ktx: Kontext, act: Activity) = {
     deferred
 }()
 
-fun storagePermissionResult(ktx: Kontext, code: Int) = {
+fun storagePermissionResult(code: Int) = {
     v("received storage permissions response", code)
     when {
         deferred.isCompleted -> Unit
@@ -34,8 +35,9 @@ fun storagePermissionResult(ktx: Kontext, code: Int) = {
     }
 }()
 
-fun checkStoragePermissions(ktx: AndroidKontext) = {
-    if (Build.VERSION.SDK_INT >= 23) checkSelfPermission(ktx.ctx,
+fun checkStoragePermissions() = {
+    val ctx = runBlocking { getApplicationContext()!! }
+    if (Build.VERSION.SDK_INT >= 23) checkSelfPermission(ctx,
             Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
     else true
 }()

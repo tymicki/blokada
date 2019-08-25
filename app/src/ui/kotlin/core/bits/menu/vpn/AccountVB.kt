@@ -6,22 +6,21 @@ import core.bits.pretty
 import g11n.i18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
 import java.util.*
 
-class AccountVB(
-        private val ktx: AndroidKontext,
-        private val modal: ModalManager = modalManager
-) : BitVB() {
+class AccountVB : BitVB() {
 
     override fun attach(view: BitView) {
         view.alternative(true)
         view.icon(R.drawable.ic_account_circle_black_24dp.res())
         view.onTap {
-            GlobalScope.launch { modal.openModal() }
-            ktx.ctx.startActivity(Intent(ktx.ctx, SubscriptionActivity::class.java))
+            val ctx = runBlocking { getActivity()!! }
+            GlobalScope.launch { modalManager.openModal() }
+            ctx.startActivity(Intent(ctx, SubscriptionActivity::class.java))
         }
         update(null)
         core.on(BLOCKA_CONFIG, update)
@@ -35,7 +34,7 @@ class AccountVB(
         view?.apply {
             val isActive = cfg?.activeUntil?.after(Date()) ?: false
             val accountLabel = if (isActive)
-                i18n.getString(R.string.slot_account_label_active, cfg!!.activeUntil.pretty(ktx))
+                i18n.getString(R.string.slot_account_label_active, cfg!!.activeUntil.pretty())
             else i18n.getString(R.string.slot_account_label_inactive)
 
             label(accountLabel.res())

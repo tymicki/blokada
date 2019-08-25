@@ -16,14 +16,13 @@ import tunnel.RestModel
 import tunnel.restApi
 
 class GatewaysDashboardSectionVB(
-        val ktx: AndroidKontext,
         override val name: Resource = R.string.menu_vpn_gateways.res()
 ) : ListViewBinder(), NamedViewBinder {
 
     private val slotMutex = SlotMutex()
 
     private var items = listOf<ViewBinder>(
-            LabelVB(ktx, label = R.string.menu_vpn_gateways_label.res())
+            LabelVB(label = R.string.menu_vpn_gateways_label.res())
     )
 
     private val gatewaysRequest = Handler {
@@ -56,10 +55,10 @@ class GatewaysDashboardSectionVB(
                         200 -> {
                             body()?.run {
                                 val g = gateways.map {
-                                    GatewayVB(ktx, it, onTap = slotMutex.openOneAtATime)
+                                    GatewayVB(it, onTap = slotMutex.openOneAtATime)
                                 }
                                 items = listOf(
-                                    LabelVB(ktx, label = R.string.menu_vpn_gateways_label.res())
+                                    LabelVB(label = R.string.menu_vpn_gateways_label.res())
                                 ) + g
                                 view?.set(items)
                             }

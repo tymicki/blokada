@@ -1,15 +1,17 @@
 package core.bits.menu.dns
 
-import core.AndroidKontext
 import core.bits.menu.MenuItemVB
+import core.getActivity
 import core.res
 import gs.presentation.NamedViewBinder
+import kotlinx.coroutines.runBlocking
 import org.blokada.R
 
-fun createDnsMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createDnsMenuItem(): NamedViewBinder {
+    val ctx = runBlocking { getActivity()!! }
+    return MenuItemVB(
             label = R.string.panel_section_advanced_dns.res(),
             icon = R.drawable.ic_server.res(),
-            opens = DnsDashboardSection(ktx.ctx)
+            opens = DnsDashboardSection(ctx)
     )
 }

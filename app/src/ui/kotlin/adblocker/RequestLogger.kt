@@ -1,7 +1,6 @@
 package adblocker
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import core.*
@@ -108,7 +107,6 @@ class RequestLogger : Service() {
 }
 
 class LoggerVB (
-        private val ktx: AndroidKontext,
         onTap: (SlotView) -> Unit
 ): SlotVB(onTap) {
 
@@ -133,7 +131,7 @@ class LoggerVB (
             askForExternalStoragePermissionsIfNeeded()
             val newConfig = modeToConfig(it)
             runBlocking { newConfig.saveToPersistence() }
-            sendConfigToService(ktx.ctx, newConfig)
+            sendConfigToService(newConfig)
         }
     }
 
@@ -152,7 +150,8 @@ class LoggerVB (
         else -> LoggerConfig(active = true, logAllowed = true, logDenied = true)
     }
 
-    private fun sendConfigToService(ctx: Context, config: LoggerConfig) {
+    private fun sendConfigToService(config: LoggerConfig) {
+        val ctx = runBlocking { getApplicationContext()!! }
         val serviceIntent = Intent(ctx.applicationContext, RequestLogger::class.java)
         val newConfigArray = BooleanArray(3)
         newConfigArray[0] = config.active
@@ -163,10 +162,10 @@ class LoggerVB (
     }
 
     private fun askForExternalStoragePermissionsIfNeeded() {
-        if (!checkStoragePermissions(ktx)) {
+        if (!checkStoragePermissions()) {
             runBlocking {
                 getActivity()?.apply {
-                    askStoragePermission(ktx, this)
+                    askStoragePermission(this)
                 }
             }
         }

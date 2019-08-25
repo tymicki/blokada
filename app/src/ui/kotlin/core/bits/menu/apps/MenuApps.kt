@@ -1,6 +1,5 @@
 package core.bits.menu.apps
 
-import core.AndroidKontext
 import core.LabelVB
 import core.bits.menu.MenuItemVB
 import core.bits.menu.MenuItemsVB
@@ -8,36 +7,36 @@ import core.res
 import gs.presentation.NamedViewBinder
 import org.blokada.R
 
-fun createAppsMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createAppsMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.panel_section_apps.res(),
             icon = R.drawable.ic_apps.res(),
-            opens = createMenuApps(ktx)
+            opens = createMenuApps()
     )
 }
 
-private fun createMenuApps(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemsVB(ktx,
+private fun createMenuApps(): NamedViewBinder {
+    return MenuItemsVB(
             items = listOf(
-                    LabelVB(ktx, label = R.string.menu_apps_intro.res()),
-                    createInstalledAppsMenuItem(ktx),
-                    LabelVB(ktx, label = R.string.menu_apps_system_label.res()),
-                    createAllAppsMenuItem(ktx)
+                    LabelVB(label = R.string.menu_apps_intro.res()),
+                    createInstalledAppsMenuItem(),
+                    LabelVB(label = R.string.menu_apps_system_label.res()),
+                    createAllAppsMenuItem()
             ),
             name = R.string.panel_section_apps.res()
     )
 }
 
-private fun createInstalledAppsMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+private fun createInstalledAppsMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.panel_section_apps_all.res(),
             icon = R.drawable.ic_apps.res(),
-            opens = AllAppsDashboardSectionVB(ktx.ctx, system = false))
+            opens = AllAppsDashboardSectionVB(system = false))
 }
 
-private fun createAllAppsMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+private fun createAllAppsMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.panel_section_apps_system.res(),
             icon = R.drawable.ic_apps.res(),
-            opens = AllAppsDashboardSectionVB(ktx.ctx, system = true))
+            opens = AllAppsDashboardSectionVB(system = true))
 }

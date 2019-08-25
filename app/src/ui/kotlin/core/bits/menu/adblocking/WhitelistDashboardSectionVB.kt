@@ -1,9 +1,12 @@
 package core.bits.menu.adblocking
 
-import core.*
+import core.LabelVB
+import core.Resource
+import core.VBListView
 import core.bits.FilterVB
 import core.bits.NewFilterVB
 import core.bits.menu.MenuItemVB
+import core.res
 import gs.presentation.ListViewBinder
 import gs.presentation.NamedViewBinder
 import org.blokada.R
@@ -11,7 +14,6 @@ import tunnel.Events
 import tunnel.Filter
 
 class WhitelistDashboardSectionVB(
-        val ktx: AndroidKontext,
         override val name: Resource = R.string.panel_section_ads_whitelist.res()
 ) : ListViewBinder(), NamedViewBinder {
 
@@ -23,11 +25,11 @@ class WhitelistDashboardSectionVB(
         val inactive = items.filter { !it.active }
 
         (active + inactive).map {
-            FilterVB(it, ktx, onTap = slotMutex.openOneAtATime)
+            FilterVB(it, onTap = slotMutex.openOneAtATime)
         }.apply { view?.set(listOf(
-                LabelVB(ktx, label = R.string.menu_host_whitelist.res()),
-                NewFilterVB(ktx, whitelist = true, nameResId = R.string.slot_new_filter_whitelist),
-                LabelVB(ktx, label = R.string.panel_section_ads_whitelist.res())
+                LabelVB(label = R.string.menu_host_whitelist.res()),
+                NewFilterVB(whitelist = true, nameResId = R.string.slot_new_filter_whitelist),
+                LabelVB(label = R.string.panel_section_ads_whitelist.res())
         ) + this) }
         Unit
     }
@@ -38,10 +40,10 @@ class WhitelistDashboardSectionVB(
     }
 }
 
-fun createWhitelistMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createWhitelistMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.panel_section_ads_whitelist.res(),
             icon = R.drawable.ic_verified.res(),
-            opens = WhitelistDashboardSectionVB(ktx)
+            opens = WhitelistDashboardSectionVB()
     )
 }

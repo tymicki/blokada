@@ -36,7 +36,6 @@ internal class SlotMutex {
 
 
 class FiltersSectionVB(
-        val ktx: AndroidKontext,
         override val name: Resource = R.string.panel_section_ads_lists.res()
 ) : ListViewBinder(), NamedViewBinder {
 
@@ -46,12 +45,12 @@ class FiltersSectionVB(
         val items = filters.filter {
             !it.whitelist && !it.hidden && it.source.id != "single"
         }
-        val activeItems = items.filter { it.active }.sortedBy { it.priority }.map { FilterVB(it, ktx, onTap = slotMutex.openOneAtATime) }
-        val inactiveItems = items.filter { !it.active }.sortedBy { it.priority }.map { FilterVB(it, ktx, onTap = slotMutex.openOneAtATime) }
+        val activeItems = items.filter { it.active }.sortedBy { it.priority }.map { FilterVB(it, onTap = slotMutex.openOneAtATime) }
+        val inactiveItems = items.filter { !it.active }.sortedBy { it.priority }.map { FilterVB(it, onTap = slotMutex.openOneAtATime) }
 
         view?.set(listOf(
-                NewFilterVB(ktx, nameResId = R.string.slot_new_filter_list),
-                LabelVB(ktx, label = R.string.menu_host_list_intro.res())
+                NewFilterVB(nameResId = R.string.slot_new_filter_list),
+                LabelVB(label = R.string.menu_host_list_intro.res())
         ) + activeItems + inactiveItems)
         onSelectedListener(null)
         Unit
@@ -69,32 +68,32 @@ class FiltersSectionVB(
 
 }
 
-fun createHostsListMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createHostsListMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.panel_section_ads_lists.res(),
             icon = R.drawable.ic_block.res(),
-            opens = FiltersSectionVB(ktx)
+            opens = FiltersSectionVB()
     )
 }
 
-fun createHostsListDownloadMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createHostsListDownloadMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.menu_host_list_settings.res(),
             icon = R.drawable.ic_tune.res(),
-            opens = createMenuHostsDownload(ktx)
+            opens = createMenuHostsDownload()
     )
 }
 
-private fun createMenuHostsDownload(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemsVB(ktx,
+private fun createMenuHostsDownload(): NamedViewBinder {
+    return MenuItemsVB(
             items = listOf(
-                    LabelVB(ktx, label = R.string.menu_host_list_status.res()),
+                    LabelVB(label = R.string.menu_host_list_status.res()),
                     FiltersStatusVB(onTap = defaultOnTap),
-                    LabelVB(ktx, label = R.string.menu_host_list_download.res()),
+                    LabelVB(label = R.string.menu_host_list_download.res()),
                     FiltersListControlVB(onTap = defaultOnTap),
-                    ListDownloadFrequencyVB(ktx, onTap = defaultOnTap),
-                    DownloadOnWifiVB(ktx, onTap = defaultOnTap),
-                    DownloadListsVB(ktx, onTap = defaultOnTap)
+                    ListDownloadFrequencyVB(onTap = defaultOnTap),
+                    DownloadOnWifiVB(onTap = defaultOnTap),
+                    DownloadListsVB(onTap = defaultOnTap)
             ),
             name = R.string.menu_host_list_settings.res()
     )

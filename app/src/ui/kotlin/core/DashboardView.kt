@@ -70,7 +70,7 @@ class DashboardView(
     private var lastSubsectionTab = 0
     private var previousMeaningfulState = PanelState.DRAGGING
 
-    private val mainMenu = createMenu(ktx)
+    private val mainMenu = createMenu()
 
     private val model by lazy {
         DashboardNavigationModel(
@@ -126,8 +126,8 @@ class DashboardView(
 
     fun createDashboardSections(ktx: AndroidKontext): List<NamedViewBinder> {
         return listOf(
-                HomeDashboardSectionVB(ktx),
-                AdsDashboardSectionVB(ktx)
+                HomeDashboardSectionVB(),
+                AdsDashboardSectionVB()
         )
     }
 

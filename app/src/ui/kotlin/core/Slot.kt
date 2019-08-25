@@ -507,7 +507,6 @@ class LabelView(
 }
 
 class LabelVB(
-        val ktx: AndroidKontext,
         val label: Resource
 ) : LayoutViewBinder(R.layout.labelview) {
 

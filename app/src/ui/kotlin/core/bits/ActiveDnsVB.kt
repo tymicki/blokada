@@ -12,7 +12,6 @@ import tunnel.showSnack
 import java.nio.charset.Charset
 
 class ActiveDnsVB(
-        private val ktx: AndroidKontext,
         private val simple: Boolean = false
 ) : ByteVB() {
 

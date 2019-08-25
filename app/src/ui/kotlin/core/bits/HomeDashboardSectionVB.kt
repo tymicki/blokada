@@ -10,6 +10,7 @@ import gs.presentation.ViewBinder
 import gs.property.version
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
@@ -28,14 +29,12 @@ data class SlotsSeenStatus(
 private const val PERSISTENCE_KEY = "slots:status"
 
 class HomeDashboardSectionVB(
-        val ktx: AndroidKontext,
-        val ctx: Context = ktx.ctx,
         override val name: Resource = R.string.panel_section_home.res()
 ) : ListViewBinder(), NamedViewBinder {
 
     override fun attach(view: VBListView) {
         core.on(BLOCKA_CONFIG, listener)
-        if (isLandscape(ktx.ctx)) {
+        if (isLandscape(view.context)) {
             view.enableLandscapeMode(reversed = false)
             view.set(items)
         } else view.set(items)
@@ -71,8 +70,8 @@ class HomeDashboardSectionVB(
             MasterSwitchVB(),
             AdsBlockedVB(),
             VpnStatusVB(),
-            ActiveDnsVB(ktx),
-            ShareVB(ktx)
+            ActiveDnsVB(),
+            ShareVB()
     )
 
     private val listener = { config: BlockaConfig ->
@@ -83,7 +82,7 @@ class HomeDashboardSectionVB(
 
     private var cfg: BlockaConfig = BlockaConfig()
     private var added: OneTimeByte? = null
-    private val oneTimeBytes = createOneTimeBytes(ktx)
+    private val oneTimeBytes = createOneTimeBytes()
 
     private fun markAsSeen() {
         val cfg = loadPersistence(PERSISTENCE_KEY, { SlotsSeenStatus() })
@@ -115,6 +114,7 @@ class HomeDashboardSectionVB(
     }
 
     private fun isPackageInstalled(appId: String): Boolean {
+        val ctx = runBlocking { getApplicationContext()!! }
         val intent = ctx.packageManager.getLaunchIntentForPackage(appId) as Intent? ?: return false
         val activities = ctx.packageManager.queryIntentActivities(intent, 0)
         return activities.size > 0
@@ -196,10 +196,9 @@ class Adblocking2VB() : BitVB() {
 }
 
 class SimpleByteVB(
-        private val ktx: AndroidKontext,
         private val label: Resource,
         private val description: Resource,
-        private val onTap: (ktx: AndroidKontext) -> Unit,
+        private val onTap: () -> Unit,
         var onTapped: () -> Unit = {}
 ) : ByteVB() {
     override fun attach(view: ByteView) {
@@ -207,7 +206,7 @@ class SimpleByteVB(
         view.label(label)
         view.state(description, smallcap = false)
         view.onTap {
-            onTap(ktx)
+            onTap()
             onTapped()
         }
     }
@@ -217,38 +216,37 @@ enum class OneTimeByte {
     CLEANUP, UPDATED, OBSOLETE, DONATE
 }
 
-fun createOneTimeBytes(ktx: AndroidKontext) = mapOf(
-        OneTimeByte.CLEANUP to CleanupVB(ktx),
-        OneTimeByte.UPDATED to SimpleByteVB(ktx,
+fun createOneTimeBytes() = mapOf(
+        OneTimeByte.CLEANUP to CleanupVB(),
+        OneTimeByte.UPDATED to SimpleByteVB(
                 label = R.string.home_whats_new.res(),
                 description = R.string.slot_updated_desc.res(),
-                onTap = { ktx ->
+                onTap = {
+                    val ctx = runBlocking { getApplicationContext()!! }
                     GlobalScope.launch { modalManager.openModal() }
-                    ktx.ctx.startActivity(Intent(ktx.ctx, WebViewActivity::class.java).apply {
+                    ctx.startActivity(Intent(ctx, WebViewActivity::class.java).apply {
                         putExtra(WebViewActivity.EXTRA_URL, pages.updated().toExternalForm())
                     })
                 }
         ),
-        OneTimeByte.OBSOLETE to SimpleByteVB(ktx,
+        OneTimeByte.OBSOLETE to SimpleByteVB(
                 label = R.string.home_update_required.res(),
                 description = R.string.slot_obsolete_desc.res(),
-                onTap = { ktx ->
-                    openInBrowser(ktx.ctx, pages.download())
+                onTap = {
+                    openInBrowser(pages.download())
                 }
         ),
-        OneTimeByte.DONATE to SimpleByteVB(ktx,
+        OneTimeByte.DONATE to SimpleByteVB(
                 label = R.string.home_donate.res(),
                 description = R.string.slot_donate_desc.res(),
-                onTap = { ktx ->
-                    openInBrowser(ktx.ctx, pages.donate())
+                onTap = {
+                    openInBrowser(pages.donate())
                 }
         )
 )
 
 
-class ShareVB(
-        val ktx: AndroidKontext
-) : ByteVB() {
+class ShareVB : ByteVB() {
     override fun attach(view: ByteView) {
         view.run {
             icon(null)
@@ -262,14 +260,15 @@ class ShareVB(
 
     private fun share() {
         try {
+            val ctx = runBlocking { getApplicationContext()!! }
             val shareIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, getMessage(ktx.ctx,
+                putExtra(Intent.EXTRA_TEXT, getMessage(ctx,
                         tunnelState.tunnelDropStart(), Format.counter(tunnelState.tunnelDropCount())))
                 type = "text/plain"
             }
-            ktx.ctx.startActivity(Intent.createChooser(shareIntent,
-                    ktx.ctx.getText(R.string.slot_dropped_share_title)))
+            ctx.startActivity(Intent.createChooser(shareIntent,
+                    ctx.getText(R.string.slot_dropped_share_title)))
         } catch (e: Exception) {}
     }
 

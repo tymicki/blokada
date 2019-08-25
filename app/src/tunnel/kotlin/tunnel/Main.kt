@@ -109,7 +109,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
         val url = pages.filters().toExternalForm()
         if (pages.filters().host != "localhost" && url != oldUrl) {
             oldUrl = url
-            tunnelManager.setUrl(ctx.ktx("filtersUrl:changed"), url, device.onWifi())
+            tunnelManager.setUrl(url, device.onWifi())
         }
     }
 
@@ -280,14 +280,14 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     tunnelState.startOnBoot {}
 
     device.onWifi.doWhenChanged().then {
-        tunnelManager.reloadConfig(ctx.ktx("onWifi:changed"), device.onWifi())
+        tunnelManager.reloadConfig(device.onWifi())
     }
 
     GlobalScope.async {
         registerTunnelConfigEvent()
         registerBlockaConfigEvent(ctx.ktx("blockaConfigInit"))
 
-        tunnelManager.reloadConfig(ctx.ktx("load:persistence:after:start"), device.onWifi())
+        tunnelManager.reloadConfig(device.onWifi())
     }
 }
 
@@ -409,9 +409,9 @@ class Main(
         else -> servers
     }
 
-    fun reloadConfig(ktx: AndroidKontext, onWifi: Boolean) = GlobalScope.async(CTRL) {
+    fun reloadConfig(onWifi: Boolean) = GlobalScope.async(CTRL) {
         v("reloading config")
-        createComponents(ktx, onWifi)
+        createComponents(onWifi)
         filters.setUrl(currentUrl)
         if (filters.sync()) {
             filters.save()
@@ -419,13 +419,13 @@ class Main(
         }
     }
 
-    fun setUrl(ktx: AndroidKontext, url: String, onWifi: Boolean) = GlobalScope.async(CTRL) {
+    fun setUrl(url: String, onWifi: Boolean) = GlobalScope.async(CTRL) {
         if (url != currentUrl) {
             currentUrl = url
 
             val cfg = config.loadFromPersistence()
             v("setting url, firstLoad: ${cfg.firstLoad}", url)
-            createComponents(ktx, onWifi)
+            createComponents(onWifi)
             filters.setUrl(url)
             if (filters.sync()) {
                 v("first fetch successful, unsetting firstLoad flag")
@@ -445,8 +445,8 @@ class Main(
         enabled = false
     }
 
-    fun load(ktx: AndroidKontext) = GlobalScope.async(CTRL) {
-        filters.load(ktx)
+    fun load() = GlobalScope.async(CTRL) {
+        filters.load()
         restartTunnelThread()
     }
 
@@ -508,9 +508,9 @@ class Main(
         if (!protected && isVpnOn()) e("could not protect", socket)
     }
 
-    private fun createComponents(ktx: AndroidKontext, onWifi: Boolean) {
+    private fun createComponents(onWifi: Boolean) {
         config = runBlocking { config.loadFromPersistence() }
-        blockaConfig = Persistence.blocka.load(ktx)
+        blockaConfig = runBlocking { blockaConfig.loadFromPersistence() }
         v("create components, onWifi: $onWifi, firstLoad: ${config.firstLoad}", config)
         filters = FilterManager(
                 blockade = blockade,
@@ -527,7 +527,7 @@ class Main(
                             || config.wifiOnly && !onWifi)
                 }
         )
-        filters.load(ktx)
+        filters.load()
     }
 
     private suspend fun startVpn() {

@@ -14,7 +14,6 @@ import tunnel.Request
 import kotlin.math.max
 
 class AdsDashboardSectionVB(
-        val ktx: AndroidKontext,
         override val name: Resource = R.string.menu_ads.res()
 ) : ListViewBinder(), NamedViewBinder {
 
@@ -27,7 +26,8 @@ class AdsDashboardSectionVB(
     }
 
     private val countLimit: Int by lazy {
-        val limit = screenHeight / ktx.ctx.dpToPx(80)
+        val ctx = runBlocking { getApplicationContext()!! }
+        val limit = screenHeight / ctx.dpToPx(80)
         max(5, limit)
     }
 
@@ -40,8 +40,8 @@ class AdsDashboardSectionVB(
         if (!displayingEntries.contains(it.domain)) {
             displayingEntries.add(it.domain)
             val dash = if (it.blocked)
-                DomainBlockedVB(it.domain, it.time, ktx, onTap = slotMutex.openOneAtATime) else
-                DomainForwarderVB(it.domain, it.time, ktx, onTap = slotMutex.openOneAtATime)
+                DomainBlockedVB(it.domain, it.time, onTap = slotMutex.openOneAtATime) else
+                DomainForwarderVB(it.domain, it.time, onTap = slotMutex.openOneAtATime)
             items.add(dash)
             view?.add(dash)
             trimListIfNecessary()
@@ -60,7 +60,7 @@ class AdsDashboardSectionVB(
     }
 
     override fun attach(view: VBListView) {
-        if (isLandscape(ktx.ctx)) {
+        if (isLandscape(view.context)) {
             view.enableLandscapeMode(reversed = false)
         }
 

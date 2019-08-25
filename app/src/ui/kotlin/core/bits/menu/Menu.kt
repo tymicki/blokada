@@ -12,167 +12,171 @@ import core.bits.menu.dns.createDnsMenuItem
 import core.bits.menu.vpn.createVpnMenuItem
 import core.bits.openInBrowser
 import gs.presentation.NamedViewBinder
+import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
 import org.blokada.R
 import tunnel.blokadaUserAgent
 import java.io.File
 
-fun createMenu(ktx: AndroidKontext): MenuItemsVB {
-    return MenuItemsVB(ktx,
+fun createMenu(): MenuItemsVB {
+    return MenuItemsVB(
             items = listOf(
-                    LabelVB(ktx, label = R.string.menu_configure.res()),
-                    createAdblockingMenuItem(ktx),
-                    createVpnMenuItem(ktx),
-                    createDnsMenuItem(ktx),
-                    LabelVB(ktx, label = R.string.menu_exclude.res()),
-                    createAppsMenuItem(ktx),
-                    LabelVB(ktx, label = R.string.menu_dive_in.res()),
-                    createDonateMenuItem(ktx),
-                    createAdvancedMenuItem(ktx),
-                    createLearnMoreMenuItem(ktx),
-                    createAboutMenuItem(ktx)
+                    LabelVB(label = R.string.menu_configure.res()),
+                    createAdblockingMenuItem(),
+                    createVpnMenuItem(),
+                    createDnsMenuItem(),
+                    LabelVB(label = R.string.menu_exclude.res()),
+                    createAppsMenuItem(),
+                    LabelVB(label = R.string.menu_dive_in.res()),
+                    createDonateMenuItem(),
+                    createAdvancedMenuItem(),
+                    createLearnMoreMenuItem(),
+                    createAboutMenuItem()
             ),
             name = R.string.panel_section_menu.res()
     )
 }
 
-fun createLearnMoreMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createLearnMoreMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.menu_learn_more.res(),
             icon = R.drawable.ic_help_outline.res(),
-            opens = createLearnMoreMenu(ktx)
+            opens = createLearnMoreMenu()
     )
 }
 
-fun createLearnMoreMenu(ktx: AndroidKontext): MenuItemsVB {
-    return MenuItemsVB(ktx,
+fun createLearnMoreMenu(): MenuItemsVB {
+    return MenuItemsVB(
             items = listOf(
-                    LabelVB(ktx, label = R.string.menu_knowledge.res()),
-                    createBlogMenuItem(ktx),
-                    createHelpMenuItem(ktx),
-                    LabelVB(ktx, label = R.string.menu_get_involved.res()),
-                    createCtaMenuItem(ktx),
-                    createTelegramMenuItem(ktx)
+                    LabelVB(label = R.string.menu_knowledge.res()),
+                    createBlogMenuItem(),
+                    createHelpMenuItem(),
+                    LabelVB(label = R.string.menu_get_involved.res()),
+                    createCtaMenuItem(),
+                    createTelegramMenuItem()
             ),
             name = R.string.menu_learn_more.res()
     )
 }
 
-fun createHelpMenuItem(ktx: AndroidKontext): NamedViewBinder {
+fun createHelpMenuItem(): NamedViewBinder {
     val helpPage = pages.help
-    return SimpleMenuItemVB(ktx,
+    return SimpleMenuItemVB(
             label = R.string.panel_section_home_help.res(),
             icon = R.drawable.ic_help_outline.res(),
-            action = { openInBrowser(ktx.ctx, helpPage()) }
+            action = { openInBrowser(helpPage()) }
     )
 }
 
-fun createCtaMenuItem(ktx: AndroidKontext): NamedViewBinder {
+fun createCtaMenuItem(): NamedViewBinder {
     val page = pages.cta
-    return SimpleMenuItemVB(ktx,
+    return SimpleMenuItemVB(
             label = R.string.main_cta.res(),
             icon = R.drawable.ic_feedback.res(),
-            action = { openInBrowser(ktx.ctx, page()) }
+            action = { openInBrowser(page()) }
     )
 }
 
-fun createDonateMenuItem(ktx: AndroidKontext): NamedViewBinder {
+fun createDonateMenuItem(): NamedViewBinder {
     val page = pages.donate
-    return SimpleMenuItemVB(ktx,
+    return SimpleMenuItemVB(
             label = R.string.slot_donate_action.res(),
             icon = R.drawable.ic_heart_box.res(),
-            action = { openInBrowser(ktx.ctx, page()) }
+            action = { openInBrowser(page()) }
     )
 }
 
-fun createTelegramMenuItem(ktx: AndroidKontext): NamedViewBinder {
+fun createTelegramMenuItem(): NamedViewBinder {
     val page = pages.chat
-    return SimpleMenuItemVB(ktx,
+    return SimpleMenuItemVB(
             label = R.string.menu_telegram.res(),
             icon = R.drawable.ic_comment_multiple_outline.res(),
-            action = { openInBrowser(ktx.ctx, page()) }
+            action = { openInBrowser(page()) }
     )
 }
 
-fun createBlogMenuItem(ktx: AndroidKontext): NamedViewBinder {
+fun createBlogMenuItem(): NamedViewBinder {
     val page = pages.news
-    return SimpleMenuItemVB(ktx,
+    return SimpleMenuItemVB(
             label = R.string.main_blog_text.res(),
             icon = R.drawable.ic_earth.res(),
-            action = { openInBrowser(ktx.ctx, page()) }
+            action = { openInBrowser(page()) }
     )
 }
 
-fun createAboutMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createAboutMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.slot_about.res(),
             icon = R.drawable.ic_info.res(),
-            opens = createAboutMenu(ktx)
+            opens = createAboutMenu()
     )
 }
 
-fun createAboutMenu(ktx: AndroidKontext): MenuItemsVB {
-    return MenuItemsVB(ktx,
+fun createAboutMenu(): MenuItemsVB {
+    val ctx = runBlocking { getApplicationContext()!! }
+    return MenuItemsVB(
             items = listOf(
-                    LabelVB(ktx, label = BuildConfig.VERSION_NAME.toString().res()),
+                    LabelVB(label = BuildConfig.VERSION_NAME.toString().res()),
                     UpdateVB(onTap = defaultOnTap),
-                    LabelVB(ktx, label = R.string.menu_share_log_label.res()),
-                    createLogMenuItem(ktx),
-                    LabelVB(ktx, label = R.string.menu_other.res()),
-                    createAppDetailsMenuItem(ktx),
-                    createChangelogMenuItem(ktx),
-                    createCreditsMenuItem(ktx),
-                    LabelVB(ktx, label = blokadaUserAgent(ktx.ctx).res())
+                    LabelVB(label = R.string.menu_share_log_label.res()),
+                    createLogMenuItem(),
+                    LabelVB(label = R.string.menu_other.res()),
+                    createAppDetailsMenuItem(),
+                    createChangelogMenuItem(),
+                    createCreditsMenuItem(),
+                    LabelVB(label = blokadaUserAgent(ctx).res())
             ),
             name = R.string.slot_about.res()
     )
 }
 
-fun createCreditsMenuItem(ktx: AndroidKontext): NamedViewBinder {
+fun createCreditsMenuItem(): NamedViewBinder {
     val page = pages.credits
-    return SimpleMenuItemVB(ktx,
+    return SimpleMenuItemVB(
             label = R.string.main_credits.res(),
             icon = R.drawable.ic_earth.res(),
-            action = { openInBrowser(ktx.ctx, page()) }
+            action = { openInBrowser(page()) }
     )
 }
 
-fun createChangelogMenuItem(ktx: AndroidKontext): NamedViewBinder {
+fun createChangelogMenuItem(): NamedViewBinder {
     val page = pages.changelog
-    return SimpleMenuItemVB(ktx,
+    return SimpleMenuItemVB(
             label = R.string.main_changelog.res(),
             icon = R.drawable.ic_code_tags.res(),
-            action = { openInBrowser(ktx.ctx, page()) }
+            action = { openInBrowser(page()) }
     )
 }
 
-fun createLogMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return SimpleMenuItemVB(ktx,
+fun createLogMenuItem(): NamedViewBinder {
+    return SimpleMenuItemVB(
             label = R.string.main_log.res(),
             icon = R.drawable.ic_bug_report_black_24dp.res(),
             action = {
                 //                    if (askForExternalStoragePermissionsIfNeeded(activity)) {
-                val uri = File(ktx.ctx.filesDir, "/blokada.log")
+                val ctx = runBlocking { getApplicationContext()!! }
+                val uri = File(ctx.filesDir, "/blokada.log")
                 val openFileIntent = Intent(Intent.ACTION_SEND)
                 openFileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 openFileIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 openFileIntent.type = "plain/*"
                 openFileIntent.putExtra(Intent.EXTRA_STREAM,
-                        FileProvider.getUriForFile(ktx.ctx, "${ktx.ctx.packageName}.files",
+                        FileProvider.getUriForFile(ctx, "${ctx.packageName}.files",
                         uri))
-                ktx.ctx.startActivity(openFileIntent)
+                ctx.startActivity(openFileIntent)
 //                    }
             }
     )
 }
 
-fun createAppDetailsMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return SimpleMenuItemVB(ktx,
+fun createAppDetailsMenuItem(): NamedViewBinder {
+    return SimpleMenuItemVB(
             label = R.string.update_button_appinfo.res(),
             icon = R.drawable.ic_info.res(),
             action = {
                 try {
-                    ktx.ctx.startActivity(newAppDetailsIntent(ktx.ctx.packageName))
+                    val ctx = runBlocking { getApplicationContext()!! }
+                    ctx.startActivity(newAppDetailsIntent(ctx.packageName))
                 } catch (e: Exception) {
                 }
             }

@@ -27,7 +27,7 @@ internal class FilterManager(
         private val doValidateFilterStoreCache: (FilterStore) -> Boolean = {
             it.cache.isNotEmpty() && it.lastFetch + 86400 * 1000 > System.currentTimeMillis()
         },
-        private val doLoadFilterStore: (AndroidKontext) -> Result<FilterStore> = Persistence.filters.load,
+        private val doLoadFilterStore: () -> Result<FilterStore> = Persistence.filters.load,
         private val doSaveFilterStore: (FilterStore) -> Result<Any> = Persistence.filters.save,
         private val doGetNow: () -> Time = { System.currentTimeMillis() },
         private val doGetMemoryLimit: () -> MemoryLimit = Memory.linesAvailable,
@@ -37,8 +37,8 @@ internal class FilterManager(
 
     private var store = FilterStore(lastFetch = 0)
 
-    fun load(ktx: AndroidKontext) {
-        doLoadFilterStore(ktx).mapBoth(
+    fun load() {
+        doLoadFilterStore().mapBoth(
                 success = {
                     v("loaded FilterStore from persistence", it.url, it.cache.size)
                     core.emit(Events.FILTERS_CHANGED, it.cache)

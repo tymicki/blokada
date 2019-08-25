@@ -13,7 +13,6 @@ fun isLandscape(ctx: Context): Boolean {
 }
 
 class MenuItemsVB(
-        val ktx: AndroidKontext,
         val items: List<ViewBinder>,
         override val name: Resource = R.string.panel_section_menu.res()
 ) : ListViewBinder(), NamedViewBinder {
@@ -29,7 +28,6 @@ class MenuItemsVB(
 }
 
 class MenuItemVB(
-        val ktx: Kontext,
         val label: Resource,
         val icon: Resource,
         val opens: NamedViewBinder,
@@ -52,10 +50,9 @@ class MenuItemVB(
 }
 
 class SimpleMenuItemVB(
-        val ktx: AndroidKontext,
         val label: Resource,
         val icon: Resource,
-        val action: (ktx: AndroidKontext) -> Unit,
+        val action: () -> Unit,
         override val name: Resource = label
 ): BitVB(), NamedViewBinder {
 
@@ -65,7 +62,7 @@ class SimpleMenuItemVB(
         view.arrow(true)
         view.alternative(true)
         view.onTap {
-            action(ktx)
+            action()
         }
     }
 

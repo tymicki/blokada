@@ -14,7 +14,6 @@ import tunnel.Persistence
 import tunnel.Request
 
 class HostsLogVB(
-        val ktx: AndroidKontext,
         override val name: Resource = R.string.panel_section_ads_log.res()
 ) : ListViewBinder(), NamedViewBinder {
 
@@ -42,7 +41,7 @@ class HostsLogVB(
     override fun attach(view: VBListView) {
         view.enableAlternativeMode()
         if(view.getItemCount() == 0) {
-            view.add(SearchBarVB(ktx, onSearch = { s ->
+            view.add(SearchBarVB(onSearch = { s ->
                 searchString = s
                 nextBatch = 0
                 this.items.clear()
@@ -56,7 +55,7 @@ class HostsLogVB(
                 view.set(emptyList())
                 attach(view)
             })
-            view.add(LabelVB(ktx, label = R.string.menu_ads_live_label.res()))
+            view.add(LabelVB(label = R.string.menu_ads_live_label.res()))
         }
         if (items.isEmpty()) {
             var items = loadBatch(0)
@@ -104,16 +103,16 @@ class HostsLogVB(
 
     private fun requestToVB(it: Request): SlotVB {
         return if (it.blocked)
-            DomainBlockedVB(it.domain, it.time, ktx, alternative = true, onTap = slotMutex.openOneAtATime) else
-            DomainForwarderVB(it.domain, it.time, ktx, alternative = true, onTap = slotMutex.openOneAtATime)
+            DomainBlockedVB(it.domain, it.time, alternative = true, onTap = slotMutex.openOneAtATime) else
+            DomainForwarderVB(it.domain, it.time,  alternative = true, onTap = slotMutex.openOneAtATime)
     }
 }
 
-fun createHostsLogMenuItem(ktx: AndroidKontext): NamedViewBinder {
-    return MenuItemVB(ktx,
+fun createHostsLogMenuItem(): NamedViewBinder {
+    return MenuItemVB(
             label = R.string.panel_section_ads_log.res(),
             icon = R.drawable.ic_menu.res(),
-            opens = HostsLogVB(ktx)
+            opens = HostsLogVB()
     )
 }
 
