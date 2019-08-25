@@ -251,7 +251,6 @@ dependencies {
 
     // Kotlin and its dependencies
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'com.github.salomonbrys.kodein:kodein:4.1.0'
     implementation 'nl.komponents.kovenant:kovenant-core:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-android:3.3.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.0-RC2'

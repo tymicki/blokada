@@ -2,7 +2,6 @@ package core.bits
 
 import android.content.Context
 import android.content.Intent
-import com.github.salomonbrys.kodein.instance
 import core.*
 import core.bits.menu.isLandscape
 import gs.presentation.ListViewBinder
@@ -31,7 +30,6 @@ private const val PERSISTENCE_KEY = "slots:status"
 class HomeDashboardSectionVB(
         val ktx: AndroidKontext,
         val ctx: Context = ktx.ctx,
-        val welcome: Welcome = ktx.di().instance(),
         override val name: Resource = R.string.panel_section_home.res()
 ) : ListViewBinder(), NamedViewBinder {
 

@@ -7,16 +7,20 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.PowerManager
-import com.github.salomonbrys.kodein.*
 import core.getApplicationContext
 import core.v
 import core.workerFor
 import g11n.i18n
-import gs.environment.*
-import kotlinx.coroutines.runBlocking
+import gs.environment.Worker
+import gs.environment.isConnected
+import gs.environment.isTethering
+import gs.environment.isWifi
+import kotlinx.coroutines.*
 import nl.komponents.kovenant.Kovenant
 import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.android.androidUiDispatcher
 import nl.komponents.kovenant.task
+import nl.komponents.kovenant.ui.KovenantUi
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -74,7 +78,7 @@ class DeviceImpl (
 class ConnectivityReceiver : BroadcastReceiver() {
 
     override fun onReceive(ctx: Context, intent: Intent?) {
-        task(ctx.inject().with("ConnectivityReceiver").instance()) {
+        GlobalScope.launch {
             // Do it async so that Android can refresh the current network info before we access it
             v("connectivity receiver ping")
             device.connected.refresh()
@@ -88,34 +92,33 @@ class ConnectivityReceiver : BroadcastReceiver() {
             filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
             filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
             filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION)
-            ctx.registerReceiver(ctx.inject().instance<ConnectivityReceiver>(), filter)
+            ctx.registerReceiver(connectivityReceiver, filter)
         }
 
     }
 
 }
 
-fun newDeviceModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
-        bind<ConnectivityReceiver>() with singleton { ConnectivityReceiver() }
-        bind<ScreenOnReceiver>() with singleton { ScreenOnReceiver() }
-        bind<LocaleReceiver>() with singleton { LocaleReceiver() }
-        onReady {
-            // Register various Android listeners to receive events
-            task {
-                // In a task because we are in DI and using DI can lead to stack overflow
-                ConnectivityReceiver.register(ctx)
-                ScreenOnReceiver.register(ctx)
-                LocaleReceiver.register(ctx)
-            }
-        }
+private val connectivityReceiver = ConnectivityReceiver()
+private val screenOnReceiver = ScreenOnReceiver()
+private val localeReceiver = LocaleReceiver()
+
+suspend fun initDevice() = withContext(Dispatchers.Main.immediate) {
+    val ctx = getApplicationContext()!!
+    ConnectivityReceiver.register(ctx)
+    ScreenOnReceiver.register(ctx)
+    LocaleReceiver.register(ctx)
+
+    KovenantUi.uiContext {
+        dispatcher = androidUiDispatcher()
     }
 }
 
 class ScreenOnReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
-        task(ctx.inject().with("ScreenOnReceiver").instance()) {
+        GlobalScope.launch {
             // This causes everything to load
+            // TODO: double care after refactor
             v("screen receiver ping")
             device.screenOn.refresh()
         }
@@ -127,7 +130,7 @@ class ScreenOnReceiver : BroadcastReceiver() {
             val filter = IntentFilter()
             filter.addAction(Intent.ACTION_SCREEN_ON)
             filter.addAction(Intent.ACTION_SCREEN_OFF)
-            ctx.registerReceiver(ctx.inject().instance<ScreenOnReceiver>(), filter)
+            ctx.registerReceiver(screenOnReceiver, filter)
         }
 
     }
@@ -135,7 +138,7 @@ class ScreenOnReceiver : BroadcastReceiver() {
 
 class LocaleReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent?) {
-        task(ctx.inject().with("LocaleReceiver").instance()) {
+        GlobalScope.launch {
             v("locale receiver ping")
             i18n.locale.refresh(force = true)
         }
@@ -145,7 +148,7 @@ class LocaleReceiver : BroadcastReceiver() {
         fun register(ctx: Context) {
             val filter = IntentFilter()
             filter.addAction(Intent.ACTION_LOCALE_CHANGED)
-            ctx.registerReceiver(ctx.inject().instance<LocaleReceiver>(), filter)
+            ctx.registerReceiver(localeReceiver, filter)
         }
 
     }

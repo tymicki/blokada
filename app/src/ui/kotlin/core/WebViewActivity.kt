@@ -3,12 +3,10 @@ package core
 import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import com.github.salomonbrys.kodein.instance
-import com.github.salomonbrys.kodein.with
-import gs.environment.Worker
 import gs.presentation.WebDash
 import gs.property.IProperty
 import gs.property.IWhen
+import gs.property.kctx
 import gs.property.newProperty
 import org.blokada.R
 import java.net.URL
@@ -23,7 +21,6 @@ class WebViewActivity : Activity() {
     private val container by lazy { findViewById<FrameLayout>(R.id.view) }
     private val close by lazy { findViewById<ImageView>(R.id.close) }
     private val ktx = ktx("WebViewActivity")
-    private val w: Worker by lazy { ktx.di().with("gscore").instance<Worker>() }
 
     private lateinit var url: IProperty<URL>
 
@@ -39,7 +36,7 @@ class WebViewActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.subscription_container)
 
-        url = newProperty(w, { URL(intent.getStringExtra(EXTRA_URL)) })
+        url = newProperty(kctx, { URL(intent.getStringExtra(EXTRA_URL)) })
 
         view = dash.createView(this, container)
         listener = url.doOnUiWhenSet().then {

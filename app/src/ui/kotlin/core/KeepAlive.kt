@@ -10,65 +10,58 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Binder
 import android.os.IBinder
-import com.github.salomonbrys.kodein.*
 import gs.environment.Worker
-import gs.property.IProperty
 import gs.property.IWhen
+import gs.property.kctx
 import gs.property.newPersistedProperty2
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import notification.createNotificationKeepAlive
 import org.blokada.R
 
-abstract class KeepAlive {
-    abstract val keepAlive: IProperty<Boolean>
+val keepAlive by lazy {
+    KeepAliveImpl(kctx)
 }
 
 
 class KeepAliveImpl(
         private val kctx: Worker
-) : KeepAlive() {
-    override val keepAlive = newPersistedProperty2(kctx, "keepAlive", { false })
+) {
+    val keepAlive = newPersistedProperty2(kctx, "keepAlive", { false })
 }
 
-fun newKeepAliveModule(ctx: Context): Kodein.Module {
-    return Kodein.Module {
-        bind<KeepAlive>() with singleton {
-            KeepAliveImpl(kctx = with("gscore").instance())
-        }
-        onReady {
-            val s: KeepAlive = instance()
-
-            // Start / stop the keep alive service depending on the configuration flag
-            val keepAliveNotificationUpdater = { dropped: Int ->
-                val nm: NotificationManager = instance()
-                val n = createNotificationKeepAlive(ctx = ctx, count = dropped,
-                        last = tunnelState.tunnelRecentDropped().lastOrNull() ?:
-                        ctx.getString(R.string.notification_keepalive_none)
-                )
-                nm.notify(3, n)
+suspend fun initKeepAlive() = withContext(Dispatchers.Main.immediate) {
+    val ctx = getApplicationContext()!!
+    // Start / stop the keep alive service depending on the configuration flag
+    val keepAliveNotificationUpdater = { dropped: Int ->
+        val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val n = createNotificationKeepAlive(ctx = ctx, count = dropped,
+                last = tunnelState.tunnelRecentDropped().lastOrNull() ?:
+                ctx.getString(R.string.notification_keepalive_none)
+        )
+        nm.notify(3, n)
+    }
+    var w1: IWhen? = null
+    var w2: IWhen? = null
+    keepAlive.keepAlive.doWhenSet().then {
+        if (keepAlive.keepAlive()) {
+            tunnelState.tunnelDropCount.cancel(w1)
+            w1 = tunnelState.tunnelDropCount.doOnUiWhenSet().then {
+                keepAliveNotificationUpdater(tunnelState.tunnelDropCount())
             }
-            var w1: IWhen? = null
-            var w2: IWhen? = null
-            s.keepAlive.doWhenSet().then {
-                if (s.keepAlive()) {
-                    tunnelState.tunnelDropCount.cancel(w1)
-                    w1 = tunnelState.tunnelDropCount.doOnUiWhenSet().then {
-                        keepAliveNotificationUpdater(tunnelState.tunnelDropCount())
-                    }
-                    tunnelState.enabled.cancel(w2)
-                    w2 = tunnelState.enabled.doOnUiWhenSet().then {
-                        keepAliveNotificationUpdater(tunnelState.tunnelDropCount())
-                    }
-                    keepAliveAgent.bind(ctx)
-                } else {
-                    tunnelState.tunnelDropCount.cancel(w1)
-                    tunnelState.enabled.cancel(w2)
-                    keepAliveAgent.unbind(ctx)
-                }
+            tunnelState.enabled.cancel(w2)
+            w2 = tunnelState.enabled.doOnUiWhenSet().then {
+                keepAliveNotificationUpdater(tunnelState.tunnelDropCount())
             }
-
-            s.keepAlive {}
+            keepAliveAgent.bind(ctx)
+        } else {
+            tunnelState.tunnelDropCount.cancel(w1)
+            tunnelState.enabled.cancel(w2)
+            keepAliveAgent.unbind(ctx)
         }
     }
+
+    keepAlive.keepAlive {}
 }
 
 // So that it's never GC'd, not sure if it actually does anything

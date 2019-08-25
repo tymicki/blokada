@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Handler
 import android.util.Base64
 import android.widget.EditText
-import com.github.salomonbrys.kodein.instance
 import core.*
 import filter.hostnameRegex
 import g11n.g11Manager
@@ -22,7 +21,6 @@ import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.*
 import tunnel.Filter
-import update.UpdateCoordinator
 import java.net.URL
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
@@ -708,7 +706,6 @@ class StartOnBootVB(
 class KeepAliveVB(
         private val ktx: AndroidKontext,
         private val ctx: Context = ktx.ctx,
-        private val keepAlive: KeepAlive = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -987,9 +984,6 @@ fun openInBrowser(ctx: Context, url: URL) {
 }
 
 class UpdateVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
-        private val updater: UpdateCoordinator = ktx.di().instance(),
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -1003,6 +997,8 @@ class UpdateVB(
             val current = repo.content()
             view.type = Slot.Type.INFO
 
+            val ctx = runBlocking { getActivity()!! }
+
             if (isUpdate(ctx, current.newestVersionCode)) {
                 view.content = Slot.Content(
                         label = i18n.getString(R.string.update_dash_available),
@@ -1010,7 +1006,7 @@ class UpdateVB(
                         action1 = Slot.Action(i18n.getString(R.string.update_button)) {
                             if (clickCounter++ % 2 == 0) {
                                 GlobalScope.launch { showSnack(R.string.update_starting) }
-                                updater.start(repo.content().downloadLinks)
+                                updateCoordinator.start(repo.content().downloadLinks)
                             } else {
                                 val intent = Intent(Intent.ACTION_VIEW)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -1099,8 +1095,7 @@ fun Date.pretty(ktx: Kontext): String {
 
 class CleanupVB(
         private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
-        private val welcome: Welcome = ktx.di().instance()
+        private val ctx: Context = ktx.ctx
 ) : ByteVB() {
 
     override fun attach(view: ByteView) {

@@ -1,10 +1,6 @@
 package gs.environment
 
-import com.github.salomonbrys.kodein.LazyKodein
 import nl.komponents.kovenant.buildDispatcher
-
-@Deprecated("out")
-typealias Environment = LazyKodein
 
 val time = SystemTime()
 

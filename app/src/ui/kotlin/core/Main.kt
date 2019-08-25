@@ -10,14 +10,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import buildtype.initBuildType
-import com.github.salomonbrys.kodein.Kodein
-import com.github.salomonbrys.kodein.KodeinAware
-import com.github.salomonbrys.kodein.lazy
 import flavor.initFlavor
-import gs.environment.newGscoreModule
 import gs.property.IWhen
 import gs.property.device
-import gs.property.newDeviceModule
+import gs.property.initDevice
 import io.paperdb.Paper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -40,15 +36,7 @@ private fun startThroughJobScheduler(
     scheduler.schedule(builder.build())
 }
 
-class MainApplication: Application(), KodeinAware {
-
-    override val kodein by Kodein.lazy {
-        import(newGscoreModule(this@MainApplication))
-        import(newDeviceModule(this@MainApplication))
-        import(newWelcomeModule(this@MainApplication))
-        import(newUpdateModule(this@MainApplication))
-        import(newKeepAliveModule(this@MainApplication))
-    }
+class MainApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -59,11 +47,13 @@ class MainApplication: Application(), KodeinAware {
         setRestartAppOnCrash()
 
         GlobalScope.launch {
-            //welcome
+            initDevice()
+            initUpdate()
+            initKeepAlive()
             initTunnel()
             initFilters()
             initDns()
-            //update
+            initUpdate()
             initApp()
             initFlavor()
             initBuildType()

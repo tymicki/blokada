@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
-import com.github.salomonbrys.kodein.instance
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import core.bits.AdsDashboardSectionVB
 import core.bits.HomeDashboardSectionVB
@@ -21,7 +20,6 @@ import core.bits.menu.MENU_CLICK_BY_NAME
 import core.bits.menu.MenuItemVB
 import core.bits.menu.createMenu
 import g11n.i18n
-import gs.environment.inject
 import gs.presentation.NamedViewBinder
 import gs.presentation.doAfter
 import org.blokada.R
@@ -127,8 +125,6 @@ class DashboardView(
     }
 
     fun createDashboardSections(ktx: AndroidKontext): List<NamedViewBinder> {
-        val di = ktx.di()
-
         return listOf(
                 HomeDashboardSectionVB(ktx),
                 AdsDashboardSectionVB(ktx)

@@ -8,17 +8,11 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import com.github.salomonbrys.kodein.instance
-import com.github.salomonbrys.kodein.with
 import filter.DefaultHostlineProcessor
 import gs.environment.Worker
-import gs.environment.inject
 import gs.property.kctx
 import gs.property.newProperty
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import nl.komponents.kovenant.task
+import kotlinx.coroutines.*
 import org.blokada.R
 import tunnel.FilterSourceDescriptor
 import tunnel.tunnelManager
@@ -81,7 +75,7 @@ data class App(
 class AppInstallReceiver : BroadcastReceiver() {
 
     override fun onReceive(ctx: Context, intent: Intent?) {
-        task(ctx.inject().with("AppInstallReceiver").instance()) {
+        GlobalScope.launch {
             v("app install receiver ping")
             filtersManager.apps.refresh(force = true)
         }

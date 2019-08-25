@@ -115,7 +115,7 @@ fun createAboutMenu(ktx: AndroidKontext): MenuItemsVB {
     return MenuItemsVB(ktx,
             items = listOf(
                     LabelVB(ktx, label = BuildConfig.VERSION_NAME.toString().res()),
-                    UpdateVB(ktx, onTap = defaultOnTap),
+                    UpdateVB(onTap = defaultOnTap),
                     LabelVB(ktx, label = R.string.menu_share_log_label.res()),
                     createLogMenuItem(ktx),
                     LabelVB(ktx, label = R.string.menu_other.res()),

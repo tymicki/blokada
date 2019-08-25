@@ -16,10 +16,8 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.RemoteViews
 import android.widget.TextView
-import com.github.salomonbrys.kodein.instance
 import core.*
 import g11n.i18n
-import gs.environment.inject
 import gs.property.IWhen
 import org.blokada.R
 import tunnel.Events

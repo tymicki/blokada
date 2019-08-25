@@ -1,17 +1,11 @@
 package core
 
 import android.content.Context
-import com.github.salomonbrys.kodein.Kodein
 import java.util.*
 
 class AndroidKontext(
         id: Any,
-        val ctx: Context,
-        val di: () -> Kodein = {
-            val c = ctx.applicationContext
-            if (c is MainApplication) c.kodein
-            else throw Exception("app does not use kodein")
-        }
+        val ctx: Context
 ): Kontext(id)
 
 private val kontexts = WeakHashMap<Any, AndroidKontext>()

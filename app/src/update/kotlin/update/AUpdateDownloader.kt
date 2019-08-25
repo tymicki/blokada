@@ -8,19 +8,18 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import androidx.core.content.FileProvider
-import com.github.salomonbrys.kodein.instance
-import gs.environment.inject
+import core.getApplicationContext
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.net.URL
 
 /**
  *
  */
-class AUpdateDownloader(
-        private val ctx: Context
-) {
+class AUpdateDownloader {
 
-    private val dm by lazy { ctx.inject().instance<DownloadManager>() }
+    private val ctx by lazy { runBlocking { getApplicationContext()!! } }
+    private val dm by lazy { ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager }
 
     private var enqueue: Long? = null
     private var links: List<java.net.URL> = emptyList()
