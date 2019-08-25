@@ -1,6 +1,5 @@
 package core.bits.menu.dns
 
-import android.content.Context
 import core.*
 import core.bits.*
 import core.bits.menu.adblocking.SlotMutex
@@ -10,11 +9,9 @@ import gs.property.IWhen
 import org.blokada.R
 
 class DnsDashboardSection(
-        val ctx: Context,
         override val name: Resource = R.string.panel_section_advanced_dns.res()
 ) : ListViewBinder(), NamedViewBinder {
 
-    private val ktx by lazy { ctx.ktx("dns-dash") }
     private val slotMutex = SlotMutex()
 
     private var get: IWhen? = null
@@ -30,12 +27,12 @@ class DnsDashboardSection(
             val defaultList = if (default != null) listOf(default) else emptyList()
 
             (defaultList + active.minus(defaultList) + inactive.minus(defaultList)).map {
-                DnsChoiceVB(it, ktx, onTap = slotMutex.openOneAtATime)
+                DnsChoiceVB(it, onTap = slotMutex.openOneAtATime)
             }.apply {
                 view.set(this)
                 view.add(LabelVB(label = R.string.menu_dns_intro.res()), 0)
                 view.add(MenuActiveDnsVB(), 1)
-                view.add(AddDnsVB(ktx), 2)
+                view.add(AddDnsVB(), 2)
                 view.add(LabelVB(label = R.string.menu_dns_recommended.res()), 3)
                 view.add(LabelVB(label = R.string.menu_manage.res()))
                 view.add(DnsListControlVB(onTap = defaultOnTap))

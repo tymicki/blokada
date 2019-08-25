@@ -51,7 +51,6 @@ suspend fun initApp() = withContext(Dispatchers.Main.immediate) {
     GlobalScope.launch {
         g11Manager.load()
 
-        val ktx = ctx.ktx("translations:sync:filters")
         core.on(tunnel.Events.FILTERS_CHANGED) {
             g11Manager.sync()
         }

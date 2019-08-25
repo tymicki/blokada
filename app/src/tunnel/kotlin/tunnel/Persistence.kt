@@ -11,7 +11,6 @@ class Persistence {
         val rules = RulesPersistence()
         val filters = FiltersPersistence()
         val request = RequestPersistence()
-        val blocka = BlockaConfigPersistence()
     }
 }
 
@@ -139,21 +138,3 @@ class RequestPersistence(
     }
 }
 
-class BlockaConfigPersistence {
-    val load = { ktx: Kontext ->
-        Result.of {
-            runBlocking { BlockaConfig().loadFromPersistence() }
-        }
-                .mapBoth(
-                        success = { it },
-                        failure = { ex ->
-                            w("failed loading BlockaConfig, reverting to empty", ex)
-                            BlockaConfig()
-                        }
-                )
-    }
-
-    val save = { config: BlockaConfig ->
-        Result.of { savePersistence("blocka:config", config) }
-    }
-}

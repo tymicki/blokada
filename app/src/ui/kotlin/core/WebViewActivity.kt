@@ -20,7 +20,6 @@ class WebViewActivity : Activity() {
 
     private val container by lazy { findViewById<FrameLayout>(R.id.view) }
     private val close by lazy { findViewById<ImageView>(R.id.close) }
-    private val ktx = ktx("WebViewActivity")
 
     private lateinit var url: IProperty<URL>
 

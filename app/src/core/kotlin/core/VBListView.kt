@@ -44,8 +44,6 @@ class VBListView(
     private var alternativeMode = false
     private var landscapeMode = false
 
-    val ktx = ctx.ktx("VBListView")
-
     init {
         listView.addItemDecoration(VerticalSpace(context.dpToPx(6)))
         listView.addOnScrollListener(object : RecyclerView.OnScrollListener() {

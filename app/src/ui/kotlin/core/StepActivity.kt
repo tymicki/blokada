@@ -17,7 +17,6 @@ class StepActivity : Activity() {
     }
 
     private val stepView by lazy { findViewById<VBStepView>(R.id.view) }
-    private val ktx = ktx("StepActivity")
     private var whitelist: Boolean = false
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
@@ -26,13 +25,13 @@ class StepActivity : Activity() {
 
         whitelist = intent.getBooleanExtra(EXTRA_WHITELIST, false)
 
-        val nameVB = EnterNameVB(ktx, accepted = {
+        val nameVB = EnterNameVB(accepted = {
             name = it
             saveNewFilter()
         })
 
         stepView.pages = listOf(
-                EnterDomainVB(ktx, accepted = { it ->
+                EnterDomainVB(accepted = { it ->
                     nameVB.inputForGeneratingName = if (it.size == 1) it.first().source else ""
                     sources = it
                     stepView.next()

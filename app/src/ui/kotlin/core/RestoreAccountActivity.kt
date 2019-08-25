@@ -12,13 +12,12 @@ import tunnel.checkAccountInfo
 class RestoreAccountActivity : Activity() {
 
     private val stepView by lazy { findViewById<VBStepView>(R.id.view) }
-    private val ktx = ktx("RestoreAccountActivity")
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.vbstepview)
 
-        val nameVB = EnterAccountVB(ktx, accepted = {
+        val nameVB = EnterAccountVB(accepted = {
             name = it
             restoreAccountId()
         })
@@ -52,7 +51,6 @@ class RestoreAccountActivity : Activity() {
 }
 
 class EnterAccountVB(
-        private val ktx: AndroidKontext,
         private val accepted: (String) -> Unit = {}
 ) : SlotVB(), Stepable {
 

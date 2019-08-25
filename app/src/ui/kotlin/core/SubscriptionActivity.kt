@@ -22,7 +22,6 @@ class SubscriptionActivity : Activity() {
 
     private val container by lazy { findViewById<FrameLayout>(R.id.view) }
     private val close by lazy { findViewById<ImageView>(R.id.close) }
-    private val ktx = ktx("SubscriptionActivity")
 
     private val subscriptionUrl by lazy { newProperty(kctx, { URL("https://localhost") }) }
     private val updateUrl = { cfg: BlockaConfig ->

@@ -1,6 +1,5 @@
 package tunnel
 
-import core.Kontext
 import core.Result
 import core.Time
 import core.w

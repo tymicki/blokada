@@ -321,7 +321,6 @@ class NewFilterVB(
 }
 
 class EnterDomainVB(
-        private val ktx: AndroidKontext,
         private val accepted: (List<FilterSourceDescriptor>) -> Unit = {}
 ) : SlotVB() {
 
@@ -379,7 +378,6 @@ class EnterDomainVB(
 }
 
 class EnterNameVB(
-        private val ktx: AndroidKontext,
         private val accepted: (String) -> Unit = {}
 ) : SlotVB(), Stepable {
 
@@ -461,8 +459,6 @@ class SearchBarVB(
 }
 
 class EnterSearchVB(
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         private val onSearch: (String) -> Unit
 ) : SlotVB(onTap = {}) {
     override fun attach(view: SlotView) {
@@ -475,7 +471,7 @@ class EnterSearchVB(
                 action1 = Slot.Action(i18n.getString(R.string.search_action_confirm)) {
                     onSearch((view.findViewById<EditText>(R.id.unfolded_edit)).text.toString())
                 },
-                action2 = Slot.Action(ctx.getString(R.string.search_action_clear)) {
+                action2 = Slot.Action(view.context.getString(R.string.search_action_clear)) {
                     onSearch("")
                 })
 
@@ -562,20 +558,18 @@ class AppVB(
     }
 }
 
-class AddDnsVB(private val ktx: AndroidKontext,
-               private val modal: ModalManager = modalManager): SlotVB({
-    GlobalScope.launch { modal.openModal() }
-    ktx.ctx.startActivity(Intent(ktx.ctx, AddDnsActivity::class.java))}){
+class AddDnsVB: SlotVB({
+    val ctx = runBlocking { getApplicationContext()!! }
+    GlobalScope.launch { modalManager.openModal() }
+    ctx.startActivity(Intent(ctx, AddDnsActivity::class.java))}){
     override fun attach(view: SlotView) {
-        view.content = Slot.Content(ktx.ctx.resources.getString(R.string.dns_custom_add_slot))
+        view.content = Slot.Content(view.context.resources.getString(R.string.dns_custom_add_slot))
         view.type = Slot.Type.NEW
     }
 }
 
 class DnsChoiceVB(
         private val item: DnsChoice,
-        private val ktx: AndroidKontext,
-        private val ctx: Context = ktx.ctx,
         onTap: (SlotView) -> Unit
 ) : SlotVB(onTap) {
 
@@ -604,7 +598,7 @@ class DnsChoiceVB(
                         null
                     }?.apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        ctx.startActivity(this)
+                        view.context.startActivity(this)
                     }
                 },
                 action3 = Slot.Action(i18n.getString(R.string.slot_action_remove)) {

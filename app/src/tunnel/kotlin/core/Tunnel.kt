@@ -44,7 +44,7 @@ class TunnelImpl(
     val tunnelState = newProperty(kctx, { TunnelState.INACTIVE })
 
     val tunnelPermission = newProperty(kctx, {
-        val (completed, _) = hasCompleted({ checkTunnelPermissions(ctx.ktx("check perm")) })
+        val (completed, _) = hasCompleted({ checkTunnelPermissions() })
         completed
     })
 
@@ -66,7 +66,7 @@ class TunnelImpl(
 val permissionAsker = object : IPermissionsAsker {
     override fun askForPermissions() {
         val act = runBlocking { getActivity() } ?: throw Exception("starting MainActivity")
-        val deferred = askTunnelPermission(Kontext.new("static perm ask"), act)
+        val deferred = askTunnelPermission(act)
         runBlocking {
             val response = deferred.await()
             if (!response) { throw Exception("could not get tunnel permissions") }

@@ -78,12 +78,12 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     var lastRestartMillis = 0L
 
     dnsManager.dnsServers.doWhenChanged(withInit = true).then {
-        tunnelManager.setup(ctx.ktx("dns:changed"), dnsManager.dnsServers())
+        tunnelManager.setup(dnsManager.dnsServers())
     }
 
     GlobalScope.async {
         core.on(BLOCKA_CONFIG) { cfg ->
-            tunnelManager.setup(ctx.ktx("blocka:vpn:switched"), dnsManager.dnsServers(), cfg)
+            tunnelManager.setup(dnsManager.dnsServers(), cfg)
 
 //                    if (cfg.blockaVpn && !s.enabled()) {
 //                        v("auto activating on vpn gateway selected")
@@ -142,9 +142,8 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
             }
 
             if (tunnelState.tunnelPermission(true)) {
-                val ktx = ctx.ktx("tunnel:start")
                 val (completed, err) = hasCompleted({ runBlocking {
-                    tunnelManager.setup(ktx, dnsManager.dnsServers(), start = true).await()
+                    tunnelManager.setup(dnsManager.dnsServers(), start = true).await()
                 } })
                 if (completed) {
                     tunnelState.tunnelState %= TunnelState.ACTIVE
@@ -285,7 +284,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
 
     GlobalScope.async {
         registerTunnelConfigEvent()
-        registerBlockaConfigEvent(ctx.ktx("blockaConfigInit"))
+        registerBlockaConfigEvent()
 
         tunnelManager.reloadConfig(device.onWifi())
     }
@@ -337,13 +336,17 @@ class Main(
             blockaConfig, socketCreator, blockade)
             else DnsTunnel(proxy!!, config, forwarder, loopback)
 
-    private fun createConfigurator(ktx: AndroidKontext) = when {
-        usePausedConfigurator -> PausedVpnConfigurator(currentServers, filters)
-        blockaConfig.blockaVpn -> BlockaVpnConfigurator(currentServers, filters, blockaConfig, ktx.ctx.packageName)
-        else -> DnsVpnConfigurator(currentServers, filters, ktx.ctx.packageName)
+    private val packageName by lazy {
+        runBlocking { getApplicationContext()!! }.packageName
     }
 
-    fun setup(ktx: AndroidKontext, servers: List<InetSocketAddress>, config: BlockaConfig? = null, start: Boolean = false) = GlobalScope.async(CTRL) {
+    private fun createConfigurator() = when {
+        usePausedConfigurator -> PausedVpnConfigurator(currentServers, filters)
+        blockaConfig.blockaVpn -> BlockaVpnConfigurator(currentServers, filters, blockaConfig, packageName)
+        else -> DnsVpnConfigurator(currentServers, filters, packageName)
+    }
+
+    fun setup(servers: List<InetSocketAddress>, config: BlockaConfig? = null, start: Boolean = false) = GlobalScope.async(CTRL) {
         val cfg = config ?: blockaConfig
         val processedServers = processServers(servers, cfg)
         v("setup tunnel, start = $start, enabled = $enabled", processedServers, config ?: "no blocka config")
@@ -371,7 +374,7 @@ class Main(
                     if (!protected) e("could not protect")
                     socket
                 }
-                val configurator = createConfigurator(ktx)
+                val configurator = createConfigurator()
 
                 connector = ServiceConnector(onVpnClose, onConfigure = { vpn ->
                     configurator.configure(vpn)

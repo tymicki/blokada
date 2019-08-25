@@ -1,6 +1,9 @@
 package core.bits
 
 import core.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 
 class MasterSwitchVB() : ByteVB() {
@@ -19,29 +22,31 @@ class MasterSwitchVB() : ByteVB() {
     }
 
     private val update = {
-        view?.run {
-            when {
-                !tunnelState.enabled() -> {
-                    icon(R.drawable.ic_play_arrow.res())
-                    label(R.string.home_touch_to_turn_on.res())
-                    state(R.string.home_blokada_disabled.res())
-                    important(true)
-                    onTap {
-                        tunnelState.enabled %= true
+        GlobalScope.launch(Dispatchers.Main.immediate) {
+            view?.run {
+                when {
+                    !tunnelState.enabled() -> {
+                        icon(R.drawable.ic_play_arrow.res())
+                        label(R.string.home_touch_to_turn_on.res())
+                        state(R.string.home_blokada_disabled.res())
+                        important(true)
+                        onTap {
+                            tunnelState.enabled %= true
+                        }
+                    }
+                    else -> {
+                        icon(R.drawable.ic_pause.res())
+                        label(R.string.home_masterswitch_on.res())
+                        state(R.string.home_masterswitch_enabled.res())
+                        important(false)
+                        onTap {
+                            tunnelState.enabled %= false
+                        }
                     }
                 }
-                else -> {
-                    icon(R.drawable.ic_pause.res())
-                    label(R.string.home_masterswitch_on.res())
-                    state(R.string.home_masterswitch_enabled.res())
-                    important(false)
-                    onTap {
-                        tunnelState.enabled %= false
-                    }
-                }
-           }
+            }
+            Unit
         }
-        Unit
     }
 
     private val tunnelListener = object : IEnabledStateActorListener {

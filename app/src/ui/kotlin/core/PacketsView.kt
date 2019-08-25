@@ -35,9 +35,6 @@ class PacketsView(
 
     private var on = false
 
-    private val ktx = ctx.ktx("colorfulBackground")
-
-
     init {
         pulsePaint = Paint(Paint.ANTI_ALIAS_FLAG);
         pulsePaint.setStrokeWidth(0f);

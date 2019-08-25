@@ -85,8 +85,6 @@ class BootReceiver : BroadcastReceiver() {
 
 class BootJobService : JobService() {
 
-    private val ktx by lazy { "boot:service".ktx() }
-
     override fun onStartJob(params: JobParameters?): Boolean {
         v("boot job start")
         device.connected.refresh()

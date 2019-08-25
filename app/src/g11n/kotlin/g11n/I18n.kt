@@ -1,7 +1,10 @@
 package g11n
 
 import android.content.res.Resources
-import core.*
+import core.Format
+import core.Resource
+import core.getApplicationContext
+import core.v
 import gs.environment.Worker
 import gs.main.getPreferredLocales
 import gs.property.*
@@ -44,7 +47,6 @@ class I18nImpl (
 
     val locale = newPersistedProperty2(kctx, "locale", { "en" },
             refresh = {
-                val ktx = "i18n:locale:refresh".ktx()
                 val preferred = getPreferredLocales()
                 val available = repo.content().locales
                 v("locale preferred/available", preferred, available)

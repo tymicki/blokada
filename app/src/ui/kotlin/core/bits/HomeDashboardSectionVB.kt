@@ -59,7 +59,7 @@ class HomeDashboardSectionVB(
                 }
             }
             set(items)
-            if (isLandscape(ktx.ctx)) {
+            if (isLandscape(context)) {
                 enableLandscapeMode(reversed = false)
                 set(items)
             }

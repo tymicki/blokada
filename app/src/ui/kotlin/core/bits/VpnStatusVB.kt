@@ -3,6 +3,9 @@ package core.bits
 import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import gs.property.IWhen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -40,81 +43,83 @@ class VpnStatusVB(
 
     private var stateListener: IWhen? = null
 
-    private val update = { ->
-        view?.run {
-            when {
-                !tunnelState.enabled() -> {
-                    icon(R.drawable.ic_shield_outline.res())
-                    arrow(null)
-                    switch(false)
-                    label(R.string.home_setup_vpn.res())
-                    state(R.string.home_vpn_disabled.res())
-                    onTap {
-                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
-                    }
-                    onSwitch {
-                        if (!tunnelStateManager.turnVpn(it)) {
+    private val update = {
+        GlobalScope.launch(Dispatchers.Main.immediate) {
+            view?.run {
+                when {
+                    !tunnelState.enabled() -> {
+                        icon(R.drawable.ic_shield_outline.res())
+                        arrow(null)
+                        switch(false)
+                        label(R.string.home_setup_vpn.res())
+                        state(R.string.home_vpn_disabled.res())
+                        onTap {
                             core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
-                    }
-                }
-                config.blockaVpn && (activating || !active) -> {
-                    icon(R.drawable.ic_shield_outline.res())
-                    arrow(null)
-                    switch(null)
-                    label(R.string.home_connecting_vpn.res())
-                    state(R.string.home_please_wait.res())
-                    onTap {}
-                    onSwitch {}
-                }
-                !config.blockaVpn && config.activeUntil.after(Date()) -> {
-                    icon(R.drawable.ic_shield_outline.res())
-                    arrow(null)
-                    switch(false)
-                    label(R.string.home_setup_vpn.res())
-                    state(R.string.home_account_active.res())
-                    onTap {
-                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
-                    }
-                    onSwitch {
-                        if (!tunnelStateManager.turnVpn(it)) {
-                            core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                        onSwitch {
+                            if (!tunnelStateManager.turnVpn(it)) {
+                                core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            }
                         }
                     }
-                }
-                !config.blockaVpn -> {
-                    icon(R.drawable.ic_shield_outline.res())
-                    arrow(null)
-                    switch(false)
-                    label(R.string.home_setup_vpn.res())
-                    state(R.string.home_vpn_disabled.res())
-                    onTap {
-                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                    config.blockaVpn && (activating || !active) -> {
+                        icon(R.drawable.ic_shield_outline.res())
+                        arrow(null)
+                        switch(null)
+                        label(R.string.home_connecting_vpn.res())
+                        state(R.string.home_please_wait.res())
+                        onTap {}
+                        onSwitch {}
                     }
-                    onSwitch {
-                        if (!tunnelStateManager.turnVpn(it)) {
+                    !config.blockaVpn && config.activeUntil.after(Date()) -> {
+                        icon(R.drawable.ic_shield_outline.res())
+                        arrow(null)
+                        switch(false)
+                        label(R.string.home_setup_vpn.res())
+                        state(R.string.home_account_active.res())
+                        onTap {
                             core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
                         }
+                        onSwitch {
+                            if (!tunnelStateManager.turnVpn(it)) {
+                                core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            }
+                        }
                     }
-                }
-                else -> {
-                    icon(R.drawable.ic_verified.res(), color = R.color.switch_on.res())
-                    arrow(null)
-                    switch(true)
-                    label(config.gatewayNiceName.res())
-                    state(R.string.home_connected_vpn.res())
-                    onTap {
-                        core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
-                    }
-                    onSwitch {
-                        if (!tunnelStateManager.turnVpn(it)) {
+                    !config.blockaVpn -> {
+                        icon(R.drawable.ic_shield_outline.res())
+                        arrow(null)
+                        switch(false)
+                        label(R.string.home_setup_vpn.res())
+                        state(R.string.home_vpn_disabled.res())
+                        onTap {
                             core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                        }
+                        onSwitch {
+                            if (!tunnelStateManager.turnVpn(it)) {
+                                core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            }
+                        }
+                    }
+                    else -> {
+                        icon(R.drawable.ic_verified.res(), color = R.color.switch_on.res())
+                        arrow(null)
+                        switch(true)
+                        label(config.gatewayNiceName.res())
+                        state(R.string.home_connected_vpn.res())
+                        onTap {
+                            core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                        }
+                        onSwitch {
+                            if (!tunnelStateManager.turnVpn(it)) {
+                                core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                            }
                         }
                     }
                 }
             }
+            Unit
         }
-        Unit
     }
 
     private val tunnelListener = object : IEnabledStateActorListener {

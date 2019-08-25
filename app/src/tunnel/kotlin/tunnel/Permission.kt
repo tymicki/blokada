@@ -2,14 +2,14 @@ package tunnel
 
 import android.app.Activity
 import android.net.VpnService
-import core.AndroidKontext
-import core.Kontext
+import core.getApplicationContext
 import core.v
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 
 private var deferred = CompletableDeferred<Boolean>()
 
-fun askTunnelPermission(ktx: Kontext, act: Activity) = {
+fun askTunnelPermission(act: Activity) = {
     v("asking for tunnel permissions")
     deferred.completeExceptionally(Exception("new permission request"))
     deferred = CompletableDeferred()
@@ -21,7 +21,7 @@ fun askTunnelPermission(ktx: Kontext, act: Activity) = {
     deferred
 }()
 
-fun tunnelPermissionResult(ktx: Kontext, code: Int) = {
+fun tunnelPermissionResult(code: Int) = {
     v("received tunnel permissions response", code)
     when {
         deferred.isCompleted -> Unit
@@ -30,8 +30,9 @@ fun tunnelPermissionResult(ktx: Kontext, code: Int) = {
     }
 }()
 
-fun checkTunnelPermissions(ktx: AndroidKontext) {
-    if (VpnService.prepare(ktx.ctx) != null) {
+fun checkTunnelPermissions() {
+    val ctx = runBlocking { getApplicationContext()!! }
+    if (VpnService.prepare(ctx) != null) {
         throw Exception("no tunnel permissions")
     }
 }

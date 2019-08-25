@@ -14,7 +14,7 @@ import gs.presentation.doAfter
 import org.blokada.R
 
 
-abstract class ByteVB()
+abstract class ByteVB
     : LayoutViewBinder(R.layout.byteview), Stepable, Navigable {
 
     abstract fun attach(view: ByteView)

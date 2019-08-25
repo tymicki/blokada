@@ -150,8 +150,8 @@ data class BlockaConfig(
 
 val BLOCKA_CONFIG = "BLOCKA_CONFIG".newEventOf<BlockaConfig>()
 
-fun registerBlockaConfigEvent(ktx: AndroidKontext) {
-    val config = Persistence.blocka.load(ktx)
+fun registerBlockaConfigEvent() {
+    val config = runBlocking { BlockaConfig().loadFromPersistence() }
 
     v("loading boringtun")
     System.loadLibrary("boringtun")
@@ -159,7 +159,7 @@ fun registerBlockaConfigEvent(ktx: AndroidKontext) {
 
     checkAccountInfo(config)
 
-    core.on(BLOCKA_CONFIG, { Persistence.blocka.save(it) })
+    core.on(BLOCKA_CONFIG, { runBlocking { it.saveToPersistence() } })
 
     device.screenOn.doOnUiWhenChanged().then {
         if (device.screenOn()) GlobalScope.async {

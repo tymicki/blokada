@@ -1,6 +1,5 @@
 package core.bits.menu.adblocking
 
-import core.AndroidKontext
 import core.LabelVB
 import core.bits.Adblocking2VB
 import core.bits.menu.MenuItemVB

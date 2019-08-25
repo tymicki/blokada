@@ -21,7 +21,6 @@ import tunnel.tunnelPermissionResult
 
 class PanelActivity : Activity() {
 
-    private val ktx = ktx("PanelActivity")
     private val dashboardView by lazy { findViewById<DashboardView>(R.id.DashboardView) }
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
@@ -63,7 +62,7 @@ class PanelActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        tunnelPermissionResult(Kontext.new("permission:vpn:result"), resultCode)
+        tunnelPermissionResult(resultCode)
     }
 
     fun trai() {

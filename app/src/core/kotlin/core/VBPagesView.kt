@@ -16,8 +16,6 @@ class VBPagesView(
 ) : ViewPager(ctx, attributeSet) {
     var lock = false
 
-    val ktx = ctx.ktx("VBPagesView")
-
     private val dashAdapter = object : PagerAdapter() {
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             val dash = pages[position]

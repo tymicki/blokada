@@ -63,8 +63,6 @@ class DashboardView(
     var navigationBarPx: Int = 0
     var onSectionClosed = {}
 
-    private val ktx = ctx.ktx("dashboard")
-
     private var scrolledView: View? = null
 
     private var lastSubsectionTab = 0
@@ -74,7 +72,7 @@ class DashboardView(
 
     private val model by lazy {
         DashboardNavigationModel(
-                createDashboardSections(ktx),
+                createDashboardSections(),
                 mainMenu,
                 onChangeSection = { section, sectionIndex ->
                     v("onChangeSection")
@@ -124,7 +122,7 @@ class DashboardView(
         }.sendEmptyMessage(0)
     }
 
-    fun createDashboardSections(ktx: AndroidKontext): List<NamedViewBinder> {
+    fun createDashboardSections(): List<NamedViewBinder> {
         return listOf(
                 HomeDashboardSectionVB(),
                 AdsDashboardSectionVB()

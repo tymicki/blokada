@@ -4,6 +4,9 @@ import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import g11n.i18n
 import gs.property.IWhen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
@@ -34,72 +37,74 @@ class AdsBlockedVB() : ByteVB() {
     }
 
     private val update = {
-        view?.run {
-            when {
-                !tunnelState.enabled() -> {
-                    icon(R.drawable.ic_show.res())
-                    label(R.string.home_touch_adblocking.res())
-                    state(R.string.home_adblocking_disabled.res())
-                    switch(false)
-                    arrow(null)
-                    onTap {
-                        tunnelStateManager.turnAdblocking(true)
+        GlobalScope.launch(Dispatchers.Main.immediate) {
+            view?.run {
+                when {
+                    !tunnelState.enabled() -> {
+                        icon(R.drawable.ic_show.res())
+                        label(R.string.home_touch_adblocking.res())
+                        state(R.string.home_adblocking_disabled.res())
+                        switch(false)
+                        arrow(null)
+                        onTap {
+                            tunnelStateManager.turnAdblocking(true)
+                        }
+                        onSwitch {
+                            tunnelStateManager.turnAdblocking(it)
+                        }
                     }
-                    onSwitch {
-                        tunnelStateManager.turnAdblocking(it)
+                    activating || !active -> {
+                        icon(R.drawable.ic_show.res())
+                        label(R.string.home_activating.res())
+                        state(R.string.home_please_wait.res())
+                        switch(null)
+                        arrow(null)
+                        onTap { }
+                        onSwitch { }
+                    }
+                    !config.adblocking && config.blockaVpn -> {
+                        icon(R.drawable.ic_show.res())
+                        label(R.string.home_vpn_only.res())
+                        state(R.string.home_adblocking_disabled.res())
+                        switch(false)
+                        arrow(null)
+                        onTap {
+                        }
+                        onSwitch {
+                            tunnelStateManager.turnAdblocking(true)
+                        }
+                    }
+                    !config.adblocking -> {
+                        icon(R.drawable.ic_show.res())
+                        label(R.string.home_dns_only.res())
+                        state(R.string.home_adblocking_disabled.res())
+                        switch(false)
+                        arrow(null)
+                        onTap {
+                        }
+                        onSwitch {
+                            tunnelStateManager.turnAdblocking(true)
+                        }
+                    }
+                    else -> {
+                        val droppedString = i18n.getString(R.string.home_requests_blocked, Format.counter(dropped))
+                        icon(R.drawable.ic_blocked.res(), color = R.color.switch_on.res())
+                        label(droppedString.res())
+                        switch(true)
+                        arrow(null)
+                        state(R.string.home_adblocking_enabled.res())
+                        onTap {
+                            //                        core.emit(SWIPE_RIGHT)
+                            core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_ads.res())
+                        }
+                        onSwitch {
+                            tunnelStateManager.turnAdblocking(it)
+                        }
                     }
                 }
-                activating || !active -> {
-                    icon(R.drawable.ic_show.res())
-                    label(R.string.home_activating.res())
-                    state(R.string.home_please_wait.res())
-                    switch(null)
-                    arrow(null)
-                    onTap { }
-                    onSwitch {  }
-                }
-                !config.adblocking && config.blockaVpn -> {
-                    icon(R.drawable.ic_show.res())
-                    label(R.string.home_vpn_only.res())
-                    state(R.string.home_adblocking_disabled.res())
-                    switch(false)
-                    arrow(null)
-                    onTap {
-                    }
-                    onSwitch {
-                        tunnelStateManager.turnAdblocking(true)
-                    }
-                }
-                !config.adblocking -> {
-                    icon(R.drawable.ic_show.res())
-                    label(R.string.home_dns_only.res())
-                    state(R.string.home_adblocking_disabled.res())
-                    switch(false)
-                    arrow(null)
-                    onTap {
-                    }
-                    onSwitch {
-                        tunnelStateManager.turnAdblocking(true)
-                    }
-                }
-                else -> {
-                    val droppedString = i18n.getString(R.string.home_requests_blocked, Format.counter(dropped))
-                    icon(R.drawable.ic_blocked.res(), color = R.color.switch_on.res())
-                    label(droppedString.res())
-                    switch(true)
-                    arrow(null)
-                    state(R.string.home_adblocking_enabled.res())
-                    onTap {
-//                        core.emit(SWIPE_RIGHT)
-                        core.emit(MENU_CLICK_BY_NAME, R.string.panel_section_ads.res())
-                    }
-                    onSwitch {
-                        tunnelStateManager.turnAdblocking(it)
-                    }
-                }
-           }
+            }
+            Unit
         }
-        Unit
     }
 
     private val configListener = { cfg: BlockaConfig ->
