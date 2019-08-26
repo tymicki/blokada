@@ -3,7 +3,7 @@ package notification
 import android.app.IntentService
 import android.content.Intent
 import android.os.Handler
-import core.tunnelState
+import tunnel.tunnelState
 import org.blokada.R
 
 

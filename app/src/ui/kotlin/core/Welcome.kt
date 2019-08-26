@@ -1,8 +1,6 @@
 package core
 
 import g11n.i18n
-import gs.property.newPersistedProperty2
-import gs.property.newProperty
 
 val welcome by lazy {
     WelcomeImpl()

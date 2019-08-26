@@ -18,10 +18,12 @@ import android.widget.RemoteViews
 import android.widget.TextView
 import core.*
 import g11n.i18n
-import gs.property.IWhen
+import core.IWhen
 import org.blokada.R
 import tunnel.Events
 import tunnel.Request
+import tunnel.TunnelState
+import tunnel.tunnelState
 import java.nio.charset.Charset
 
 

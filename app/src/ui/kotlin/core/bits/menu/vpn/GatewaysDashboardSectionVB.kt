@@ -3,17 +3,17 @@ package core.bits.menu.vpn
 import android.os.Handler
 import core.*
 import core.bits.menu.adblocking.SlotMutex
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
-import gs.presentation.ViewBinder
+import core.ListViewBinder
+import core.NamedViewBinder
+import core.ViewBinder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.blokada.R
 import retrofit2.Call
 import retrofit2.Response
 import tunnel.MAX_RETRIES
-import tunnel.RestModel
-import tunnel.restApi
+import blocka.RestModel
+import blocka.restApi
 
 class GatewaysDashboardSectionVB(
         override val name: Resource = R.string.menu_vpn_gateways.res()

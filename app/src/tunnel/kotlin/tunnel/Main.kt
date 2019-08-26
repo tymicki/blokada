@@ -3,11 +3,12 @@ package tunnel
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.VpnService
+import blocka.BlockaTunnel
 import com.github.michaelbull.result.onFailure
 import core.*
+import filter.Blockade
+import filter.FilterManager
 import filter.sourceProvider
-import gs.property.device
-import gs.property.watchdog
 import kotlinx.coroutines.*
 import org.blokada.R
 import java.io.FileDescriptor
@@ -128,7 +129,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     tunnelState.active.doWhenSet().then {
         e("enabled: ${tunnelState.enabled()}")
         if (tunnelState.enabled() && tunnelState.active() && tunnelState.tunnelState(TunnelState.INACTIVE)) {
-            tunnelState.retries %=tunnelState.retries() - 1
+            tunnelState.retries %= tunnelState.retries() - 1
             tunnelState.tunnelState %= TunnelState.ACTIVATING
             tunnelState.tunnelPermission.refresh(blocking = true)
 
@@ -176,7 +177,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
                 if (tunnelState.tunnelState(TunnelState.ACTIVE)) {
                     Thread.sleep(15 * 1000)
                     v("tunnel stable")
-                    if (tunnelState.tunnelState(TunnelState.ACTIVE))tunnelState.retries.refresh()
+                    if (tunnelState.tunnelState(TunnelState.ACTIVE)) tunnelState.retries.refresh()
                 }
             }
         }
@@ -195,7 +196,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
 
             // Reset retry counter after a longer break since we never give up, never surrender
             resetRetriesTask = GlobalScope.launch(retryKctx) {
-                if (tunnelState.enabled() &&tunnelState.retries(0) && !tunnelState.tunnelState(TunnelState.ACTIVE)) {
+                if (tunnelState.enabled() && tunnelState.retries(0) && !tunnelState.tunnelState(TunnelState.ACTIVE)) {
                     Thread.sleep(5 * 1000)
                     if (tunnelState.enabled() && !tunnelState.tunnelState(TunnelState.ACTIVE)) {
                         v("tunnel restart after wait")
@@ -211,7 +212,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     // Turn off the tunnel if disabled (by user, no connectivity, or giving up on error)
     tunnelState.active.doWhenChanged().then {
         if (tunnelState.active(false)
-                &&tunnelState.tunnelState(TunnelState.ACTIVE, TunnelState.ACTIVATING)) {
+                && tunnelState.tunnelState(TunnelState.ACTIVE, TunnelState.ACTIVATING)) {
             watchdog.stop()
             tunnelState.tunnelState %= TunnelState.DEACTIVATING
             hasCompleted {
@@ -224,18 +225,18 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     // Auto off in case of no connectivity, and auto on once connected
     device.connected.doWhenChanged(withInit = true).then {
         when {
-            !device.connected() &&tunnelState.active() -> {
+            !device.connected() && tunnelState.active() -> {
                 v("no connectivity, deactivating")
                 tunnelState.restart %= true
                 tunnelState.active %= false
             }
-            device.connected() &&tunnelState.restart() && !tunnelState.updating() &&tunnelState.enabled() -> {
+            device.connected() && tunnelState.restart() && !tunnelState.updating() && tunnelState.enabled() -> {
                 v("connectivity back, activating")
                 tunnelState.restart %= false
                 tunnelState.error %= false
                 tunnelState.active %= true
             }
-            device.connected() &&tunnelState.error() && !tunnelState.updating() && !tunnelState.enabled() -> {
+            device.connected() && tunnelState.error() && !tunnelState.updating() && !tunnelState.enabled() -> {
                 v("connectivity back, auto recover from error")
                 tunnelState.error %= false
                 tunnelState.enabled %= true
@@ -245,8 +246,8 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
 
     // Auto restart (eg. when reconfiguring the tunnelManager, or retrying)
     tunnelState.tunnelState.doWhen {
-        tunnelState.tunnelState(TunnelState.INACTIVE) &&tunnelState.enabled() &&tunnelState.restart() &&tunnelState.updating(false)
-                && !device.isWaiting() &&tunnelState.retries() > 0
+        tunnelState.tunnelState(TunnelState.INACTIVE) && tunnelState.enabled() && tunnelState.restart() && tunnelState.updating(false)
+                && !device.isWaiting() && tunnelState.retries() > 0
     }.then {
         v("tunnel auto restart")
         tunnelState.restart %= false
@@ -255,7 +256,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
 
     // Make sure watchdog is started and stopped as user wishes
     device.watchdogOn.doWhenChanged().then { when {
-        device.watchdogOn() &&tunnelState.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> {
+        device.watchdogOn() && tunnelState.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> {
             // Flip the connected flag so we detect the change if now we're actually connected
             device.connected %= false
             watchdog.start()
@@ -270,7 +271,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     // Monitor connectivity only when user is interacting with device
     device.screenOn.doWhenChanged().then { when {
         tunnelState.enabled(false) -> Unit
-        device.screenOn() &&tunnelState.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> watchdog.start()
+        device.screenOn() && tunnelState.tunnelState(TunnelState.ACTIVE, TunnelState.INACTIVE) -> watchdog.start()
         device.screenOn(false) -> watchdog.stop()
     }}
 

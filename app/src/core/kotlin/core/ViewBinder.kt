@@ -1,10 +1,9 @@
-package gs.presentation
+package core
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import core.*
 import org.blokada.R
 import java.lang.ref.WeakReference
 

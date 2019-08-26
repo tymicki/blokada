@@ -4,10 +4,10 @@ import android.content.Context
 import android.content.Intent
 import core.*
 import core.bits.menu.isLandscape
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
-import gs.presentation.ViewBinder
-import gs.property.version
+import core.ListViewBinder
+import core.NamedViewBinder
+import core.ViewBinder
+import core.version
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -15,6 +15,7 @@ import org.blokada.BuildConfig
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
+import tunnel.tunnelState
 import java.util.*
 
 data class SlotsSeenStatus(

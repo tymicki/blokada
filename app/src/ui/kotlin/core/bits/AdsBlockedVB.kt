@@ -3,13 +3,14 @@ package core.bits
 import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import g11n.i18n
-import gs.property.IWhen
+import core.IWhen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
+import tunnel.tunnelState
 
 class AdsBlockedVB() : ByteVB() {
 

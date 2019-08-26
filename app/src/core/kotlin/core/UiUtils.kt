@@ -1,4 +1,4 @@
-package gs.presentation
+package core
 
 /**
  * Dev tools and the play store (and others?) launch with a different intent, and so

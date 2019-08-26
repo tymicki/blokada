@@ -1,4 +1,4 @@
-package tunnel
+package blocka
 
 import android.os.ParcelFileDescriptor
 import android.system.ErrnoException
@@ -11,10 +11,15 @@ import core.Result
 import core.e
 import core.v
 import core.w
+import filter.Blockade
 import org.pcap4j.packet.*
 import org.pcap4j.packet.factory.PacketFactoryPropertiesLoader
 import org.pcap4j.util.PropertiesLoader
 import org.xbill.DNS.*
+import tunnel.BlockaConfig
+import tunnel.Tunnel
+import tunnel.TunnelConfig
+import tunnel.checkLeaseIfNeeded
 import java.io.*
 import java.net.*
 import java.nio.ByteBuffer
@@ -52,7 +57,7 @@ internal class BlockaTunnel(
 
     private var deviceOut: OutputStream? = null
 
-    private var tunnel: Long? = null
+    private var tunnelId: Long? = null
     private val op = ByteBuffer.allocateDirect(8)
     private val empty = ByteArray(1)
 
@@ -85,7 +90,7 @@ internal class BlockaTunnel(
             destination.rewind()
             destination.limit(destination.capacity())
             val source = if (i++ == 0) fromDevice else empty
-            val response = BoringTunJNI.wireguard_write(tunnel!!, source, length, destination,
+            val response = BoringTunJNI.wireguard_write(tunnelId!!, source, length, destination,
                     destination.capacity(), op)
             destination.limit(response)
             when (op[0].toInt()) {
@@ -113,7 +118,7 @@ internal class BlockaTunnel(
             destination.rewind()
             destination.limit(destination.capacity())
             val source = if (i++ == 0) source else empty
-            val response = BoringTunJNI.wireguard_read(tunnel!!, source, length, destination,
+            val response = BoringTunJNI.wireguard_read(tunnelId!!, source, length, destination,
                     destination.capacity(), op)
             destination.limit(response) // TODO: what if -1
             when (op[0].toInt()) {
@@ -150,7 +155,7 @@ internal class BlockaTunnel(
 
     private fun interceptDns(packetBytes: ByteArray, length: Int): Boolean {
         return if ((packetBytes[0] and ipv4Version) == ipv4Version) {
-            if (isUdp(packetBytes) && dstAddress4(packetBytes, length, dnsProxyDst4))
+            if (isUdp(packetBytes) && dstAddress4(packetBytes, length, tunnel.dnsProxyDst4))
                 parseDns(packetBytes, length)
             else false
         } else if ((packetBytes[0] and ipv6Version) == ipv6Version) {
@@ -206,7 +211,7 @@ internal class BlockaTunnel(
 
             envelope.rawData.copyInto(packetBytes)
 
-            core.emit(Events.REQUEST, Request(host))
+            core.emit(tunnel.Events.REQUEST, tunnel.Request(host))
             if (++oneWayDnsCounter > MAX_ONE_WAY_DNS_REQUESTS) {
                 throw Exception("Too many DNS requests without response")
             }
@@ -216,7 +221,7 @@ internal class BlockaTunnel(
             dnsMessage.header.rcode = Rcode.NOERROR
             dnsMessage.addRecord(denyResponse, Section.AUTHORITY)
             toDeviceFakeDnsResponse(dnsMessage.toWire(), originEnvelope)
-            core.emit(Events.REQUEST, Request(host, blocked = true))
+            core.emit(tunnel.Events.REQUEST, tunnel.Request(host, blocked = true))
             true
         }
     }
@@ -268,7 +273,7 @@ internal class BlockaTunnel(
         if (dnsIndex == -1) errorOccurred("cannot rewrite DNS response, unknown dns server: $dst. dropping")
 //            v("rewritten back dns response")
         else {
-            val src = dnsProxyDst4.copyOf()
+            val src = tunnel.dnsProxyDst4.copyOf()
             src[3] = (dnsIndex + 1).toByte()
             val addr = Inet4Address.getByAddress(src) as Inet4Address
             val udpForward = UdpPacket.Builder(udp)
@@ -335,7 +340,7 @@ internal class BlockaTunnel(
 
     fun createTunnel() {
         v("creating boringtun tunnel", blockaConfig.gatewayId)
-        tunnel = BoringTunJNI.new_tunnel(blockaConfig.privateKey, blockaConfig.gatewayId)
+        tunnelId = BoringTunJNI.new_tunnel(blockaConfig.privateKey, blockaConfig.gatewayId)
     }
 
     fun forward() {
@@ -357,11 +362,11 @@ internal class BlockaTunnel(
         v("connect to gateway ip: ${blockaConfig.gatewayIp}")
     }
 
-    override fun run(tunnel: FileDescriptor) {
+    override fun run(tun: FileDescriptor) {
         v("running boring tunnel thread", this)
 
-        val input = FileInputStream(tunnel)
-        val output = FileOutputStream(tunnel)
+        val input = FileInputStream(tun)
+        val output = FileOutputStream(tun)
         deviceOut = output
         oneWayDnsCounter = 0
         checkLeaseIfNeeded()
@@ -396,7 +401,7 @@ internal class BlockaTunnel(
             val cause = ex.cause
             if (cause is ErrnoException && cause.errno == OsConstants.EPERM) {
                 if (++epermCounter >= 3 && config.powersave) {
-                    core.emit(Events.TUNNEL_POWER_SAVING)
+                    core.emit(tunnel.Events.TUNNEL_POWER_SAVING)
                     epermCounter = 0
                 }
             } else {
@@ -412,13 +417,13 @@ internal class BlockaTunnel(
         }
     }
 
-    override fun runWithRetry(tunnel: FileDescriptor) {
+    override fun runWithRetry(tun: FileDescriptor) {
         var interrupted = false
         do {
-            Result.of { run(tunnel) }.mapError {
+            Result.of { run(tun) }.mapError {
                 if (it is InterruptedException || threadInterrupted()) interrupted = true
                 else {
-                    core.emit(Events.TUNNEL_RESTART)
+                    core.emit(tunnel.Events.TUNNEL_RESTART)
                     val cooldown = min(cooldownTtl * cooldownCounter++, cooldownMax)
                     e("tunnel thread error, will restart after $cooldown ms", this, it.toString())
                     Result.of { Thread.sleep(cooldown) }.mapError {
@@ -518,13 +523,13 @@ internal class BlockaTunnel(
     }
 
     fun tickWireguard() {
-        if (tunnel == null) return
+        if (tunnelId == null) return
 
         op.rewind()
         val destination = buffer
         destination.rewind()
         destination.limit(destination.capacity())
-        val response = BoringTunJNI.wireguard_tick(tunnel!!, destination, destination.capacity(), op)
+        val response = BoringTunJNI.wireguard_tick(tunnelId!!, destination, destination.capacity(), op)
         destination.limit(response)
         when (op[0].toInt()) {
             BoringTunJNI.WRITE_TO_NETWORK -> {

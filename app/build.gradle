@@ -165,8 +165,8 @@ android {
         def srcTunnelKotlin = 'src/tunnel/kotlin'
         def srcTunnelTest = 'src/tunnel/test'
 
-        def srcAdblockingKotlin = 'src/adblocking/kotlin'
-        def srcAdblockingTest = 'src/adblocking/test'
+        def srcFilterKotlin = 'src/filter/kotlin'
+        def srcFilterTest = 'src/filter/test'
 
         def srcDnsKotlin = 'src/dns/kotlin'
         def srcDnsTest = 'src/dns/test'
@@ -192,7 +192,7 @@ android {
         appFull.java.srcDirs += srcTunnelKotlin
         appFull.java.srcDirs += srcG11nKotlin
         appFull.java.srcDirs += srcWireguardKotlin
-        appFull.java.srcDirs += srcAdblockingKotlin
+        appFull.java.srcDirs += srcFilterKotlin
         appFull.java.srcDirs += srcDnsKotlin
         appFull.java.srcDirs += srcUiKotlin
         appFull.java.srcDirs += srcStateKotlin

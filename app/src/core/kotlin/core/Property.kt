@@ -1,6 +1,5 @@
-package gs.property
+package core
 
-import core.*
 import kotlinx.coroutines.*
 
 /**
@@ -242,7 +241,7 @@ private open class BaseProperty<T>(
         }
 
     override fun doWhen(condition: () -> Boolean): IWhen {
-        val newWhen = When(onUi = false, condition =  condition, immediate = value != null)
+        val newWhen = When(onUi = false, condition = condition, immediate = value != null)
         GlobalScope.launch(PROPERTY) {
             listeners.add(newWhen)
         }

@@ -5,7 +5,7 @@ import core.bits.Adblocking2VB
 import core.bits.menu.MenuItemVB
 import core.bits.menu.MenuItemsVB
 import core.res
-import gs.presentation.NamedViewBinder
+import core.NamedViewBinder
 import org.blokada.R
 
 private fun createMenuAdblocking(): NamedViewBinder {

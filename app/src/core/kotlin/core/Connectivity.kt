@@ -1,4 +1,4 @@
-package gs.environment
+package core
 
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
@@ -16,15 +16,15 @@ fun isConnected(ctx: android.content.Context): Boolean {
 
 fun isTethering(ctx: android.content.Context, intent: android.content.Intent? = null): Boolean {
     var tethering = false
-    if (intent != null) tethering = gs.environment.isTetheringMethod3(intent.extras)
-    if (!tethering) tethering = gs.environment.isTetheringMethod1(ctx)
-    if (!tethering) tethering = gs.environment.isTetheringMethod2(ctx)
+    if (intent != null) tethering = isTetheringMethod3(intent.extras)
+    if (!tethering) tethering = isTetheringMethod1(ctx)
+    if (!tethering) tethering = isTetheringMethod2(ctx)
     return tethering
 }
 
 fun getDnsServers(ctx: android.content.Context): List<java.net.InetSocketAddress> {
-    var servers = if (android.os.Build.VERSION.SDK_INT >= 21) gs.environment.getDnsServersMethod1(ctx) else emptyList()
-    if (servers.isEmpty()) servers = gs.environment.getDnsServersMethod2()
+    var servers = if (android.os.Build.VERSION.SDK_INT >= 21) getDnsServersMethod1(ctx) else emptyList()
+    if (servers.isEmpty()) servers = getDnsServersMethod2()
     return servers.map { java.net.InetSocketAddress(it, UdpPort.DOMAIN.valueAsInt()) }
 }
 

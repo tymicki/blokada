@@ -4,6 +4,7 @@ import android.net.VpnService
 import core.Result
 import core.e
 import core.v
+import filter.FilterManager
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetSocketAddress

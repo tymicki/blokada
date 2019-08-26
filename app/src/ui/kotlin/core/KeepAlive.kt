@@ -10,12 +10,11 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Binder
 import android.os.IBinder
-import gs.property.IWhen
-import gs.property.newPersistedProperty2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import notification.createNotificationKeepAlive
 import org.blokada.R
+import tunnel.tunnelState
 
 val keepAlive by lazy {
     KeepAliveImpl()

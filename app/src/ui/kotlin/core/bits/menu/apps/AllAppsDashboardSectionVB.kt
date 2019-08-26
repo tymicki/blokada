@@ -4,9 +4,9 @@ import core.*
 import core.bits.AppVB
 import core.bits.SearchBarVB
 import core.bits.menu.adblocking.SlotMutex
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
-import gs.property.IWhen
+import core.ListViewBinder
+import core.NamedViewBinder
+import core.IWhen
 import org.blokada.R
 import tunnel.Events
 import tunnel.Filter

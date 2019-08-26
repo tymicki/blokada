@@ -13,8 +13,6 @@ import android.view.ViewGroup
 import android.widget.*
 import com.ramotion.foldingcell.FoldingCell
 import g11n.i18n
-import gs.presentation.LayoutViewBinder
-import gs.presentation.doAfter
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R

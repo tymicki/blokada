@@ -3,9 +3,9 @@ package core.bits.menu
 import android.content.Context
 import android.content.res.Configuration
 import core.*
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
-import gs.presentation.ViewBinder
+import core.ListViewBinder
+import core.NamedViewBinder
+import core.ViewBinder
 import org.blokada.R
 
 fun isLandscape(ctx: Context): Boolean {

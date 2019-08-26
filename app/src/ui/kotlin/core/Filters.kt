@@ -9,7 +9,6 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import filter.DefaultHostlineProcessor
-import gs.property.newProperty
 import kotlinx.coroutines.*
 import org.blokada.R
 import tunnel.FilterSourceDescriptor

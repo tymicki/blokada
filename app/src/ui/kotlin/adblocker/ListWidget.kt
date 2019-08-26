@@ -6,7 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
-import core.tunnelState
+import tunnel.tunnelState
 import notification.ANotificationsToggleService
 import org.blokada.R
 

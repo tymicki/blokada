@@ -2,7 +2,7 @@ package core.bits.menu.dns
 
 import core.bits.menu.MenuItemVB
 import core.res
-import gs.presentation.NamedViewBinder
+import core.NamedViewBinder
 import org.blokada.R
 
 fun createDnsMenuItem(): NamedViewBinder {

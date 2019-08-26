@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.viewpager.widget.ViewPager
-import gs.presentation.ViewBinder
 import org.blokada.R
 
 class VBStepView(

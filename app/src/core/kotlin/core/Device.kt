@@ -1,4 +1,4 @@
-package gs.property
+package core
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,13 +7,7 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.PowerManager
-import core.getApplicationContext
-import core.logCoroutineExceptions
-import core.v
 import g11n.i18n
-import gs.environment.isConnected
-import gs.environment.isTethering
-import gs.environment.isWifi
 import kotlinx.coroutines.*
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -52,13 +46,13 @@ class DeviceImpl (
         val c = isConnected(ctx) or watchdog.test()
         v("connected", c)
         c
-    } )
-    val tethering = newProperty({ isTethering(ctx)} )
+    })
+    val tethering = newProperty({ isTethering(ctx) })
 
     val watchdogOn = newPersistedProperty2("watchdogOn",
             { false })
 
-    val onWifi = newProperty({ isWifi(ctx) } )
+    val onWifi = newProperty({ isWifi(ctx) })
 
     val reports = newPersistedProperty2("reports",
             { true }

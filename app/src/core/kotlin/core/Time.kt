@@ -1,4 +1,4 @@
-package gs.environment
+package core
 
 val time = SystemTime()
 

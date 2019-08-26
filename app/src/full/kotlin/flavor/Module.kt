@@ -11,7 +11,7 @@ import android.content.Intent
 import android.os.Build
 import core.getApplicationContext
 import core.loadFromPersistence
-import core.tunnelState
+import tunnel.tunnelState
 import core.ui
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -25,7 +25,7 @@ suspend fun initFlavor() = withContext(Dispatchers.Main.immediate) {
     // Display notifications for dropped
    tunnelState.tunnelRecentDropped.doOnUiWhenSet().then {
         if (tunnelState.tunnelRecentDropped().isEmpty()) hideNotification(ctx)
-        else if (ui.notifications()) displayNotification(ctx,tunnelState.tunnelRecentDropped().last())
+        else if (ui.notifications()) displayNotification(ctx, tunnelState.tunnelRecentDropped().last())
     }
 
    tunnelState.tunnelRecentDropped.doWhenChanged().then{

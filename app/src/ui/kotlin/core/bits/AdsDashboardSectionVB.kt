@@ -5,8 +5,8 @@ import com.github.michaelbull.result.onSuccess
 import core.*
 import core.bits.menu.adblocking.SlotMutex
 import core.bits.menu.isLandscape
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
+import core.ListViewBinder
+import core.NamedViewBinder
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.Events

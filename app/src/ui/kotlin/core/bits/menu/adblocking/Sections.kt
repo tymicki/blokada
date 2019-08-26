@@ -4,9 +4,9 @@ import core.*
 import core.bits.*
 import core.bits.menu.MenuItemVB
 import core.bits.menu.MenuItemsVB
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
-import gs.presentation.ViewBinder
+import core.ListViewBinder
+import core.NamedViewBinder
+import core.ViewBinder
 import org.blokada.R
 import tunnel.Events
 import tunnel.Filter

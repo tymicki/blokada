@@ -1,15 +1,15 @@
 package g11n
 
+import android.annotation.TargetApi
 import android.content.res.Resources
 import core.Format
 import core.Resource
 import core.getApplicationContext
 import core.v
-import gs.main.getPreferredLocales
-import gs.property.Persistence
-import gs.property.PersistenceWithSerialiser
-import gs.property.newPersistedProperty2
-import gs.property.repo
+import core.Persistence
+import core.PersistenceWithSerialiser
+import core.newPersistedProperty2
+import core.repo
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import java.util.*
@@ -172,3 +172,14 @@ class I18nPersistence(
 fun I18nImpl.getBrandedString(resId: Int): String {
     return getString(resId, getString(R.string.branding_app_name_short))
 }
+
+@TargetApi(24)
+internal fun getPreferredLocales(): List<java.util.Locale> {
+    val cfg = android.content.res.Resources.getSystem().configuration
+    return try {
+        // Android, a custom list type that is not an iterable. Just wow.
+        val locales = cfg.locales
+        (0..locales.size() - 1).map { locales.get(it) }
+    } catch (t: Throwable) { listOf(cfg.locale) }
+}
+

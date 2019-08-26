@@ -1,12 +1,10 @@
-package core
+package tunnel
 
+import core.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
-import tunnel.BLOCKA_CONFIG
-import tunnel.BlockaConfig
-import tunnel.showSnack
 import java.util.*
 
 /**
@@ -21,7 +19,7 @@ class TunnelStateManager() {
         @Synchronized set
 
     init {
-        core.on(BLOCKA_CONFIG) {
+        on(BLOCKA_CONFIG) {
             latest = it
             check(it)
         }
@@ -43,7 +41,7 @@ class TunnelStateManager() {
                     }
 
                     v("pausing features.")
-                    core.emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
+                    emit(BLOCKA_CONFIG, latest.copy(adblocking = false, blockaVpn = false))
                     dnsManager.enabled %= false
                 }
                 else -> {
@@ -68,7 +66,7 @@ class TunnelStateManager() {
                     }
 
                     dnsManager.enabled %= dns
-                    core.emit(BLOCKA_CONFIG, latest.copy(adblocking = adblocking, blockaVpn = vpn))
+                    emit(BLOCKA_CONFIG, latest.copy(adblocking = adblocking, blockaVpn = vpn))
                 }
             }
         }
@@ -83,39 +81,39 @@ class TunnelStateManager() {
             }
             !it.adblocking && it.blockaVpn && !it.hasGateway() -> {
                 v("turning off everything because no gateway selected")
-                core.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
+                emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
                tunnelState.enabled %= false
             }
             (it.adblocking || dnsManager.enabled()) && it.blockaVpn && !it.hasGateway() -> {
                 v("turning off vpn because no gateway selected")
-                core.emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
+                emit(BLOCKA_CONFIG, it.copy(blockaVpn = false))
             }
         }
     }
 
     fun turnAdblocking(on: Boolean): Boolean {
-        core.emit(BLOCKA_CONFIG, latest.copy(adblocking = on))
+        emit(BLOCKA_CONFIG, latest.copy(adblocking = on))
         return true
     }
 
     fun turnVpn(on: Boolean): Boolean {
         return when {
             !on -> {
-                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
+                emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 true
             }
             latest.activeUntil.before(Date()) -> {
                 GlobalScope.launch { showSnack(R.string.menu_vpn_activate_account.res()) }
-                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
+                emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }
             !latest.hasGateway() -> {
                 GlobalScope.launch { showSnack(R.string.menu_vpn_select_gateway.res()) }
-                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
+                emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))
                 false
             }
             else -> {
-                core.emit(BLOCKA_CONFIG, latest.copy(blockaVpn = true))
+                emit(BLOCKA_CONFIG, latest.copy(blockaVpn = true))
                 true
             }
         }

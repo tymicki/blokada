@@ -1,7 +1,6 @@
-package gs.property
+package core
 
 import android.content.SharedPreferences
-import core.getApplicationContext
 import kotlinx.coroutines.runBlocking
 
 @Deprecated("use new persistence instead")
@@ -12,14 +11,14 @@ interface Persistence<T> {
 
 interface Serialiser {
     interface Editor {
-        fun putString(key: String, value: String): gs.property.Serialiser.Editor
-        fun putStringSet(key: String, values: Set<String>): gs.property.Serialiser.Editor
-        fun putInt(key: String, value: Int): gs.property.Serialiser.Editor
-        fun putLong(key: String, value: Long): gs.property.Serialiser.Editor
-        fun putFloat(key: String, value: Float): gs.property.Serialiser.Editor
-        fun putBoolean(key: String, value: Boolean): gs.property.Serialiser.Editor
-        fun remove(key: String): gs.property.Serialiser.Editor
-        fun clear(): gs.property.Serialiser.Editor
+        fun putString(key: String, value: String): Editor
+        fun putStringSet(key: String, values: Set<String>): Editor
+        fun putInt(key: String, value: Int): Editor
+        fun putLong(key: String, value: Long): Editor
+        fun putFloat(key: String, value: Float): Editor
+        fun putBoolean(key: String, value: Boolean): Editor
+        fun remove(key: String): Editor
+        fun clear(): Editor
         fun apply()
     }
 
@@ -31,11 +30,11 @@ interface Serialiser {
     fun getFloat(key: String, defValue: Float): Float
     fun getBoolean(key: String, defValue: Boolean): Boolean
     operator fun contains(key: String): Boolean
-    fun edit(): gs.property.Serialiser.Editor
+    fun edit(): Editor
 }
 
-abstract class PersistenceWithSerialiser<T>(): gs.property.Persistence<T> {
-    protected fun serialiser(key: String): gs.property.Serialiser {
+abstract class PersistenceWithSerialiser<T>(): Persistence<T> {
+    protected fun serialiser(key: String): Serialiser {
         return serialiserFor(key)
     }
 }

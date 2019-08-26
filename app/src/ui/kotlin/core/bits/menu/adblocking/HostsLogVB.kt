@@ -6,8 +6,8 @@ import core.bits.DomainBlockedVB
 import core.bits.DomainForwarderVB
 import core.bits.SearchBarVB
 import core.bits.menu.MenuItemVB
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
+import core.ListViewBinder
+import core.NamedViewBinder
 import org.blokada.R
 import tunnel.Events
 import tunnel.Persistence

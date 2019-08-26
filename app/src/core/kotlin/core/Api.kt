@@ -7,7 +7,6 @@ import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
-import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.lang.ref.WeakReference
@@ -103,10 +102,6 @@ fun openUrl(url: URL, timeoutMillis: Int): () -> HttpURLConnection = {
     c
 }
 
-fun openFile(file: File): InputStream {
-    return file.inputStream()
-}
-
 private val ctx = newSingleThreadContext("context-register") + logCoroutineExceptions()
 private var appContext: WeakReference<Context?> = WeakReference(null)
 private var activityContext: WeakReference<Activity?> = WeakReference(null)
@@ -141,3 +136,16 @@ suspend fun unsetActivity() = withContext(ctx) {
     activityContext = WeakReference(null)
 }
 
+private val commonEmit = CommonEmit()
+fun <T> emit(event: EventType<T>, value: T) = commonEmit.emit(event, value)
+fun <T> on(event: EventType<T>, callback: Callback<T>) = commonEmit.on(event, callback)
+fun <T> on(event: EventType<T>, callback: Callback<T>, recentValue: Boolean = true)
+        = commonEmit.on(event, callback, recentValue)
+
+fun <T> cancel(event: EventType<T>, callback: Callback<T>) = commonEmit.cancel(event, callback)
+suspend fun <T> getMostRecent(event: EventType<T>) = commonEmit.getMostRecent(event)
+fun emit(event: SimpleEvent) = commonEmit.emit(event)
+fun on(event: SimpleEvent, callback: () -> Unit, recentValue: Boolean = true)
+        = commonEmit.on(event, callback, recentValue)
+
+fun cancel(event: SimpleEvent, callback: () -> Unit) = commonEmit.cancel(event, callback)

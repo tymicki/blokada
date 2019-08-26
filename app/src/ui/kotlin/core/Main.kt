@@ -11,15 +11,13 @@ import android.content.Context
 import android.content.Intent
 import buildtype.initBuildType
 import flavor.initFlavor
-import gs.property.IWhen
-import gs.property.device
-import gs.property.initDevice
 import io.paperdb.Paper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import tunnel.blokadaUserAgent
+import blocka.blokadaUserAgent
 import tunnel.initTunnel
+import tunnel.tunnelState
 
 
 /**

@@ -1,9 +1,10 @@
-package tunnel
+package filter
 
 import com.github.michaelbull.result.mapBoth
 import core.Result
 import core.e
 import core.v
+import tunnel.*
 
 internal class Blockade(
         private val doLoadRuleset: (FilterId) -> Result<Ruleset> = Persistence.rules.load,

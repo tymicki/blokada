@@ -1,6 +1,8 @@
-package tunnel
+package filter
 
 import core.batch
+import tunnel.Filter
+import tunnel.FilterSourceDescriptor
 
 class FilterSerializer {
     fun deserialise(repo: List<String>): Set<Filter> {

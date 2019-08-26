@@ -1,4 +1,4 @@
-package gs.presentation
+package core
 
 class SwitchCompatView(
         private val ctx: android.content.Context,

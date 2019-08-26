@@ -3,11 +3,10 @@ package core
 import android.content.Context
 import g11n.g11Manager
 import g11n.i18n
-import gs.presentation.ViewBinderHolder
-import gs.property.*
 import kotlinx.coroutines.*
 import org.blokada.BuildConfig
 import org.blokada.R
+import tunnel.TunnelStateManager
 import tunnel.tunnelManager
 
 val ui by lazy {
@@ -83,7 +82,7 @@ suspend fun initApp() = withContext(Dispatchers.Main.immediate) {
 class APrefsPersistence<T>(
         val ctx: Context,
         val key: String
-) : gs.property.Persistence<T> {
+) : Persistence<T> {
 
     val p by lazy { ctx.getSharedPreferences("default", Context.MODE_PRIVATE) }
 

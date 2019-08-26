@@ -1,8 +1,11 @@
-package tunnel
+package filter
 
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.mapBoth
 import core.*
+import tunnel.*
+import tunnel.Filter
+import tunnel.Persistence
 import java.net.URL
 
 internal class FilterManager(

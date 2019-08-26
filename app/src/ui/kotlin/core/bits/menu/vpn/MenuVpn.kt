@@ -6,7 +6,7 @@ import core.bits.VpnVB
 import core.bits.menu.MenuItemVB
 import core.bits.menu.MenuItemsVB
 import core.bits.menu.SimpleMenuItemVB
-import gs.presentation.NamedViewBinder
+import core.NamedViewBinder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking

@@ -1,7 +1,6 @@
 package core
 
 import g11n.i18n
-import gs.property.newProperty
 import java.net.HttpURLConnection
 import java.net.URL
 

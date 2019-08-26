@@ -7,8 +7,8 @@ import core.bits.FilterVB
 import core.bits.NewFilterVB
 import core.bits.menu.MenuItemVB
 import core.res
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
+import core.ListViewBinder
+import core.NamedViewBinder
 import org.blokada.R
 import tunnel.Events
 import tunnel.Filter

@@ -9,8 +9,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import g11n.i18n
-import gs.presentation.LayoutViewBinder
-import gs.presentation.doAfter
 import org.blokada.R
 
 

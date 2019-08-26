@@ -11,11 +11,11 @@ import core.bits.menu.apps.createAppsMenuItem
 import core.bits.menu.dns.createDnsMenuItem
 import core.bits.menu.vpn.createVpnMenuItem
 import core.bits.openInBrowser
-import gs.presentation.NamedViewBinder
+import core.NamedViewBinder
 import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
 import org.blokada.R
-import tunnel.blokadaUserAgent
+import blocka.blokadaUserAgent
 import java.io.File
 
 fun createMenu(): MenuItemsVB {

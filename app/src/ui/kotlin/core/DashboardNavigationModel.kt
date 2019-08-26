@@ -1,7 +1,5 @@
 package core
 
-import gs.presentation.NamedViewBinder
-
 
 internal class DashboardNavigationModel(
         val sections: List<NamedViewBinder>,

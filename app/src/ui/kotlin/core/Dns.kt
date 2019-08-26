@@ -1,13 +1,12 @@
 package core
 
 import g11n.i18n
-import gs.environment.getDnsServers
-import gs.property.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.pcap4j.packet.namednumber.UdpPort
 import tunnel.TunnelConfig
+import tunnel.tunnelState
 import java.io.InputStreamReader
 import java.net.InetAddress
 import java.net.InetSocketAddress

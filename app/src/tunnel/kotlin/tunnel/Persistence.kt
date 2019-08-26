@@ -4,6 +4,7 @@ import android.content.Context
 import com.github.michaelbull.result.*
 import core.*
 import core.Result
+import filter.FilterSerializer
 import kotlinx.coroutines.runBlocking
 
 class Persistence {

@@ -1,6 +1,7 @@
 package core.bits.menu.vpn
 
 import android.content.Intent
+import blocka.RestModel
 import core.*
 import g11n.i18n
 import kotlinx.coroutines.GlobalScope

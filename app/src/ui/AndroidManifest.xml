@@ -151,17 +151,17 @@
         </service>
         <service android:name="core.KeepAliveService"></service>
 
-        <receiver android:name="gs.property.LocaleReceiver">
+        <receiver android:name="core.LocaleReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.LOCALE_CHANGED" />
             </intent-filter>
         </receiver>
-        <receiver android:name="gs.property.ConnectivityReceiver">
+        <receiver android:name="core.ConnectivityReceiver">
             <intent-filter>
                 <action android:name="org.blokada.keepAlive" />
             </intent-filter>
         </receiver>
-        <receiver android:name="gs.property.ScreenOnReceiver"></receiver>
+        <receiver android:name="core.ScreenOnReceiver"></receiver>
         <receiver android:name="tunnel.RenewLicenseReceiver"></receiver>
 
         <provider

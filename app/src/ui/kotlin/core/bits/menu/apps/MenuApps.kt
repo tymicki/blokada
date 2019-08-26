@@ -4,7 +4,7 @@ import core.LabelVB
 import core.bits.menu.MenuItemVB
 import core.bits.menu.MenuItemsVB
 import core.res
-import gs.presentation.NamedViewBinder
+import core.NamedViewBinder
 import org.blokada.R
 
 fun createAppsMenuItem(): NamedViewBinder {

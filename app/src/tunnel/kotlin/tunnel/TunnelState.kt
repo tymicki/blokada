@@ -1,11 +1,7 @@
-package core
+package tunnel
 
-import gs.property.newPersistedProperty
-import gs.property.newProperty
+import core.*
 import kotlinx.coroutines.runBlocking
-import tunnel.askTunnelPermission
-import tunnel.checkTunnelPermissions
-import tunnel.hasCompleted
 
 val tunnelState by lazy {
     runBlocking {

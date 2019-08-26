@@ -3,10 +3,6 @@ package core
 import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import gs.presentation.WebDash
-import gs.property.IProperty
-import gs.property.IWhen
-import gs.property.newProperty
 import org.blokada.R
 import java.net.URL
 

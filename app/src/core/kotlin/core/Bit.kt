@@ -14,7 +14,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.GestureDetectorCompat
 import g11n.i18n
-import gs.presentation.LayoutViewBinder
 import org.blokada.R
 
 

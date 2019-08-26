@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.View
 import org.blokada.R
 import tunnel.Request
+import tunnel.TunnelState
 import java.util.*
 
 

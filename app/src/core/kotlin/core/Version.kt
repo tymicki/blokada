@@ -1,4 +1,4 @@
-package gs.property
+package core
 
 val version by lazy { VersionImpl() }
 

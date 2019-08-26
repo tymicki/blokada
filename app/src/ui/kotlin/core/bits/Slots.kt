@@ -10,9 +10,6 @@ import core.*
 import filter.hostnameRegex
 import g11n.g11Manager
 import g11n.i18n
-import gs.property.IWhen
-import gs.property.device
-import gs.property.repo
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -20,6 +17,7 @@ import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import tunnel.*
 import tunnel.Filter
+import tunnel.FilterSourceDescriptor
 import java.net.URL
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat

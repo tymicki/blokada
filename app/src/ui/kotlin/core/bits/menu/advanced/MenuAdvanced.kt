@@ -7,7 +7,7 @@ import core.bits.menu.MenuItemVB
 import core.bits.menu.MenuItemsVB
 import core.defaultOnTap
 import core.res
-import gs.presentation.NamedViewBinder
+import core.NamedViewBinder
 import org.blokada.R
 
 private fun createMenuAdvanced(): NamedViewBinder {

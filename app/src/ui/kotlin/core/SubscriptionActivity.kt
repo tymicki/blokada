@@ -3,9 +3,6 @@ package core
 import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import gs.presentation.WebDash
-import gs.property.IWhen
-import gs.property.newProperty
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay

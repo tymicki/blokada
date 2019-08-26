@@ -5,10 +5,10 @@ import android.content.Context
 import android.text.format.DateUtils
 import android.util.Log
 import core.getApplicationContext
-import core.workerFor
-import gs.environment.time
-import gs.property.device
-import gs.property.newPersistedProperty2
+import core.time
+import core.tunnelState
+import core.device
+import core.newPersistedProperty2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -29,11 +29,10 @@ private val lastDailyMillis = newPersistedProperty2("daily", { 0L },
 
 private val lastActiveMillis = newPersistedProperty2("daily-active", { 0L },
         refresh = {
-            // TODO: once tunnel is avaibale
-//            if (t.active()) {
-//                j.event("daily-active")
-//                time.now()
-//            } else it
+            if (tunnelState.active()) {
+                j.event("daily-active")
+                time.now()
+            } else it
             it
         },
         shouldRefresh = { !DateUtils.isToday(it) })

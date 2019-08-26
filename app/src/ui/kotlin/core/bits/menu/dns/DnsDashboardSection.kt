@@ -3,9 +3,9 @@ package core.bits.menu.dns
 import core.*
 import core.bits.*
 import core.bits.menu.adblocking.SlotMutex
-import gs.presentation.ListViewBinder
-import gs.presentation.NamedViewBinder
-import gs.property.IWhen
+import core.ListViewBinder
+import core.NamedViewBinder
+import core.IWhen
 import org.blokada.R
 
 class DnsDashboardSection(

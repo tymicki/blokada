@@ -1,6 +1,5 @@
-package gs.property
+package core
 
-import core.*
 import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.util.*
@@ -51,7 +50,7 @@ class RepoImpl {
             }
             v("repo downloaded")
 
-            lastRefreshMillis %= gs.environment.time.now()
+            lastRefreshMillis %= time.now()
             RepoContent(
                     contentPath = URL(repo2[0]),
                     locales = locales,
@@ -78,7 +77,7 @@ class RepoImpl {
 
                 when {
                     it.fetchedUrl != url() -> true
-                    lastRefreshMillis() + ttl < gs.environment.time.now() -> true
+                    lastRefreshMillis() + ttl < time.now() -> true
                     it.downloadLinks.isEmpty() -> true
                     it.contentPath == null -> true
                     it.locales.isEmpty() -> true

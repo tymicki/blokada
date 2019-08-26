@@ -1,8 +1,8 @@
 package update
 
-import core.TunnelState
-import core.tunnelState
-import gs.property.IWhen
+import tunnel.TunnelState
+import tunnel.tunnelState
+import core.IWhen
 import java.net.URL
 
 /**
@@ -23,7 +23,7 @@ class UpdateCoordinator(
         else {
             core.v("UpdateCoordinator: deactivate tunnel: ${tunnelState.tunnelState()}")
            tunnelState.tunnelState.cancel(w)
-            w =tunnelState.tunnelState.doOnUiWhenChanged().then {
+            w = tunnelState.tunnelState.doOnUiWhenChanged().then {
                 if (tunnelState.tunnelState(TunnelState.INACTIVE)) {
                     if (!downloading) {
                         core.v("UpdateCoordinator: tunnel deactivated")

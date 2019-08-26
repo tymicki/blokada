@@ -1,12 +1,12 @@
 package core
 
 import android.content.Context
-import gs.property.newPersistedProperty2
-import gs.property.repo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import notification.displayNotificationForUpdate
 import org.blokada.BuildConfig
+import tunnel.TunnelState
+import tunnel.tunnelState
 import update.AUpdateDownloader
 import update.UpdateCoordinator
 
@@ -45,14 +45,14 @@ suspend fun initUpdate() = withContext(Dispatchers.Main.immediate) {
 
         if (isUpdate(ctx, content.newestVersionCode) && canShowNotification(last, cooldown)) {
             displayNotificationForUpdate(ctx, content.newestVersionName)
-            updateManager.lastSeenUpdateMillis %= gs.environment.time.now()
+            updateManager.lastSeenUpdateMillis %= time.now()
         }
     }
 
 }
 
 internal fun canShowNotification(last: Long, cooldownMillis: Long): Boolean {
-    return last + cooldownMillis < gs.environment.time.now()
+    return last + cooldownMillis < time.now()
 }
 
 fun isUpdate(ctx: Context, code: Int): Boolean {

@@ -1,4 +1,4 @@
-package gs.presentation
+package core
 
 import android.content.Context
 import android.content.Intent
@@ -10,14 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
-import core.ListSection
-import core.Navigable
-import core.Scrollable
-import core.e
-import gs.property.IProperty
-import gs.property.IWhen
 import org.blokada.R
-import tunnel.blokadaUserAgent
+import blocka.blokadaUserAgent
 import java.net.URL
 
 class WebDash(

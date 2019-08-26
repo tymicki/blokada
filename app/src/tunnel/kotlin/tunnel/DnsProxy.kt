@@ -5,6 +5,7 @@ import android.system.OsConstants
 import com.github.michaelbull.result.mapError
 import core.Result
 import core.w
+import filter.Blockade
 import org.pcap4j.packet.*
 import org.pcap4j.packet.namednumber.UdpPort
 import org.xbill.DNS.*

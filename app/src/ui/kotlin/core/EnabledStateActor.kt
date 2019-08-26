@@ -1,5 +1,8 @@
 package core
 
+import tunnel.TunnelState
+import tunnel.tunnelState
+
 /**
  * Translates internal MainState changes into higher level events used by topbar and fab.
  */
@@ -13,9 +16,9 @@ class EnabledStateActor(
     private val listener3: Any
 
     init {
-        listener1 =tunnelState.enabled.doOnUiWhenChanged().then { update() }
-        listener2 =tunnelState.active.doOnUiWhenChanged().then { update() }
-        listener3 =tunnelState.tunnelState.doOnUiWhenChanged().then { update() }
+        listener1 = tunnelState.enabled.doOnUiWhenChanged().then { update() }
+        listener2 = tunnelState.active.doOnUiWhenChanged().then { update() }
+        listener3 = tunnelState.tunnelState.doOnUiWhenChanged().then { update() }
         update()
     }
 
