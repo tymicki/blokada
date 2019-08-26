@@ -7,7 +7,11 @@ import android.os.Handler
 import android.util.Base64
 import android.widget.EditText
 import core.*
-import filter.hostnameRegex
+import dns.DnsChoice
+import dns.dnsManager
+import dns.printServers
+import filter.*
+import filter.id
 import g11n.g11Manager
 import g11n.i18n
 import kotlinx.coroutines.GlobalScope

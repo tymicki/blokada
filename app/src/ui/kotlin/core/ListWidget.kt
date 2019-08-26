@@ -1,4 +1,4 @@
-package adblocker
+package core
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import tunnel.tunnelState
-import notification.ANotificationsToggleService
 import org.blokada.R
 
 

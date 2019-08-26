@@ -6,6 +6,7 @@ import g11n.i18n
 import kotlinx.coroutines.*
 import org.blokada.BuildConfig
 import org.blokada.R
+import tunnel.EnabledStateActor
 import tunnel.TunnelStateManager
 import tunnel.tunnelManager
 

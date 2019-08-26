@@ -12,7 +12,6 @@ import android.os.Binder
 import android.os.IBinder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import notification.createNotificationKeepAlive
 import org.blokada.R
 import tunnel.tunnelState
 
@@ -31,8 +30,8 @@ suspend fun initKeepAlive() = withContext(Dispatchers.Main.immediate) {
     val keepAliveNotificationUpdater = { dropped: Int ->
         val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val n = createNotificationKeepAlive(ctx = ctx, count = dropped,
-                last = tunnelState.tunnelRecentDropped().lastOrNull() ?:
-                ctx.getString(R.string.notification_keepalive_none)
+                last = tunnelState.tunnelRecentDropped().lastOrNull()
+                        ?: ctx.getString(R.string.notification_keepalive_none)
         )
         nm.notify(3, n)
     }

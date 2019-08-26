@@ -21,10 +21,8 @@ import core.bits.menu.MenuItemVB
 import core.bits.menu.createMenu
 import g11n.i18n
 import org.blokada.R
-import tunnel.Events
+import tunnel.*
 import tunnel.Persistence
-import tunnel.TunnelState
-import tunnel.tunnelState
 import kotlin.math.max
 import kotlin.math.min
 

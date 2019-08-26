@@ -1,4 +1,4 @@
-package adblocker
+package core
 
 import android.app.Activity
 import android.app.PendingIntent
@@ -16,9 +16,8 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.RemoteViews
 import android.widget.TextView
-import core.*
+import dns.dnsManager
 import g11n.i18n
-import core.IWhen
 import org.blokada.R
 import tunnel.Events
 import tunnel.Request
@@ -91,14 +90,14 @@ class ActiveWidgetProvider : AppWidgetProvider() {
     override fun onRestored(context: Context?, oldWidgetIds: IntArray?, newWidgetIds: IntArray?) {
         super.onRestored(context, oldWidgetIds, newWidgetIds)
         val restoreData = WidgetRestoreData
-        restoreData.oldWidgetIds = oldWidgetIds ?: IntArray(0)
-        restoreData.newWidgetIds = newWidgetIds ?: IntArray(0)
-        core.emit(RESTORE_WIDGET, restoreData)
+        WidgetRestoreData.oldWidgetIds = oldWidgetIds ?: IntArray(0)
+        WidgetRestoreData.newWidgetIds = newWidgetIds ?: IntArray(0)
+        emit(RESTORE_WIDGET, restoreData)
     }
 
     override fun onDeleted(context: Context?, appWidgetIds: IntArray?) {
         super.onDeleted(context, appWidgetIds)
-        core.emit(DELETE_WIDGET, appWidgetIds ?: IntArray(0))
+        emit(DELETE_WIDGET, appWidgetIds ?: IntArray(0))
     }
 
     override fun onDisabled(context: Context?) {
@@ -151,11 +150,11 @@ class UpdateWidgetService : Service() {
                 }
             }
 
-            core.on(NEW_WIDGET, onNewWidgetEvent)
+            on(NEW_WIDGET, onNewWidgetEvent)
 
-            core.on(RESTORE_WIDGET, onRestoreEvent)
+            on(RESTORE_WIDGET, onRestoreEvent)
 
-            core.on(DELETE_WIDGET, onDeleteEvent)
+            on(DELETE_WIDGET, onDeleteEvent)
 
             val droppedlist = tunnelState.tunnelRecentDropped()
             if (droppedlist.isEmpty()) {
@@ -163,7 +162,7 @@ class UpdateWidgetService : Service() {
             } else {
                 onBlocked(droppedlist.last())
             }
-            core.on(Events.REQUEST, onBlockedEvent)
+            on(Events.REQUEST, onBlockedEvent)
 
             onTunnelStateChanged()
             onTunnelStateEvent = tunnelState.tunnelState.doOnUiWhenChanged(withInit = true).then {
@@ -221,12 +220,12 @@ class UpdateWidgetService : Service() {
         val pref = this.getSharedPreferences("widgets", Context.MODE_PRIVATE)
         val prefEdit = pref.edit()
 
-        for ((index, oldId) in restoreData.oldWidgetIds.withIndex()) {
+        for ((index, oldId) in WidgetRestoreData.oldWidgetIds.withIndex()) {
             if (pref.contains("widget-$oldId")) {
                 val widgetConf = pref.getInt("widget-$oldId", 0)
                 prefEdit.remove("widget-$oldId")
-                prefEdit.putInt("widget-" + restoreData.newWidgetIds[index], widgetConf)
-                (widgetList.find { wd -> wd.id == oldId })?.id = restoreData.newWidgetIds[index]
+                prefEdit.putInt("widget-" + WidgetRestoreData.newWidgetIds[index], widgetConf)
+                (widgetList.find { wd -> wd.id == oldId })?.id = WidgetRestoreData.newWidgetIds[index]
             } else {
                 v("old widget id not found!")
             }
@@ -436,7 +435,7 @@ class ConfigWidgetActivity : Activity() {
 //            data.alpha = findViewById<SeekBar>(R.id.widget_cv_alpha).progress
             data.id = appWidgetId
 
-            core.emit(NEW_WIDGET, data)
+            emit(NEW_WIDGET, data)
 
             val serviceIntent = Intent(this.applicationContext,
                     UpdateWidgetService::class.java)

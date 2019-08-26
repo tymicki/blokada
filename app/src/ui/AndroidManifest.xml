@@ -130,9 +130,9 @@
             android:launchMode="singleInstance"
             android:theme="@style/TransparentWindow" />
 
-        <service android:name="notification.ANotificationsOffService"></service>
-        <service android:name="notification.ANotificationsWhitelistService"></service>
-        <service android:name="notification.ANotificationsToggleService"></service>
+        <service android:name="core.ANotificationsOffService"></service>
+        <service android:name="core.ANotificationsWhitelistService"></service>
+        <service android:name="core.ANotificationsToggleService"></service>
         <service
             android:name="core.QuickSettingsService"
             android:icon="@drawable/ic_blokada"
@@ -174,15 +174,15 @@
                 android:resource="@xml/provider_update" />
         </provider>
 
-        <activity android:name="adblocker.ConfigWidgetActivity">
+        <activity android:name="core.ConfigWidgetActivity">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-        <service android:name="adblocker.UpdateWidgetService" />
+        <service android:name="core.UpdateWidgetService" />
 
         <receiver
-            android:name="adblocker.ActiveWidgetProvider"
+            android:name="core.ActiveWidgetProvider"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
@@ -195,7 +195,7 @@
                 android:resource="@xml/active_widget_info" />
         </receiver>
         <receiver
-            android:name="adblocker.ListWidgetProvider"
+            android:name="core.ListWidgetProvider"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -205,9 +205,9 @@
                 android:resource="@xml/list_widget_info" />
         </receiver>
 
-        <service android:name="adblocker.RequestLogger" />
+        <service android:name="core.RequestLogger" />
 
-        <service android:name="adblocker.ForegroundStartService" />
+        <service android:name="core.ForegroundStartService" />
 
         <activity android:name="core.AddDnsActivity"
             android:configChanges="orientation|screenSize"

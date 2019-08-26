@@ -1,4 +1,4 @@
-package notification
+package core
 
 import android.annotation.TargetApi
 import android.app.Notification
@@ -10,7 +10,8 @@ import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import core.*
+import dns.dnsManager
+import dns.printServers
 import g11n.i18n
 import kotlinx.coroutines.runBlocking
 import org.blokada.R

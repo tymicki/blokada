@@ -7,6 +7,8 @@ import core.bits.menu.adblocking.SlotMutex
 import core.ListViewBinder
 import core.NamedViewBinder
 import core.IWhen
+import filter.App
+import filter.filtersManager
 import org.blokada.R
 import tunnel.Events
 import tunnel.Filter

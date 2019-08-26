@@ -1,7 +1,4 @@
-package core
-
-import tunnel.TunnelState
-import tunnel.tunnelState
+package tunnel
 
 /**
  * Translates internal MainState changes into higher level events used by topbar and fab.

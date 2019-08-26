@@ -3,6 +3,9 @@ package core
 import android.app.Activity
 import android.util.Base64
 import android.view.View
+import dns.DnsChoice
+import dns.dnsManager
+import dns.printServers
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import java.net.InetSocketAddress

@@ -5,6 +5,7 @@ import core.*
 import core.bits.menu.MENU_CLICK_BY_NAME
 import g11n.i18n
 import core.IWhen
+import dns.dnsManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R

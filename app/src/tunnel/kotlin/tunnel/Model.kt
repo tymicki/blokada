@@ -13,8 +13,8 @@ import com.cloudflare.app.boringtun.BoringTunJNI
 import com.google.android.material.snackbar.Snackbar
 import core.*
 import kotlinx.coroutines.*
-import notification.displayAccountExpiredNotification
-import notification.displayLeaseExpiredNotification
+import core.displayAccountExpiredNotification
+import core.displayLeaseExpiredNotification
 import org.blokada.R
 import retrofit2.Call
 import retrofit2.Response

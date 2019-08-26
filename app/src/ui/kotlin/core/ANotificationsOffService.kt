@@ -1,4 +1,4 @@
-package notification
+package core
 
 import android.app.IntentService
 import android.content.Intent

@@ -6,8 +6,11 @@ import android.net.VpnService
 import blocka.BlockaTunnel
 import com.github.michaelbull.result.onFailure
 import core.*
+import dns.FALLBACK_DNS
+import dns.dnsManager
 import filter.Blockade
 import filter.FilterManager
+import filter.filtersManager
 import filter.sourceProvider
 import kotlinx.coroutines.*
 import org.blokada.R

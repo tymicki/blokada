@@ -1,9 +1,9 @@
 package flavor
 
-import adblocker.ActiveWidgetProvider
-import adblocker.ForegroundStartService
-import adblocker.ListWidgetProvider
-import adblocker.LoggerConfig
+import core.ActiveWidgetProvider
+import core.ForegroundStartService
+import core.ListWidgetProvider
+import core.LoggerConfig
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
@@ -16,8 +16,8 @@ import core.ui
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import notification.displayNotification
-import notification.hideNotification
+import core.displayNotification
+import core.hideNotification
 
 suspend fun initFlavor() = withContext(Dispatchers.Main.immediate) {
     val ctx = runBlocking { getApplicationContext()!! }

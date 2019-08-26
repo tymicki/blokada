@@ -1,4 +1,4 @@
-package core
+package filter
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -8,7 +8,9 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import filter.DefaultHostlineProcessor
+import core.getApplicationContext
+import core.newProperty
+import core.v
 import kotlinx.coroutines.*
 import org.blokada.R
 import tunnel.FilterSourceDescriptor

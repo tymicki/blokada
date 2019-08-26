@@ -1,4 +1,4 @@
-package adblocker
+package core
 
 import android.app.Notification
 import android.app.NotificationChannel

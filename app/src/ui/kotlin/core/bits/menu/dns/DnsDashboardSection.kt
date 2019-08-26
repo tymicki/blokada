@@ -6,6 +6,8 @@ import core.bits.menu.adblocking.SlotMutex
 import core.ListViewBinder
 import core.NamedViewBinder
 import core.IWhen
+import dns.dnsManager
+import filter.filtersManager
 import org.blokada.R
 
 class DnsDashboardSection(

@@ -1,5 +1,6 @@
-package core
+package dns
 
+import core.*
 import g11n.i18n
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -235,7 +236,7 @@ class DnsLocalisedFetcher() {
     }
 
     fun fetch() {
-        core.v("dns: fetch strings: start ${pages.dnsStrings()}")
+        v("dns: fetch strings: start ${pages.dnsStrings()}")
         val prop = Properties()
         try {
             prop.load(InputStreamReader(openUrl(pages.dnsStrings(), 10000)().getInputStream(),
@@ -244,9 +245,9 @@ class DnsLocalisedFetcher() {
                 i18n.set("dns_$it", prop.getProperty(it))
             }
         } catch (e: Exception) {
-            core.v("dns: fetch strings crash", e)
+            v("dns: fetch strings crash", e)
         }
-        core.v("dns: fetch strings: done")
+        v("dns: fetch strings: done")
     }
 }
 

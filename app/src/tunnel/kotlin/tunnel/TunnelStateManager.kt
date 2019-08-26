@@ -1,6 +1,7 @@
 package tunnel
 
 import core.*
+import dns.dnsManager
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -12,7 +13,7 @@ import java.util.*
  * state of adblocking, vpn, and DNS.
  */
 
-class TunnelStateManager() {
+class TunnelStateManager {
 
     private var latest: BlockaConfig = BlockaConfig()
         @Synchronized get

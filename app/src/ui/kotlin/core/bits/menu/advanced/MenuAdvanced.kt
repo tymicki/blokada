@@ -1,6 +1,6 @@
 package core.bits.menu.advanced
 
-import adblocker.LoggerVB
+import core.LoggerVB
 import core.LabelVB
 import core.bits.*
 import core.bits.menu.MenuItemVB

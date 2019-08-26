@@ -1,10 +1,10 @@
-package notification
+package core
 
 import android.app.IntentService
 import android.content.Intent
 import android.os.Handler
-import tunnel.tunnelState
 import org.blokada.R
+import tunnel.tunnelState
 
 
 class ANotificationsToggleService : IntentService("notificationsToggle") {

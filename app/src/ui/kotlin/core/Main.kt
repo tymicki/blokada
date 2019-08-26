@@ -16,6 +16,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import blocka.blokadaUserAgent
+import dns.initDns
+import filter.initFilters
 import tunnel.initTunnel
 import tunnel.tunnelState
 

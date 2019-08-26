@@ -1,9 +1,8 @@
-package adblocker
+package core
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import core.*
 import g11n.i18n
 import kotlinx.coroutines.runBlocking
 import org.blokada.R

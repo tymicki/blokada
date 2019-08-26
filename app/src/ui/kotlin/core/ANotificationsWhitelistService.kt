@@ -1,9 +1,9 @@
-package notification
+package core
 
 import android.app.IntentService
 import android.content.Intent
 import android.os.Handler
-import core.id
+import filter.id
 import org.blokada.R
 import tunnel.Filter
 import tunnel.FilterSourceDescriptor

@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
+import tunnel.IEnabledStateActorListener
 import tunnel.tunnelState
 import java.util.*
 
