@@ -1,8 +1,6 @@
 package core
 
 import android.content.Context
-import gs.environment.Worker
-import gs.property.kctx
 import gs.property.newPersistedProperty2
 import gs.property.repo
 import kotlinx.coroutines.Dispatchers
@@ -13,14 +11,12 @@ import update.AUpdateDownloader
 import update.UpdateCoordinator
 
 val updateManager by lazy {
-    UpdateImpl(kctx)
+    UpdateImpl()
 }
 
-class UpdateImpl (
-        w: Worker
-) {
+class UpdateImpl {
 
-    val lastSeenUpdateMillis = newPersistedProperty2(w, "lastSeenUpdate", { 0L })
+    val lastSeenUpdateMillis = newPersistedProperty2("lastSeenUpdate", { 0L })
 }
 
 val updateCoordinator = UpdateCoordinator(downloader = AUpdateDownloader())

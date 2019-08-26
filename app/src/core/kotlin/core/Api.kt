@@ -2,8 +2,6 @@ package core
 
 import android.app.Activity
 import android.content.Context
-import gs.environment.Worker
-import gs.environment.newSingleThreadedWorker
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.newFixedThreadPoolContext
 import kotlinx.coroutines.newSingleThreadContext
@@ -18,7 +16,7 @@ import java.net.URL
 import java.net.URLConnection
 import java.util.zip.GZIPInputStream
 
-val COMMON = newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors(), "common")
+val COMMON = newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors(), "common") + logCoroutineExceptions()
 
 typealias Result<T> = com.github.michaelbull.result.Result<T, Exception>
 typealias Time = Long
@@ -109,7 +107,7 @@ fun openFile(file: File): InputStream {
     return file.inputStream()
 }
 
-private val ctx = newSingleThreadContext("context-register")
+private val ctx = newSingleThreadContext("context-register") + logCoroutineExceptions()
 private var appContext: WeakReference<Context?> = WeakReference(null)
 private var activityContext: WeakReference<Activity?> = WeakReference(null)
 
@@ -141,11 +139,5 @@ suspend fun Activity.setActivityContext() {
 suspend fun unsetActivity() = withContext(ctx) {
     v("unsetting activity context")
     activityContext = WeakReference(null)
-}
-
-private val workers = mutableMapOf<String, Worker>()
-@Synchronized fun workerFor(name: String) : Worker {
-    if (!workers.containsKey(name)) workers[name] = newSingleThreadedWorker(name)
-    return workers[name]!!
 }
 

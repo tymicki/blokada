@@ -8,27 +8,19 @@ import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.PowerManager
 import core.getApplicationContext
+import core.logCoroutineExceptions
 import core.v
-import core.workerFor
 import g11n.i18n
-import gs.environment.Worker
 import gs.environment.isConnected
 import gs.environment.isTethering
 import gs.environment.isWifi
 import kotlinx.coroutines.*
-import nl.komponents.kovenant.Kovenant
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.android.androidUiDispatcher
-import nl.komponents.kovenant.task
-import nl.komponents.kovenant.ui.KovenantUi
 import java.net.InetSocketAddress
 import java.net.Socket
 
-private val kctxWatchdog = workerFor("watchdog")
-
 val device by lazy {
     runBlocking {
-        DeviceImpl(kctx, getApplicationContext()!!)
+        DeviceImpl(getApplicationContext()!!)
     }
 }
 
@@ -39,7 +31,6 @@ val watchdog by lazy {
 }
 
 class DeviceImpl (
-        kctx: Worker,
         ctx: Context
 ) {
 
@@ -53,23 +44,23 @@ class DeviceImpl (
         }
     }
 
-    val appInForeground = newProperty(kctx, { false })
-    val screenOn = newProperty(kctx, { pm.isInteractive })
-    val connected = newProperty(kctx, zeroValue = { true }, refresh = {
+    val appInForeground = newProperty({ false })
+    val screenOn = newProperty({ pm.isInteractive })
+    val connected = newProperty(zeroValue = { true }, refresh = {
         // With watchdog off always returning true, we basically disable detection.
         // Because isConnected sometimes returns false when we are actually online.
         val c = isConnected(ctx) or watchdog.test()
         v("connected", c)
         c
     } )
-    val tethering = newProperty(kctx, { isTethering(ctx)} )
+    val tethering = newProperty({ isTethering(ctx)} )
 
-    val watchdogOn = newPersistedProperty2(kctx, "watchdogOn",
+    val watchdogOn = newPersistedProperty2("watchdogOn",
             { false })
 
-    val onWifi = newProperty(kctx, { isWifi(ctx) } )
+    val onWifi = newProperty({ isWifi(ctx) } )
 
-    val reports = newPersistedProperty2(kctx, "reports",
+    val reports = newPersistedProperty2("reports",
             { true }
     )
 
@@ -108,10 +99,6 @@ suspend fun initDevice() = withContext(Dispatchers.Main.immediate) {
     ConnectivityReceiver.register(ctx)
     ScreenOnReceiver.register(ctx)
     LocaleReceiver.register(ctx)
-
-    KovenantUi.uiContext {
-        dispatcher = androidUiDispatcher()
-    }
 }
 
 class ScreenOnReceiver : BroadcastReceiver() {
@@ -162,6 +149,8 @@ class LocaleReceiver : BroadcastReceiver() {
  */
 class Watchdog {
 
+    private val kctx = newSingleThreadContext("watchdog") + logCoroutineExceptions()
+
     fun test(): Boolean {
         if (!device.watchdogOn()) return true
         v("watchdog ping")
@@ -183,25 +172,25 @@ class Watchdog {
     private val MAX = 120
     private var started = false
     private var wait = 1
-    private var nextTask: Promise<*, *>? = null
+    private var nextTask: Job? = null
 
     @Synchronized fun start() {
         if (started) return
         if (!device.watchdogOn()) { return }
         started = true
         wait = 1
-        if (nextTask != null) Kovenant.cancel(nextTask!!, Exception("cancelled"))
+        if (nextTask != null) nextTask?.cancel()
         nextTask = tick()
     }
 
     @Synchronized fun stop() {
         started = false
-        if (nextTask != null) Kovenant.cancel(nextTask!!, Exception("cancelled"))
+        if (nextTask != null) nextTask?.cancel()
         nextTask = null
     }
 
-    private fun tick(): Promise<*, *> {
-        return task(kctxWatchdog) {
+    private fun tick(): Job {
+        return GlobalScope.launch(kctx) {
             if (started) {
                 // Delay the first check to not cause false positives
                 if (wait == 1) Thread.sleep(1000L)

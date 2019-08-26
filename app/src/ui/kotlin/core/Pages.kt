@@ -1,19 +1,15 @@
 package core
 
 import g11n.i18n
-import gs.environment.Worker
-import gs.property.kctx
 import gs.property.newProperty
 import java.net.HttpURLConnection
 import java.net.URL
 
 val pages by lazy {
-    PagesImpl(kctx)
+    PagesImpl()
 }
 
-class PagesImpl (
-        w: Worker
-) {
+class PagesImpl {
 
     init {
         i18n.locale.doWhenSet().then {
@@ -45,29 +41,29 @@ class PagesImpl (
         }
     }
 
-    val loaded = newProperty(w, { false })
-    val intro = newProperty(w, { URL("http://localhost") })
-    val updated = newProperty(w, { URL("http://localhost") })
-    val patronAbout = newProperty(w, { URL("http://localhost") })
-    val cleanup = newProperty(w, { URL("http://localhost") })
-    val cta = newProperty(w, { URL("http://localhost") })
-    val donate = newProperty(w, { URL("http://localhost") })
-    val help = newProperty(w, { URL("http://localhost") })
-    val changelog = newProperty(w, { URL("http://localhost") })
-    val credits = newProperty(w, { URL("http://localhost") })
-    val filters = newProperty(w, { URL("http://localhost") })
-    val filtersStrings = newProperty(w, { URL("http://localhost") })
-    val filtersStringsFallback = newProperty(w, { URL("http://localhost") })
-    val dns = newProperty(w, { URL("http://localhost") })
-    val dnsStrings = newProperty(w, { URL("http://localhost") })
-    val chat = newProperty(w, { URL("http://go.blokada.org/chat") })
-    val vpn = newProperty(w, { URL("http://localhost") })
+    val loaded = newProperty({ false })
+    val intro = newProperty({ URL("http://localhost") })
+    val updated = newProperty({ URL("http://localhost") })
+    val patronAbout = newProperty({ URL("http://localhost") })
+    val cleanup = newProperty({ URL("http://localhost") })
+    val cta = newProperty({ URL("http://localhost") })
+    val donate = newProperty({ URL("http://localhost") })
+    val help = newProperty({ URL("http://localhost") })
+    val changelog = newProperty({ URL("http://localhost") })
+    val credits = newProperty({ URL("http://localhost") })
+    val filters = newProperty({ URL("http://localhost") })
+    val filtersStrings = newProperty({ URL("http://localhost") })
+    val filtersStringsFallback = newProperty({ URL("http://localhost") })
+    val dns = newProperty({ URL("http://localhost") })
+    val dnsStrings = newProperty({ URL("http://localhost") })
+    val chat = newProperty({ URL("http://go.blokada.org/chat") })
+    val vpn = newProperty({ URL("http://localhost") })
 
-    val news = newProperty(w, { URL("http://go.blokada.org/news") })
-    val feedback = newProperty(w, { URL("http://go.blokada.org/feedback") })
-    val patron = newProperty(w, { URL("http://go.blokada.org/patron_redirect") })
-    val obsolete = newProperty(w, { URL("https://blokada.org/api/legacy/content/en/obsolete.html") })
-    val download = newProperty(w, { URL("https://blokada.org/#download") })
+    val news = newProperty({ URL("http://go.blokada.org/news") })
+    val feedback = newProperty({ URL("http://go.blokada.org/feedback") })
+    val patron = newProperty({ URL("http://go.blokada.org/patron_redirect") })
+    val obsolete = newProperty({ URL("https://blokada.org/api/legacy/content/en/obsolete.html") })
+    val download = newProperty({ URL("https://blokada.org/#download") })
 
 }
 

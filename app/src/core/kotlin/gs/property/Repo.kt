@@ -1,7 +1,6 @@
 package gs.property
 
 import core.*
-import gs.environment.Worker
 import kotlinx.coroutines.runBlocking
 import java.net.URL
 import java.util.*
@@ -17,15 +16,13 @@ data class RepoContent(
 
 val repo by lazy {
     runBlocking {
-        RepoImpl(kctx)
+        RepoImpl()
     }
 }
 
-class RepoImpl(
-        private val kctx: Worker
-) {
+class RepoImpl {
 
-    val url = newPersistedProperty2(kctx, "repo_url", zeroValue = { "" })
+    val url = newPersistedProperty2("repo_url", zeroValue = { "" })
 
     init {
         url.doWhenSet().then {
@@ -34,7 +31,7 @@ class RepoImpl(
         }
     }
 
-    val lastRefreshMillis = newPersistedProperty2(kctx, "repo_refresh", zeroValue = { 0L })
+    val lastRefreshMillis = newPersistedProperty2("repo_refresh", zeroValue = { 0L })
 
     private val repoRefresh = {
         v("repo refresh start")
@@ -73,7 +70,7 @@ class RepoImpl(
         }
     }
 
-    val content = newPersistedProperty(kctx, ARepoPersistence(),
+    val content = newPersistedProperty(ARepoPersistence(),
             zeroValue = { RepoContent(null, listOf(), 0, "", listOf(), "") },
             refresh = { repoRefresh() },
             shouldRefresh = {

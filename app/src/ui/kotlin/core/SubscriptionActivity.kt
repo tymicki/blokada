@@ -5,7 +5,6 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import gs.presentation.WebDash
 import gs.property.IWhen
-import gs.property.kctx
 import gs.property.newProperty
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -23,7 +22,7 @@ class SubscriptionActivity : Activity() {
     private val container by lazy { findViewById<FrameLayout>(R.id.view) }
     private val close by lazy { findViewById<ImageView>(R.id.close) }
 
-    private val subscriptionUrl by lazy { newProperty(kctx, { URL("https://localhost") }) }
+    private val subscriptionUrl by lazy { newProperty({ URL("https://localhost") }) }
     private val updateUrl = { cfg: BlockaConfig ->
         subscriptionUrl %= URL("https://app.blokada.org/#/activate/${cfg.accountId}")
     }

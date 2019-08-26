@@ -6,7 +6,6 @@ import android.widget.ImageView
 import gs.presentation.WebDash
 import gs.property.IProperty
 import gs.property.IWhen
-import gs.property.kctx
 import gs.property.newProperty
 import org.blokada.R
 import java.net.URL
@@ -35,7 +34,7 @@ class WebViewActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.subscription_container)
 
-        url = newProperty(kctx, { URL(intent.getStringExtra(EXTRA_URL)) })
+        url = newProperty({ URL(intent.getStringExtra(EXTRA_URL)) })
 
         view = dash.createView(this, container)
         listener = url.doOnUiWhenSet().then {

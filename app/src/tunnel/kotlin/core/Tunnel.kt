@@ -1,7 +1,5 @@
 package core
 
-import gs.environment.Worker
-import gs.property.kctx
 import gs.property.newPersistedProperty
 import gs.property.newProperty
 import kotlinx.coroutines.runBlocking
@@ -11,54 +9,52 @@ import tunnel.hasCompleted
 
 val tunnelState by lazy {
     runBlocking {
-        TunnelImpl(kctx)
+        TunnelImpl()
     }
 }
 
-class TunnelImpl(
-        kctx: Worker
-) {
+class TunnelImpl {
 
     private val ctx by lazy {
         runBlocking { getApplicationContext()!! }
     }
 
-    val enabled = newPersistedProperty(kctx, APrefsPersistence(ctx, "enabled"),
+    val enabled = newPersistedProperty(APrefsPersistence(ctx, "enabled"),
             { false }
     )
 
-    val error = newProperty(kctx, { false })
+    val error = newProperty({ false })
 
-    val active = newPersistedProperty(kctx, APrefsPersistence(ctx, "active"),
+    val active = newPersistedProperty(APrefsPersistence(ctx, "active"),
             { false }
     )
 
-    val restart = newPersistedProperty(kctx, APrefsPersistence(ctx, "restart"),
+    val restart = newPersistedProperty(APrefsPersistence(ctx, "restart"),
             { false }
     )
 
-    val retries = newProperty(kctx, { 3 })
+    val retries = newProperty({ 3 })
 
-    val updating = newProperty(kctx, { false })
+    val updating = newProperty({ false })
 
-    val tunnelState = newProperty(kctx, { TunnelState.INACTIVE })
+    val tunnelState = newProperty({ TunnelState.INACTIVE })
 
-    val tunnelPermission = newProperty(kctx, {
+    val tunnelPermission = newProperty({
         val (completed, _) = hasCompleted({ checkTunnelPermissions() })
         completed
     })
 
-    val tunnelDropCount = newPersistedProperty(kctx, APrefsPersistence(ctx, "tunnelAdsCount"),
+    val tunnelDropCount = newPersistedProperty(APrefsPersistence(ctx, "tunnelAdsCount"),
             { 0 }
     )
 
-    val tunnelDropStart = newPersistedProperty(kctx, APrefsPersistence(ctx, "tunnelAdsStart"),
+    val tunnelDropStart = newPersistedProperty(APrefsPersistence(ctx, "tunnelAdsStart"),
             { System.currentTimeMillis() }
     )
 
-    val tunnelRecentDropped = newProperty<List<String>>(kctx, { listOf() })
+    val tunnelRecentDropped = newProperty<List<String>>({ listOf() })
 
-    val startOnBoot  = newPersistedProperty(kctx, APrefsPersistence(ctx, "startOnBoot"),
+    val startOnBoot  = newPersistedProperty(APrefsPersistence(ctx, "startOnBoot"),
             { true }
     )
 }

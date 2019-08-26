@@ -5,9 +5,11 @@ import core.Format
 import core.Resource
 import core.getApplicationContext
 import core.v
-import gs.environment.Worker
 import gs.main.getPreferredLocales
-import gs.property.*
+import gs.property.Persistence
+import gs.property.PersistenceWithSerialiser
+import gs.property.newPersistedProperty2
+import gs.property.repo
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
 import java.util.*
@@ -17,7 +19,7 @@ typealias Localised = String
 
 val i18n by lazy {
     runBlocking {
-        I18nImpl(kctx)
+        I18nImpl()
     }
 }
 
@@ -27,9 +29,7 @@ private val persistences = mutableMapOf<String, I18nPersistence>()
     return persistences[name]!!
 }
 
-class I18nImpl (
-        private val kctx: Worker
-) {
+class I18nImpl {
 
     private val ctx by lazy {
         runBlocking { getApplicationContext()!! }
@@ -45,7 +45,7 @@ class I18nImpl (
         return "%s/%s".format(repo.content().contentPath ?: "http://localhost", "en")
     }
 
-    val locale = newPersistedProperty2(kctx, "locale", { "en" },
+    val locale = newPersistedProperty2("locale", { "en" },
             refresh = {
                 val preferred = getPreferredLocales()
                 val available = repo.content().locales

@@ -9,9 +9,6 @@ import filter.sourceProvider
 import gs.property.device
 import gs.property.watchdog
 import kotlinx.coroutines.*
-import nl.komponents.kovenant.Kovenant
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.task
 import org.blokada.R
 import java.io.FileDescriptor
 import java.net.DatagramSocket
@@ -165,16 +162,16 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     }
 
     // Things that happen after we get everything set up nice and sweet
-    var resetRetriesTask: Promise<*, *>? = null
+    var resetRetriesTask: Job? = null
 
     tunnelState.tunnelState.doWhenChanged().then {
         if (tunnelState.tunnelState(TunnelState.ACTIVE)) {
             // Make sure the tunnel is actually usable by checking connectivity
             if (device.screenOn()) watchdog.start()
-            if (resetRetriesTask != null) Kovenant.cancel(resetRetriesTask!!, Exception())
+            if (resetRetriesTask != null) resetRetriesTask?.cancel()
 
             // Reset retry counter in case we seem to be stable
-            resetRetriesTask = task(retryKctx) {
+            resetRetriesTask = GlobalScope.launch(retryKctx) {
                 if (tunnelState.tunnelState(TunnelState.ACTIVE)) {
                     Thread.sleep(15 * 1000)
                     v("tunnel stable")
@@ -190,13 +187,13 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
             tunnelState.active %= false
             tunnelState.restart %= true
             tunnelState.tunnelState %= TunnelState.INACTIVE
-            if (resetRetriesTask != null) Kovenant.cancel(resetRetriesTask!!, Exception())
+            if (resetRetriesTask != null) resetRetriesTask?.cancel()
 
             // Monitor connectivity if disconnected, in case we can't relay on Android event
             if (tunnelState.enabled() && device.screenOn()) watchdog.start()
 
             // Reset retry counter after a longer break since we never give up, never surrender
-            resetRetriesTask = task(retryKctx) {
+            resetRetriesTask = GlobalScope.launch(retryKctx) {
                 if (tunnelState.enabled() &&tunnelState.retries(0) && !tunnelState.tunnelState(TunnelState.ACTIVE)) {
                     Thread.sleep(5 * 1000)
                     if (tunnelState.enabled() && !tunnelState.tunnelState(TunnelState.ACTIVE)) {
@@ -216,9 +213,9 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
                 &&tunnelState.tunnelState(TunnelState.ACTIVE, TunnelState.ACTIVATING)) {
             watchdog.stop()
             tunnelState.tunnelState %= TunnelState.DEACTIVATING
-            hasCompleted({
+            hasCompleted {
                 tunnelManager.stop()
-            })
+            }
             tunnelState.tunnelState %= TunnelState.DEACTIVATED
         }
     }
@@ -290,7 +287,7 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     }
 }
 
-private val retryKctx = workerFor("retry")
+private val retryKctx = newSingleThreadContext("retry") + logCoroutineExceptions()
 
 class Main(
         private val onVpnClose: () -> Unit,
@@ -325,7 +322,7 @@ class Main(
     private var binder: ServiceBinder? = null
     private var enabled: Boolean = false
 
-    private val CTRL = newSingleThreadContext("tunnel-ctrl")
+    private val CTRL = newSingleThreadContext("tunnel-ctrl") + logCoroutineExceptions()
     private var threadCounter = 0
     private var usePausedConfigurator = false
 

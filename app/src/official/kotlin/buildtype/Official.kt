@@ -14,22 +14,20 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.blokada.R
 
-private val kctx = workerFor("gscore")
-
 private val j by lazy {
     runBlocking {
         Journal(getApplicationContext()!!)
     }
 }
 
-private val lastDailyMillis = newPersistedProperty2(kctx, "daily", { 0L },
+private val lastDailyMillis = newPersistedProperty2("daily", { 0L },
         refresh = {
             j.event("daily")
             time.now()
         },
         shouldRefresh = { !DateUtils.isToday(it) })
 
-private val lastActiveMillis = newPersistedProperty2(kctx, "daily-active", { 0L },
+private val lastActiveMillis = newPersistedProperty2("daily-active", { 0L },
         refresh = {
             // TODO: once tunnel is avaibale
 //            if (t.active()) {

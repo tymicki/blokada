@@ -9,8 +9,6 @@ import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import filter.DefaultHostlineProcessor
-import gs.environment.Worker
-import gs.property.kctx
 import gs.property.newProperty
 import kotlinx.coroutines.*
 import org.blokada.R
@@ -18,14 +16,12 @@ import tunnel.FilterSourceDescriptor
 import tunnel.tunnelManager
 
 val filtersManager by lazy {
-    FiltersImpl(kctx)
+    FiltersImpl()
 }
 
-class FiltersImpl(
-        private val kctx: Worker
-) {
+class FiltersImpl {
 
-    val changed = newProperty(kctx, { false })
+    val changed = newProperty({ false })
 
     private val appsRefresh = {
         v("apps refresh start")
@@ -44,7 +40,7 @@ class FiltersImpl(
         a
     }
 
-    val apps = newProperty(kctx, zeroValue = { emptyList<App>() }, refresh = { appsRefresh() },
+    val apps = newProperty(zeroValue = { emptyList<App>() }, refresh = { appsRefresh() },
             shouldRefresh = { it.isEmpty() })
 
 }

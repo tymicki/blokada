@@ -1,7 +1,6 @@
 package core
 
 import g11n.i18n
-import gs.environment.Worker
 import gs.environment.getDnsServers
 import gs.property.*
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +15,7 @@ import java.nio.charset.Charset
 import java.util.*
 
 val dnsManager by lazy {
-    DnsImpl(kctx)
+    DnsImpl()
 }
 
 suspend fun initDns() = withContext(Dispatchers.Main.immediate) {
@@ -48,9 +47,7 @@ val FALLBACK_DNS = listOf(
 val serialiser = DnsSerialiser()
 val fetcher = DnsLocalisedFetcher()
 
-class DnsImpl(
-        w: Worker
-) {
+class DnsImpl {
 
     fun hasCustomDnsSelected(checkEnabled: Boolean): Boolean {
         return choices().firstOrNull { it.id != "default" && it.active } != null && (!checkEnabled or enabled())
@@ -103,18 +100,18 @@ class DnsImpl(
     }
 
 
-    val choices = newPersistedProperty(w, DnsChoicePersistence(),
+    val choices = newPersistedProperty(DnsChoicePersistence(),
             zeroValue = { listOf() },
             refresh = refresh,
             shouldRefresh = { it.size <= 1 })
 
-    val dnsServers = newProperty(w, {
+    val dnsServers = newProperty({
         val d = if (enabled()) choices().firstOrNull { it.active } else null
         if (d?.servers?.isEmpty() ?: true) getDnsServers(ctx)
         else d?.servers!!
     })
 
-    val enabled = newPersistedProperty2(w, "dnsEnabled", { false })
+    val enabled = newPersistedProperty2("dnsEnabled", { false })
 
     init {
         pages.dns.doWhenSet().then {

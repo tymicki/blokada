@@ -3,7 +3,6 @@ package core
 import android.content.Context
 import g11n.g11Manager
 import g11n.i18n
-import gs.environment.Worker
 import gs.presentation.ViewBinderHolder
 import gs.property.*
 import kotlinx.coroutines.*
@@ -13,31 +12,29 @@ import tunnel.tunnelManager
 
 val ui by lazy {
     runBlocking {
-        AUiState(kctx)
+        AUiState()
     }
 }
 
-class AUiState(
-        private val kctx: Worker
-) {
+class AUiState {
 
     private val ctx by lazy {
         runBlocking { getApplicationContext()!! }
     }
 
-    val seenWelcome = newPersistedProperty(kctx, APrefsPersistence(ctx, "seenWelcome"),
+    val seenWelcome = newPersistedProperty(APrefsPersistence(ctx, "seenWelcome"),
             { false }
     )
 
-    val notifications = newPersistedProperty(kctx, APrefsPersistence(ctx, "notifications"),
+    val notifications = newPersistedProperty(APrefsPersistence(ctx, "notifications"),
             { false } // By default, have notifications off. 
     )
 
-    val showSystemApps = newPersistedProperty(kctx, APrefsPersistence(ctx, "showSystemApps"),
+    val showSystemApps = newPersistedProperty(APrefsPersistence(ctx, "showSystemApps"),
             { true }
     )
 
-    val showBgAnim = newPersistedProperty(kctx, APrefsPersistence(ctx, "backgroundAnimation"),
+    val showBgAnim = newPersistedProperty(APrefsPersistence(ctx, "backgroundAnimation"),
             { true }
     )
 }

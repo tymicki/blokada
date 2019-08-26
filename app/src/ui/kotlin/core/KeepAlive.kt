@@ -10,9 +10,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Binder
 import android.os.IBinder
-import gs.environment.Worker
 import gs.property.IWhen
-import gs.property.kctx
 import gs.property.newPersistedProperty2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,14 +18,12 @@ import notification.createNotificationKeepAlive
 import org.blokada.R
 
 val keepAlive by lazy {
-    KeepAliveImpl(kctx)
+    KeepAliveImpl()
 }
 
 
-class KeepAliveImpl(
-        private val kctx: Worker
-) {
-    val keepAlive = newPersistedProperty2(kctx, "keepAlive", { false })
+class KeepAliveImpl {
+    val keepAlive = newPersistedProperty2("keepAlive", { false })
 }
 
 suspend fun initKeepAlive() = withContext(Dispatchers.Main.immediate) {
