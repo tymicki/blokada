@@ -127,10 +127,11 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
     // The tunnel setup routine (with permissions request)
     tunnelState.active.doWhenSet().then {
         e("enabled: ${tunnelState.enabled()}")
-        if (tunnelState.enabled() &&tunnelState.active() &&tunnelState.tunnelState(TunnelState.INACTIVE)) {
+        if (tunnelState.enabled() && tunnelState.active() && tunnelState.tunnelState(TunnelState.INACTIVE)) {
             tunnelState.retries %=tunnelState.retries() - 1
             tunnelState.tunnelState %= TunnelState.ACTIVATING
             tunnelState.tunnelPermission.refresh(blocking = true)
+
             if (tunnelState.tunnelPermission(false)) {
                 hasCompleted({
                     permissionAsker.askForPermissions()
@@ -532,6 +533,7 @@ class Main(
 
     private suspend fun startVpn() {
         Result.of {
+            v("vpn starting")
             val binding = connector.bind()
             runBlocking { binding.join() }
             binder = binding.getCompleted()

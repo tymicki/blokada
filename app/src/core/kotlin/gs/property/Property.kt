@@ -1,9 +1,6 @@
 package gs.property
 
-import core.e
-import core.loadFromPersistence
-import core.logCoroutineExceptions
-import core.saveToPersistence
+import core.*
 import kotlinx.coroutines.*
 
 /**
@@ -153,6 +150,7 @@ private interface IWhenExecute : IWhen {
  * it catches any exceptions and reports them using journal.
  */
 private class When(
+        private val onUi: Boolean,
         private val condition: () -> Boolean,
         private val immediate: Boolean = true,
         private var action: () -> Unit = {}
@@ -169,8 +167,14 @@ private class When(
     }
 
     override fun execute() {
-        GlobalScope.launch(Dispatchers.Main) {
-            action()
+        if (onUi) {
+            GlobalScope.launch(Dispatchers.Main) {
+                action()
+            }
+        } else {
+            GlobalScope.launch(COMMON) {
+                action()
+            }
         }
     }
 
@@ -238,7 +242,7 @@ private open class BaseProperty<T>(
         }
 
     override fun doWhen(condition: () -> Boolean): IWhen {
-        val newWhen = When(condition, immediate = value != null)
+        val newWhen = When(onUi = false, condition =  condition, immediate = value != null)
         GlobalScope.launch(PROPERTY) {
             listeners.add(newWhen)
         }
@@ -250,7 +254,7 @@ private open class BaseProperty<T>(
     }
 
     override fun doOnUiWhenSet(): IWhen {
-        val newWhen = When({ true }, immediate = value != null)
+        val newWhen = When(onUi = true, condition = { true }, immediate = value != null)
         GlobalScope.launch(PROPERTY) {
             listeners.add(newWhen)
         }
@@ -258,7 +262,7 @@ private open class BaseProperty<T>(
     }
 
     override fun doWhenChanged(withInit: Boolean): IWhen {
-        val newWhen = WhenChanged(this, withInit, When({ true }, immediate = false))
+        val newWhen = WhenChanged(this, withInit, When(onUi = false, condition = { true }, immediate = false))
         GlobalScope.launch(PROPERTY) {
             listeners.add(newWhen)
         }
@@ -266,7 +270,7 @@ private open class BaseProperty<T>(
     }
 
     override fun doOnUiWhenChanged(withInit: Boolean): IWhen {
-        val newWhen = WhenChanged(this, withInit, When({ true }, immediate = false))
+        val newWhen = WhenChanged(this, withInit, When(onUi = true, condition = { true }, immediate = false))
         GlobalScope.launch(PROPERTY) {
             listeners.add(newWhen)
         }

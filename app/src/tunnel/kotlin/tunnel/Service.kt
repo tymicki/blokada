@@ -29,6 +29,7 @@ internal class ServiceConnector(
 
     private val serviceConnection = object: ServiceConnection {
         @Synchronized override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+            v("onServiceConnected called")
             if (binder !is ServiceBinder) {
                 e("service binder of wrong type", binder::class.java)
                 return
@@ -44,21 +45,24 @@ internal class ServiceConnector(
         }
     }
 
-    fun bind() = {
-        val ctx = runBlocking { getApplicationContext()!! }
-        this.deferred = CompletableDeferred()
-        val intent = Intent(ctx, Service::class.java)
-        intent.action = Service.BINDER_ACTION
-        if (!ctx.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE
-                or Context.BIND_ABOVE_CLIENT or Context.BIND_IMPORTANT)) {
-            deferred.completeExceptionally(Exception("could not bind to service"))
-        } else GlobalScope.launch {
-            delay(3000)
-            if (!deferred.isCompleted) deferred.completeExceptionally(
-                    Exception("timeout waiting for binding to service"))
+    suspend fun bind(): CompletableDeferred<ServiceBinder>  {
+        return withContext(Dispatchers.Main.immediate) {
+            v("binding vpn service")
+            val ctx = getApplicationContext()!!
+            this@ServiceConnector.deferred = CompletableDeferred()
+            val intent = Intent(ctx, Service::class.java)
+            intent.action = Service.BINDER_ACTION
+            if (!ctx.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE
+                            or Context.BIND_ABOVE_CLIENT or Context.BIND_IMPORTANT)) {
+                deferred.completeExceptionally(Exception("could not bind to service"))
+            } else GlobalScope.launch {
+                delay(3000)
+                if (!deferred.isCompleted) deferred.completeExceptionally(
+                        Exception("timeout waiting for binding to service"))
+            }
+            deferred
         }
-        deferred
-    }()
+    }
 
     fun unbind() = Result.of {
         val ctx = runBlocking { getApplicationContext()!! }
@@ -76,12 +80,16 @@ class Service : VpnService() {
         private var lastReleasedMillis = 0L
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int =
-            android.app.Service.START_STICKY
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = {
+        v("VPN service onStartCommand")
+        android.app.Service.START_STICKY
+    }()
 
     private var binder: ServiceBinder? = null
     override fun onBind(intent: Intent?): IBinder? {
+        v("VPN service onBind called")
         if (BINDER_ACTION == intent?.action) {
+            v("onBind returning binder")
             binder = ServiceBinder(this)
             return binder
         }
