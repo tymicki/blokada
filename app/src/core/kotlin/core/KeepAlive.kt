@@ -14,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.blokada.R
 import tunnel.tunnelState
+import ui.BootJobService
+import ui.createNotificationKeepAlive
 
 val keepAlive by lazy {
     KeepAliveImpl()

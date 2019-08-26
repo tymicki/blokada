@@ -1,23 +1,19 @@
 package flavor
 
-import core.ActiveWidgetProvider
-import core.ForegroundStartService
-import core.ListWidgetProvider
-import core.LoggerConfig
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import core.ForegroundStartService
+import core.LoggerConfig
 import core.getApplicationContext
 import core.loadFromPersistence
-import tunnel.tunnelState
-import core.ui
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import core.displayNotification
-import core.hideNotification
+import tunnel.tunnelState
+import ui.*
 
 suspend fun initFlavor() = withContext(Dispatchers.Main.immediate) {
     val ctx = runBlocking { getApplicationContext()!! }
@@ -25,7 +21,7 @@ suspend fun initFlavor() = withContext(Dispatchers.Main.immediate) {
     // Display notifications for dropped
    tunnelState.tunnelRecentDropped.doOnUiWhenSet().then {
         if (tunnelState.tunnelRecentDropped().isEmpty()) hideNotification(ctx)
-        else if (ui.notifications()) displayNotification(ctx, tunnelState.tunnelRecentDropped().last())
+        else if (uiState.notifications()) displayNotification(ctx, tunnelState.tunnelRecentDropped().last())
     }
 
    tunnelState.tunnelRecentDropped.doWhenChanged().then{
@@ -37,7 +33,7 @@ suspend fun initFlavor() = withContext(Dispatchers.Main.immediate) {
     updateListWidget(ctx)
 
     // Hide notification when disabled
-    ui.notifications.doOnUiWhenSet().then {
+    uiState.notifications.doOnUiWhenSet().then {
         hideNotification(ctx)
     }
 

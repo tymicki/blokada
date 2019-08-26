@@ -8,6 +8,7 @@ import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.viewpager.widget.ViewPager
 import org.blokada.R
+import ui.DotsView
 
 class VBStepView(
         ctx: Context,

@@ -10,8 +10,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
-import org.blokada.R
 import blocka.blokadaUserAgent
+import org.blokada.R
 import java.net.URL
 
 class WebDash(

@@ -1,5 +1,7 @@
 package tunnel
 
+val enabledStateActor = EnabledStateActor()
+
 /**
  * Translates internal MainState changes into higher level events used by topbar and fab.
  */

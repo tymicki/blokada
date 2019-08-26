@@ -3,9 +3,9 @@ package g11n
 import core.COMMON
 import core.Result
 import core.Url
-import core.pages
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import ui.pages
 
 object Events {
 

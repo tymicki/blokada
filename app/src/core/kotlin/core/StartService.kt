@@ -10,6 +10,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import org.blokada.R
+import ui.ActiveWidgetProvider
+import ui.UpdateWidgetService
 
 
 class ForegroundStartService: Service(){

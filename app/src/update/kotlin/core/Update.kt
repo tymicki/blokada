@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import org.blokada.BuildConfig
 import tunnel.TunnelState
 import tunnel.tunnelState
+import ui.displayNotificationForUpdate
 import update.AUpdateDownloader
 import update.UpdateCoordinator
 

@@ -13,6 +13,8 @@ import java.util.*
  * state of adblocking, vpn, and DNS.
  */
 
+val tunnelStateManager = TunnelStateManager()
+
 class TunnelStateManager {
 
     private var latest: BlockaConfig = BlockaConfig()
