@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import tunnel.initTunnel
 import tunnel.tunnelState
+import update.initUpdate
 
 
 /**

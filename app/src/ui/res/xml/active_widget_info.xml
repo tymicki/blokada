@@ -8,5 +8,5 @@
     android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
     android:previewImage="@drawable/active_widget_preview"
-    android:configure="core.ConfigWidgetActivity">
+    android:configure="ui.ConfigWidgetActivity">
 </appwidget-provider>

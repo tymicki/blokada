@@ -23,6 +23,8 @@ import tunnel.*
 import tunnel.Filter
 import tunnel.FilterSourceDescriptor
 import ui.*
+import update.isUpdate
+import update.updateCoordinator
 import java.net.URL
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
@@ -932,7 +934,7 @@ class UpdateVB(
 
             val ctx = runBlocking { getActivity()!! }
 
-            if (isUpdate(ctx, current.newestVersionCode)) {
+            if (isUpdate(current.newestVersionCode)) {
                 view.content = Slot.Content(
                         label = i18n.getString(R.string.update_dash_available),
                         description = i18n.getString(R.string.update_notification_text, current.newestVersionName),

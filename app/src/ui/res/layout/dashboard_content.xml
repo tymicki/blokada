@@ -19,12 +19,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <core.ColorfulBackground
+            <ui.ColorfulBackground
                 android:id="@+id/bg_colors"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <core.PacketsView
+            <ui.PacketsView
                 android:id="@+id/bg_packets"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
@@ -47,7 +47,7 @@
                 android:paddingTop="@dimen/dashboard_pager_margin_top"
                 android:paddingBottom="@dimen/dashboard_pager_margin_bottom" />
 
-            <core.DotsView
+            <ui.DotsView
                 android:id="@+id/bg_nav"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

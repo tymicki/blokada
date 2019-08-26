@@ -11,10 +11,10 @@ import org.blokada.R
 import tunnel.BLOCKA_CONFIG
 import tunnel.BlockaConfig
 import tunnel.tunnelState
+import tunnel.tunnelStateManager
 import ui.bits.menu.isLandscape
 import ui.modalManager
 import ui.pages
-import tunnel.tunnelStateManager
 import ui.welcome
 import java.util.*
 
@@ -223,7 +223,7 @@ fun createOneTimeBytes() = mapOf(
                 label = R.string.home_whats_new.res(),
                 description = R.string.slot_updated_desc.res(),
                 onTap = {
-                    val ctx = runBlocking { getApplicationContext()!! }
+                    val ctx = runBlocking { getActivity()!! }
                     GlobalScope.launch { modalManager.openModal() }
                     ctx.startActivity(Intent(ctx, WebViewActivity::class.java).apply {
                         putExtra(WebViewActivity.EXTRA_URL, pages.updated().toExternalForm())

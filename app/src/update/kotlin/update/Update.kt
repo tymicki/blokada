@@ -1,14 +1,12 @@
-package core
+package update
 
-import android.content.Context
+import core.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.blokada.BuildConfig
 import tunnel.TunnelState
 import tunnel.tunnelState
 import ui.displayNotificationForUpdate
-import update.AUpdateDownloader
-import update.UpdateCoordinator
 
 val updateManager by lazy {
     UpdateImpl()
@@ -20,7 +18,6 @@ class UpdateImpl {
 }
 
 val updateCoordinator = UpdateCoordinator(downloader = AUpdateDownloader())
-
 suspend fun initUpdate() = withContext(Dispatchers.Main.immediate) {
     val ctx = getApplicationContext()!!
 
@@ -32,7 +29,7 @@ suspend fun initUpdate() = withContext(Dispatchers.Main.immediate) {
 
     // Display an info message when update is available
     repo.content.doOnUiWhenSet().then {
-        if (isUpdate(ctx, repo.content().newestVersionCode)) {
+        if (isUpdate(repo.content().newestVersionCode)) {
             updateManager.lastSeenUpdateMillis.refresh(force = true)
         }
     }
@@ -43,7 +40,7 @@ suspend fun initUpdate() = withContext(Dispatchers.Main.immediate) {
         val last = updateManager.lastSeenUpdateMillis()
         val cooldown = 86400 * 1000L
 
-        if (isUpdate(ctx, content.newestVersionCode) && canShowNotification(last, cooldown)) {
+        if (isUpdate(content.newestVersionCode) && canShowNotification(last, cooldown)) {
             displayNotificationForUpdate(ctx, content.newestVersionName)
             updateManager.lastSeenUpdateMillis %= time.now()
         }
@@ -55,6 +52,6 @@ internal fun canShowNotification(last: Long, cooldownMillis: Long): Boolean {
     return last + cooldownMillis < time.now()
 }
 
-fun isUpdate(ctx: Context, code: Int): Boolean {
+fun isUpdate(code: Int): Boolean {
     return code > BuildConfig.VERSION_CODE
 }

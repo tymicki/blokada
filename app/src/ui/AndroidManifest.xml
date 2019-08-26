@@ -16,7 +16,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:name="core.MainApplication"
+        android:name="ui.MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:installLocation="internalOnly"
@@ -31,7 +31,7 @@
             android:value="true" />
 
         <receiver
-            android:name="core.BootReceiver"
+            android:name="ui.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter android:priority="500">
@@ -45,11 +45,11 @@
 
 
         <service
-            android:name="core.BootJobService"
+            android:name="ui.BootJobService"
             android:permission="android.permission.BIND_JOB_SERVICE"></service>
 
         <activity
-            android:name="core.PanelActivity"
+            android:name="ui.PanelActivity"
             android:configChanges="keyboard|keyboardHidden|navigation"
             android:label="@string/branding_app_name"
             android:launchMode="singleTask"
@@ -69,7 +69,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="core.StepActivity"
+            android:name="ui.StepActivity"
             android:configChanges="orientation|screenSize"
             android:excludeFromRecents="true"
             android:label="Blokada Steps"
@@ -81,7 +81,7 @@
                 android:value="true" />
         </activity>
         <activity
-            android:name="core.SubscriptionActivity"
+            android:name="ui.SubscriptionActivity"
             android:configChanges="orientation|screenSize"
             android:excludeFromRecents="true"
             android:label="Blokada Subscription"
@@ -105,7 +105,7 @@
                 android:value="true" />
         </activity>
         <activity
-            android:name="core.RestoreAccountActivity"
+            android:name="ui.RestoreAccountActivity"
             android:configChanges="orientation|screenSize"
             android:excludeFromRecents="true"
             android:label="Blokada Restore Account"
@@ -117,7 +117,7 @@
                 android:value="true" />
         </activity>
         <activity
-            android:name="core.SearchActivity"
+            android:name="ui.SearchActivity"
             android:configChanges="orientation|screenSize"
             android:excludeFromRecents="true"
             android:launchMode="singleTop"
@@ -130,11 +130,11 @@
             android:launchMode="singleInstance"
             android:theme="@style/TransparentWindow" />
 
-        <service android:name="core.ANotificationsOffService"></service>
-        <service android:name="core.ANotificationsWhitelistService"></service>
-        <service android:name="core.ANotificationsToggleService"></service>
+        <service android:name="ui.ANotificationsOffService"></service>
+        <service android:name="ui.ANotificationsWhitelistService"></service>
+        <service android:name="ui.ANotificationsToggleService"></service>
         <service
-            android:name="core.QuickSettingsService"
+            android:name="ui.QuickSettingsService"
             android:icon="@drawable/ic_blokada"
             android:label="@string/main_quicksettings_toggle"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
@@ -174,15 +174,15 @@
                 android:resource="@xml/provider_update" />
         </provider>
 
-        <activity android:name="core.ConfigWidgetActivity">
+        <activity android:name="ui.ConfigWidgetActivity">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-        <service android:name="core.UpdateWidgetService" />
+        <service android:name="ui.UpdateWidgetService" />
 
         <receiver
-            android:name="core.ActiveWidgetProvider"
+            android:name="ui.ActiveWidgetProvider"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
@@ -195,7 +195,7 @@
                 android:resource="@xml/active_widget_info" />
         </receiver>
         <receiver
-            android:name="core.ListWidgetProvider"
+            android:name="ui.ListWidgetProvider"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -209,7 +209,7 @@
 
         <service android:name="core.ForegroundStartService" />
 
-        <activity android:name="core.AddDnsActivity"
+        <activity android:name="ui.AddDnsActivity"
             android:configChanges="orientation|screenSize"
             android:excludeFromRecents="true"
             android:label="Add DNS"
