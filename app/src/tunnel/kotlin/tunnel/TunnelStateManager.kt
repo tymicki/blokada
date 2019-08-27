@@ -1,5 +1,6 @@
 package tunnel
 
+import blocka.BLOCKA_CONFIG
 import core.*
 import dns.dnsManager
 import kotlinx.coroutines.GlobalScope
@@ -122,12 +123,3 @@ class TunnelStateManager {
         }
     }
 }
-
-data class TunnelPause(
-        val vpn: Boolean = false,
-        val adblocking: Boolean = false,
-        val dns: Boolean = false
-): Persistable {
-    override fun key() = "tunnel:pause"
-}
-

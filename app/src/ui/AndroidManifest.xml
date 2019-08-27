@@ -162,7 +162,7 @@
             </intent-filter>
         </receiver>
         <receiver android:name="core.ScreenOnReceiver"></receiver>
-        <receiver android:name="tunnel.RenewLicenseReceiver"></receiver>
+        <receiver android:name="blocka.RenewLicenseReceiver"></receiver>
 
         <provider
             android:name="androidx.core.content.FileProvider"

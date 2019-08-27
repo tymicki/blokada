@@ -1,6 +1,7 @@
 package ui.bits.menu.vpn
 
 import android.os.Handler
+import blocka.MAX_RETRIES
 import blocka.RestModel
 import blocka.restApi
 import core.*
@@ -9,7 +10,6 @@ import kotlinx.coroutines.async
 import org.blokada.R
 import retrofit2.Call
 import retrofit2.Response
-import tunnel.MAX_RETRIES
 import ui.bits.menu.adblocking.SlotMutex
 
 class GatewaysDashboardSectionVB(

@@ -10,7 +10,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.R
-import tunnel.BLOCKA_CONFIG
+import blocka.BLOCKA_CONFIG
 import tunnel.BlockaConfig
 import ui.SubscriptionActivity
 import ui.bits.pretty

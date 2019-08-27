@@ -10,6 +10,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import blocka.blokadaUserAgent
+import blocka.initBlocka
 import buildtype.initBuildType
 import core.*
 import dns.initDns
@@ -57,6 +58,7 @@ class MainApplication: Application() {
             initDns()
             initUpdate()
             initApp()
+            initBlocka()
             initFlavor()
             initBuildType()
         }

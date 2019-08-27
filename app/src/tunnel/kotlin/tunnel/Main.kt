@@ -3,6 +3,7 @@ package tunnel
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.VpnService
+import blocka.BLOCKA_CONFIG
 import blocka.BlockaTunnel
 import com.github.michaelbull.result.onFailure
 import core.*
@@ -288,8 +289,6 @@ suspend fun initTunnel() = withContext(Dispatchers.Main.immediate) {
 
     GlobalScope.async {
         registerTunnelConfigEvent()
-        registerBlockaConfigEvent()
-
         tunnelManager.reloadConfig(device.onWifi())
     }
 }

@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R
-import tunnel.BLOCKA_CONFIG
+import blocka.BLOCKA_CONFIG
 import tunnel.BlockaConfig
 import tunnel.IEnabledStateActorListener
 import tunnel.tunnelState

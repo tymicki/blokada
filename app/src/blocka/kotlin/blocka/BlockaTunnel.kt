@@ -19,7 +19,6 @@ import org.xbill.DNS.*
 import tunnel.BlockaConfig
 import tunnel.Tunnel
 import tunnel.TunnelConfig
-import tunnel.checkLeaseIfNeeded
 import java.io.*
 import java.net.*
 import java.nio.ByteBuffer

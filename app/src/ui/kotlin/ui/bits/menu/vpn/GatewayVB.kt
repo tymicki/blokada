@@ -1,7 +1,10 @@
 package ui.bits.menu.vpn
 
 import android.content.Intent
+import blocka.BLOCKA_CONFIG
 import blocka.RestModel
+import blocka.checkGateways
+import blocka.clearConnectedGateway
 import core.Slot
 import core.SlotVB
 import core.SlotView

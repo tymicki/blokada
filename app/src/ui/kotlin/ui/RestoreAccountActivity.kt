@@ -6,8 +6,8 @@ import g11n.i18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.blokada.R
-import tunnel.BLOCKA_CONFIG
-import tunnel.checkAccountInfo
+import blocka.BLOCKA_CONFIG
+import blocka.checkAccountInfo
 
 
 class RestoreAccountActivity : Activity() {

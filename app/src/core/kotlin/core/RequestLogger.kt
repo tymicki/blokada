@@ -36,14 +36,6 @@ class RequestLogWriter {
     private fun time() = Date().time.toString(10)
 }
 
-data class LoggerConfig(
-        val active: Boolean = false,
-        val logAllowed: Boolean = false,
-        val logDenied: Boolean = false
-): Persistable {
-    override fun key() = "logger:config"
-}
-
 class RequestLogger : Service() {
     override fun onBind(intent: Intent?): IBinder? {
         return null

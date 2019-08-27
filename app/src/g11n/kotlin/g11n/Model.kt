@@ -11,6 +11,10 @@ typealias Translations = List<Pair<Key, Translation>>
 
 fun emptyTranslations() = emptyList<Pair<Key, Translation>>()
 
+/**
+ * Those files cannot change their (package) name because they are persisted.
+ */
+
 data class TranslationStore(
         val cache: Map<Url, Time> = emptyMap()
 ): Persistable {

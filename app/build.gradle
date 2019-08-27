@@ -184,6 +184,8 @@ android {
         def srcUiRes = 'src/ui/res'
         def srcUiTest = 'src/ui/test'
 
+        def srcLegacyKotlin = 'src/legacy/kotlin'
+
         modCore.java.srcDirs += srcCoreKotlin
         testModCore.java.srcDirs += srcCoreTest
 
@@ -198,6 +200,7 @@ android {
         appFull.java.srcDirs += srcStateKotlin
         appFull.java.srcDirs += srcUpdateKotlin
         appFull.java.srcDirs += srcBlockaKotlin
+        appFull.java.srcDirs += srcLegacyKotlin
         appFull.java.srcDirs += 'src/full/kotlin'
         appFull.jniLibs.srcDirs += srcWireguardJni
         appFull.res.srcDirs += srcUiRes

@@ -3,6 +3,7 @@ package ui
 import android.app.Activity
 import android.widget.FrameLayout
 import android.widget.ImageView
+import blocka.checkAccountInfo
 import core.IWhen
 import core.WebDash
 import core.newProperty
@@ -11,7 +12,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.blokada.R
-import tunnel.BLOCKA_CONFIG
+import blocka.BLOCKA_CONFIG
 import tunnel.BlockaConfig
 import tunnel.showSnack
 import java.net.URL
@@ -72,7 +73,7 @@ class SubscriptionActivity : Activity() {
         GlobalScope.async {
             core.getMostRecent(BLOCKA_CONFIG)?.run {
                 delay(3000)
-                tunnel.checkAccountInfo(this)
+                checkAccountInfo(this)
             }
         }
     }
