@@ -1,15 +1,13 @@
 package filter
 
-import com.github.michaelbull.result.mapBoth
-import core.Result
 import core.e
 import core.v
 import tunnel.*
 
 internal class Blockade(
-        private val doLoadRuleset: (FilterId) -> Result<Ruleset> = Persistence.rules.load,
-        private val doSaveRuleset: (FilterId, Ruleset) -> Result<Any> = Persistence.rules.save,
-        private val doGetRulesetSize: (FilterId) -> Result<Int> = Persistence.rules.size,
+        private val doLoadRuleset: (FilterId) -> Result<Ruleset> = RulesPersistence.load,
+        private val doSaveRuleset: (FilterId, Ruleset) -> Result<Any?> = RulesPersistence.save,
+        private val doGetRulesetSize: (FilterId) -> Result<Int> = RulesPersistence.size,
         private val doGetMemoryLimit: () -> MemoryLimit = Memory.linesAvailable,
         private var denyRuleset: Ruleset = Ruleset(),
         private var allowRuleset: Ruleset = Ruleset()
@@ -27,14 +25,14 @@ internal class Blockade(
     private fun buildRuleset(filters: List<FilterId>): Ruleset {
         var ruleset = Ruleset()
         if (filters.isEmpty()) return ruleset
-        doLoadRuleset(filters.first()).mapBoth(
-                success = { firstRuleset ->
+        doLoadRuleset(filters.first()).fold(
+                onSuccess = { firstRuleset ->
                     ruleset = firstRuleset
                     filters.drop(1).forEach { nextFilter ->
                         if (ruleset.size < doGetMemoryLimit()) {
-                            doLoadRuleset(nextFilter).mapBoth(
-                                    success = { ruleset.addAll(it) },
-                                    failure = { e("could not load ruleset", nextFilter, it) }
+                            doLoadRuleset(nextFilter).fold(
+                                    onSuccess = { ruleset.addAll(it) },
+                                    onFailure = { e("could not load ruleset", nextFilter, it) }
                             )
                         } else {
                             e("memory limit reached, skipping ruleset", nextFilter,
@@ -42,7 +40,7 @@ internal class Blockade(
                         }
                     }
                 },
-                failure = {
+                onFailure = {
                     e("could not load first ruleset", filters.first(), it)
                 }
         )
@@ -50,9 +48,9 @@ internal class Blockade(
     }
 
     fun set(id: FilterId, ruleset: Ruleset) {
-        doSaveRuleset(id, ruleset).mapBoth(
-                success = { v("saved ruleset", id, ruleset.size) },
-                failure = { e("failed to save ruleset", id, it) }
+        doSaveRuleset(id, ruleset).fold(
+                onSuccess = { v("saved ruleset", id, ruleset.size) },
+                onFailure = { e("failed to save ruleset", id, it) }
         )
     }
 

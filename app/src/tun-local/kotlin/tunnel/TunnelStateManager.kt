@@ -37,11 +37,13 @@ class TunnelStateManager {
                 !tunnelState.enabled() -> {
                     // Save state before pausing
                     runBlocking {
-                        TunnelPause(
-                                vpn = latest.blockaVpn,
-                                adblocking = latest.adblocking,
-                                dns = dnsManager.enabled()
-                        ).save()
+                        Register.set(TunnelPause::class.java,
+                            TunnelPause(
+                                    vpn = latest.blockaVpn,
+                                    adblocking = latest.adblocking,
+                                    dns = dnsManager.enabled()
+                            )
+                        )
                     }
 
                     v("pausing features.")
@@ -51,7 +53,7 @@ class TunnelStateManager {
                 else -> {
                     // Restore the state
                     val ctx = runBlocking { getApplicationContext()!! }
-                    val pause = get(TunnelPause::class.java)
+                    val pause = runBlocking { Register.get(TunnelPause::class.java)!! }
 
                     val vpn = pause.vpn && latest.hasGateway() && latest.leaseActiveUntil.after(Date())
                     var adblocking = pause.adblocking && Product.current(ctx) != Product.DNS

@@ -9,22 +9,23 @@ import kotlinx.coroutines.runBlocking
 
 class Persistence {
     companion object {
-        val rules = RulesPersistence()
         val filters = FiltersPersistence()
         val request = RequestPersistence()
     }
 }
 
-class RulesPersistence {
+object RulesPersistence {
     val load = { id: FilterId ->
-        Result.of { loadPersistence("rules:set:$id", { Ruleset() }) }
+        blockingResult { Register.get(Ruleset(), "rules:set", id) }
     }
     val save = { id: FilterId, ruleset: Ruleset ->
-        Result.of { savePersistence("rules:set:$id", ruleset) }
-        Result.of { savePersistence("rules:size:$id", ruleset.size) }
+        blockingResult {
+            Register.set(ruleset, "rules:set", id)
+            Register.set(ruleset.size, "rules:size", id)
+        }
     }
     val size = { id: FilterId ->
-        Result.of { loadPersistence("rules:size:$id", { 0 }) }
+        blockingResult { Register.get(0, "rules:size", id) }
     }
 }
 

@@ -47,6 +47,10 @@ android {
         exclude 'META-INF/main.kotlin_module'
     }
 
+    kotlinOptions {
+        freeCompilerArgs = ["-Xallow-result-return-type"]
+    }
+
     defaultConfig {
         applicationId "org.blokada"
         minSdkVersion 21

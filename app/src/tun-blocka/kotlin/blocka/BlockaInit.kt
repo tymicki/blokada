@@ -6,17 +6,15 @@ import kotlinx.coroutines.*
 import tunnel.BlockaConfig
 
 suspend fun initBlocka() = withContext(Dispatchers.Main.immediate) {
-    setPersistor(BlockaConfig::class.java, PaperPersistor("blocka:config"))
-
     v("loading boringtun")
     System.loadLibrary("boringtun")
     v("boringtun loaded")
 
     // TODO
-    val config = loadPersistence(BlockaConfig::class.java) ?: BlockaConfig()
+    val config = BlockaConfig().loadFromPersistence()
     checkAccountInfo(config)
 
-    on(BLOCKA_CONFIG) { runBlocking { it.savePersistence() } }
+    on(BLOCKA_CONFIG) { runBlocking { it.saveToPersistence() } }
 
     device.screenOn.doOnUiWhenChanged().then {
         if (device.screenOn()) GlobalScope.async {

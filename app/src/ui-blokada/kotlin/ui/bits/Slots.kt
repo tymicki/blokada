@@ -245,7 +245,7 @@ class ConfigHelper {
         private fun idToString(id: Int) = i18n.getString(id)
 
         fun getFrequencyString() = {
-            val config = get(TunnelConfig::class.java)
+            val config = TunnelConfig().loadFromPersistence()
             idToString(ttlToId(config.cacheTTL))
         }()
 
