@@ -104,6 +104,11 @@ fun blokadaUserAgent(ctx: Context) = "blokada/%s (android-%s %s %s %s %s-%s %s)"
         if (ctx.packageManager.hasSystemFeature("android.hardware.touchscreen")) "touch" else "donttouch"
 )
 
+val gson = GsonBuilder()
+        .setDateFormat(DateFormat.FULL)
+        .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES)
+        .create()
+
 val restApi by lazy {
     val ctx = runBlocking { getApplicationContext()!! }
     val clientBuilder = OkHttpClient.Builder()
@@ -121,10 +126,6 @@ val restApi by lazy {
             }
     if (!ProductType.isPublic()) clientBuilder.addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
     val client = clientBuilder.build()
-    val gson = GsonBuilder()
-            .setDateFormat(DateFormat.FULL)
-            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES)
-            .create()
     val retrofit = Retrofit.Builder()
             .baseUrl("https://api.blocka.net")
             .addConverterFactory(GsonConverterFactory.create(gson))

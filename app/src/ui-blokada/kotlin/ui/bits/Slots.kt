@@ -245,14 +245,14 @@ class ConfigHelper {
         private fun idToString(id: Int) = i18n.getString(id)
 
         fun getFrequencyString() = {
-            val config = runBlocking { TunnelConfig().loadFromPersistence() }
+            val config = get(TunnelConfig::class.java)
             idToString(ttlToId(config.cacheTTL))
         }()
 
         fun setFrequency(string: String) = {
-            val config = runBlocking { TunnelConfig().loadFromPersistence() }
+            val config = get(TunnelConfig::class.java)
             val new = config.copy(cacheTTL = idToTtl(stringToId(string)))
-            runBlocking { new.saveToPersistence() }
+            new.save()
         }()
     }
 }
@@ -296,11 +296,10 @@ class DownloadOnWifiVB(
                 label = i18n.getString(R.string.tunnel_config_wifi_only_title),
                 description = i18n.getString(R.string.tunnel_config_wifi_only_description),
                 icon = view.context.getDrawable(R.drawable.ic_wifi),
-                switched = runBlocking { TunnelConfig().loadFromPersistence() }.wifiOnly
+                switched = get(TunnelConfig::class.java).wifiOnly
         )
         view.onSwitch = { switched ->
-            val new = runBlocking { TunnelConfig().loadFromPersistence() }.copy(wifiOnly = switched)
-            runBlocking { new.saveToPersistence() }
+            get(TunnelConfig::class.java).copy(wifiOnly = switched).save()
             tunnelManager.reloadConfig(device.onWifi())
         }
     }
@@ -704,11 +703,10 @@ class PowersaveVB(
                 label = i18n.getString(R.string.tunnel_config_powersave_title),
                 icon = view.context.getDrawable(R.drawable.ic_power),
                 description = i18n.getString(R.string.tunnel_config_powersave_description),
-                switched = runBlocking { TunnelConfig().loadFromPersistence() }.powersave
+                switched = get(TunnelConfig::class.java).powersave
         )
         view.onSwitch = {
-            val new = runBlocking { TunnelConfig().loadFromPersistence() }.copy(powersave = it)
-            runBlocking { new.saveToPersistence() }
+            get(TunnelConfig::class.java).copy(powersave = it).save()
         }
     }
 
@@ -725,11 +723,10 @@ class DnsFallbackVB(
                 label = i18n.getString(R.string.tunnel_config_fallback_title),
                 icon = view.context.getDrawable(R.drawable.ic_server),
                 description = i18n.getString(R.string.tunnel_config_fallback_description),
-                switched = runBlocking { TunnelConfig().loadFromPersistence() }.dnsFallback
+                switched = get(TunnelConfig::class.java).dnsFallback
         )
         view.onSwitch = {
-            val new = runBlocking { TunnelConfig().loadFromPersistence() }.copy(dnsFallback = it)
-            runBlocking { new.saveToPersistence() }
+            get(TunnelConfig::class.java).copy(dnsFallback = it).save()
         }
     }
 
@@ -746,11 +743,10 @@ class ReportVB(
                 label = i18n.getString(R.string.tunnel_config_reports_title),
                 icon = view.context.getDrawable(R.drawable.ic_heart_box),
                 description = i18n.getString(R.string.tunnel_config_reports_description),
-                switched = runBlocking { TunnelConfig().loadFromPersistence() }.report
+                switched = get(TunnelConfig::class.java).report
         )
         view.onSwitch = {
-            val new = runBlocking { TunnelConfig().loadFromPersistence() }.copy(report = it)
-            runBlocking { new.saveToPersistence() }
+            get(TunnelConfig::class.java).copy(report = it).save()
         }
     }
 

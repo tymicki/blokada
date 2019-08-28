@@ -156,33 +156,18 @@ android {
         def srcCoreMock = 'src/core/mock'
         def srcCoreTest = 'src/core/test'
 
-        def srcWireguardKotlin = 'src/wireguard/kotlin'
-        def srcWireguardJni = 'src/wireguard/jniLibs'
-
-        def srcG11nKotlin = 'src/g11n/kotlin'
-        def srcG11nTest = 'src/g11n/test'
-
-        def srcTunnelKotlin = 'src/tunnel/kotlin'
-        def srcTunnelTest = 'src/tunnel/test'
-
         def srcFilterKotlin = 'src/filter/kotlin'
-        def srcFilterTest = 'src/filter/test'
 
-        def srcDnsKotlin = 'src/dns/kotlin'
-        def srcDnsTest = 'src/dns/test'
+        def srcTunBlockaKotlin = 'src/tun-blocka/kotlin'
+        def srcTunBlockaJni = 'src/tun-blocka/jniLibs'
 
-        def srcStateKotlin = 'src/state/kotlin'
-        def srcStateTest = 'src/state/test'
+        def srcTunLocalKotlin = 'src/tun-local/kotlin'
 
-        def srcUpdateKotlin = 'src/update/kotlin'
-        def srcUpdateTest = 'src/update/test'
+        def srcUiCoreKotlin = 'src/ui-core/kotlin'
+        def srcUiCoreRes = 'src/ui-core/res'
 
-        def srcBlockaKotlin = 'src/blocka/kotlin'
-        def srcBlockaTest = 'src/blocka/test'
-
-        def srcUiKotlin = 'src/ui/kotlin'
-        def srcUiRes = 'src/ui/res'
-        def srcUiTest = 'src/ui/test'
+        def srcUiBlokadaKotlin = 'src/ui-blokada/kotlin'
+        def srcUiBlokadaRes = 'src/ui-blokada/res'
 
         def srcLegacyKotlin = 'src/legacy/kotlin'
 
@@ -191,46 +176,43 @@ android {
 
         appFull.manifest.srcFile 'src/ui/AndroidManifest.xml'
         appFull.java.srcDirs += srcCoreKotlin
-        appFull.java.srcDirs += srcTunnelKotlin
-        appFull.java.srcDirs += srcG11nKotlin
-        appFull.java.srcDirs += srcWireguardKotlin
+        appFull.java.srcDirs += srcTunLocalKotlin
+        appFull.java.srcDirs += srcTunBlockaKotlin
         appFull.java.srcDirs += srcFilterKotlin
-        appFull.java.srcDirs += srcDnsKotlin
-        appFull.java.srcDirs += srcUiKotlin
-        appFull.java.srcDirs += srcStateKotlin
-        appFull.java.srcDirs += srcUpdateKotlin
-        appFull.java.srcDirs += srcBlockaKotlin
+        appFull.java.srcDirs += srcUiCoreKotlin
+        appFull.java.srcDirs += srcUiBlokadaKotlin
         appFull.java.srcDirs += srcLegacyKotlin
         appFull.java.srcDirs += 'src/full/kotlin'
-        appFull.jniLibs.srcDirs += srcWireguardJni
-        appFull.res.srcDirs += srcUiRes
+        appFull.jniLibs.srcDirs += srcTunBlockaJni
         appFull.res.srcDirs += srcCoreRes
+        appFull.res.srcDirs += srcUiCoreRes
+        appFull.res.srcDirs += srcUiBlokadaRes
         appFull.res.srcDirs += 'src/full/res'
 //        testAppFull.java.srcDirs += testModTunnel.java.srcDirs
 //        testAppFull.java.srcDirs += testModG11n.java.srcDirs
 //        testAppFull.java.srcDirs += testModWireguard.java.srcDirs
 
-        appCommunity.manifest.srcFile 'src/ui/AndroidManifest.xml'
-        appCommunity.java.srcDirs += srcCoreKotlin
-        appCommunity.java.srcDirs += srcTunnelKotlin
-        appCommunity.java.srcDirs += srcG11nKotlin
-        appCommunity.java.srcDirs += srcWireguardKotlin
-        appCommunity.java.srcDirs += srcUiKotlin
-        appCommunity.java.srcDirs += 'src/full/kotlin'
-        appCommunity.jniLibs.srcDirs += srcWireguardJni
-        appCommunity.res.srcDirs += srcUiRes
-        appCommunity.res.srcDirs += 'src/full/res'
-
-        appGoogle.manifest.srcFile 'src/ui/AndroidManifest.xml'
-        appGoogle.java.srcDirs += srcCoreKotlin
-        appGoogle.java.srcDirs += srcTunnelKotlin
-        appGoogle.java.srcDirs += srcG11nKotlin
-        appGoogle.java.srcDirs += srcWireguardKotlin
-        appGoogle.java.srcDirs += srcUiKotlin
-        appGoogle.java.srcDirs += 'src/google/kotlin'
-        appGoogle.jniLibs.srcDirs += srcWireguardJni
-        appGoogle.res.srcDirs += srcUiRes
-        appGoogle.res.srcDirs += 'src/google/res'
+//        appCommunity.manifest.srcFile 'src/ui/AndroidManifest.xml'
+//        appCommunity.java.srcDirs += srcCoreKotlin
+//        appCommunity.java.srcDirs += srcTunnelKotlin
+//        appCommunity.java.srcDirs += srcG11nKotlin
+//        appCommunity.java.srcDirs += srcWireguardKotlin
+//        appCommunity.java.srcDirs += srcUiKotlin
+//        appCommunity.java.srcDirs += 'src/full/kotlin'
+//        appCommunity.jniLibs.srcDirs += srcWireguardJni
+//        appCommunity.res.srcDirs += srcUiRes
+//        appCommunity.res.srcDirs += 'src/full/res'
+//
+//        appGoogle.manifest.srcFile 'src/ui/AndroidManifest.xml'
+//        appGoogle.java.srcDirs += srcCoreKotlin
+//        appGoogle.java.srcDirs += srcTunnelKotlin
+//        appGoogle.java.srcDirs += srcG11nKotlin
+//        appGoogle.java.srcDirs += srcWireguardKotlin
+//        appGoogle.java.srcDirs += srcUiKotlin
+//        appGoogle.java.srcDirs += 'src/google/kotlin'
+//        appGoogle.jniLibs.srcDirs += srcWireguardJni
+//        appGoogle.res.srcDirs += srcUiRes
+//        appGoogle.res.srcDirs += 'src/google/res'
 
         /**
          * Build types are cross combined with flavors to make a final release
