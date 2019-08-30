@@ -28,7 +28,7 @@ class WebViewActivity : Activity() {
 
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.subscription_container)
+        setContentView(R.layout.subscription_with_close)
 
         url = newProperty({ URL(intent.getStringExtra(EXTRA_URL)) })
 

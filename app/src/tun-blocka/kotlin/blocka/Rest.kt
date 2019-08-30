@@ -93,7 +93,8 @@ object RestModel {
     )
 }
 
-fun blokadaUserAgent(ctx: Context) = "blokada/%s (android-%s %s %s %s %s-%s %s)".format(
+fun blokadaUserAgent(ctx: Context, viewer: Boolean? = null)
+    = "blokada/%s (android-%s %s %s %s %s-%s %s %s)".format(
         BuildConfig.VERSION_NAME,
         Build.VERSION.SDK_INT,
         BuildConfig.FLAVOR,
@@ -101,7 +102,9 @@ fun blokadaUserAgent(ctx: Context) = "blokada/%s (android-%s %s %s %s %s-%s %s)"
         Build.SUPPORTED_ABIS[0],
         Build.MANUFACTURER,
         Build.DEVICE,
-        if (ctx.packageManager.hasSystemFeature("android.hardware.touchscreen")) "touch" else "donttouch"
+        if (ctx.packageManager.hasSystemFeature("android.hardware.touchscreen"))
+            "touch" else "donttouch",
+        if (viewer == true) "chrometab" else if (viewer == false) "webview" else "api"
 )
 
 val gson = GsonBuilder()

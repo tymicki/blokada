@@ -112,7 +112,7 @@ object Register {
         val source = sources.get(null to key) as Source<T>?
         if (source == null) throw Exception("No source in register for: $key")
         source.set(value, id)
-        v("persistence set", key, value as Any)
+        v("persistence set", key)
         if (!skipMemory) currents.put(null to key, value as Any)
     }
 
@@ -121,7 +121,7 @@ object Register {
         val source = sources.get(classOfT to key) as Source<T>?
         if (source == null) throw Exception("No source in register for: $classOfT, (key: $key)")
         source.set(value, id)
-        v("persistence set", classOfT, value as Any)
+        v("persistence set", classOfT)
         if (!skipMemory) currents.put(value to key, value as Any)
     }
 }
