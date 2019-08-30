@@ -1,7 +1,6 @@
 package g11n
 
 import core.COMMON
-import core.Result
 import core.Url
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
@@ -39,7 +38,7 @@ val g11Manager by lazy {
                     pages.filtersStrings().toExternalForm() to "filters"
             ) },
             doPutTranslation = { key, value ->
-                core.Result.of { i18n.set(key, value); true }
+                runCatching { i18n.set(key, value); true }
             }
     )
 }

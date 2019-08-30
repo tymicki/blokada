@@ -2,20 +2,20 @@ package ui.bits
 
 import android.content.Context
 import android.content.Intent
+import blocka.BLOCKA_CONFIG
 import core.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
 import org.blokada.R
-import blocka.BLOCKA_CONFIG
 import tunnel.BlockaConfig
 import tunnel.tunnelState
 import tunnel.tunnelStateManager
 import ui.bits.menu.isLandscape
+import ui.conflictingBuilds
 import ui.modalManager
 import ui.pages
-import ui.welcome
 import java.util.*
 
 data class SlotsSeenStatus(
@@ -26,8 +26,6 @@ data class SlotsSeenStatus(
         val cta: Int = 0,
         val donate: Int = 0
 )
-
-private const val PERSISTENCE_KEY = "slots:status"
 
 class HomeDashboardSectionVB(
         override val name: Resource = R.string.panel_section_home.res()
@@ -86,17 +84,17 @@ class HomeDashboardSectionVB(
     private val oneTimeBytes = createOneTimeBytes()
 
     private fun markAsSeen() {
-        val cfg = loadPersistence(PERSISTENCE_KEY, { SlotsSeenStatus() })
+        val cfg = get(SlotsSeenStatus::class.java)
         val newCfg = when (added) {
             OneTimeByte.UPDATED -> cfg.copy(updated = BuildConfig.VERSION_CODE)
             OneTimeByte.DONATE -> cfg.copy(donate = BuildConfig.VERSION_CODE)
             else -> cfg
         }
-        savePersistence(PERSISTENCE_KEY, newCfg)
+        newCfg.update(SlotsSeenStatus::class.java)
     }
 
     private fun decideOnSlot(noSubscription: Boolean): Pair<ViewBinder?, OneTimeByte?> {
-        val cfg = loadPersistence(PERSISTENCE_KEY, { SlotsSeenStatus() })
+        val cfg = get(SlotsSeenStatus::class.java)
         val name = if (cfg == null) null else when {
             //isLandscape(ktx.ctx) -> null
             BuildConfig.VERSION_CODE > cfg.updated -> OneTimeByte.UPDATED
@@ -109,7 +107,7 @@ class HomeDashboardSectionVB(
     }
 
     private fun getInstalledBuilds(): List<String> {
-        return welcome.conflictingBuilds().map {
+        return conflictingBuilds.map {
             if (isPackageInstalled(it)) it else null
         }.filterNotNull()
     }

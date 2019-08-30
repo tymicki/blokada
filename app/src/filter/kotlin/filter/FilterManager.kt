@@ -1,22 +1,21 @@
 package filter
 
-import com.github.michaelbull.result.Err
-import com.github.michaelbull.result.mapBoth
 import core.*
 import tunnel.*
 import tunnel.Filter
 import tunnel.Persistence
 import java.net.URL
+import kotlin.Result.Companion.failure
 
 internal class FilterManager(
         private val doFetchRuleset: (IFilterSource, MemoryLimit) -> Result<Ruleset> = { source, limit ->
-            if (source.size() <= limit) Result.of {
+            if (source.size() <= limit) runCatching {
                 val fetched = source.fetch()
                 if (fetched.size == 0 && source.id() != "app")
                     throw Exception("failed to fetch ruleset (size 0)")
                 else fetched
             }
-            else Err(Exception("failed fetching rules, memory limit reached: $limit"))
+            else failure(Exception("failed fetching rules, memory limit reached: $limit"))
         },
         private val doValidateRulesetCache: (Filter) -> Boolean = {
             it.source.id in listOf("app") /*||
@@ -24,13 +23,13 @@ internal class FilterManager(
         },
         private val doFetchFiltersFromRepo: (Url) -> Result<Set<Filter>> = {
             val serializer = FilterSerializer()
-            Result.of { serializer.deserialise(loadGzip(openUrl(URL(it), 10 * 1000))) }
+            runCatching { serializer.deserialise(loadGzip(openUrl(URL(it), 10 * 1000))) }
         },
         private val doProcessFetchedFilters: (Set<Filter>) -> Set<Filter> = { it },
         private val doValidateFilterStoreCache: (FilterStore) -> Boolean = {
             it.cache.isNotEmpty() && it.lastFetch + 86400 * 1000 > System.currentTimeMillis()
         },
-        private val doLoadFilterStore: () -> Result<FilterStore> = Persistence.filters.load,
+        private val doLoadFilterStore: () -> FilterStore? = Persistence.filters.load,
         private val doSaveFilterStore: (FilterStore) -> Result<Any> = Persistence.filters.save,
         private val doGetNow: () -> Time = { System.currentTimeMillis() },
         private val doGetMemoryLimit: () -> MemoryLimit = Memory.linesAvailable,
@@ -41,22 +40,20 @@ internal class FilterManager(
     private var store = FilterStore(lastFetch = 0)
 
     fun load() {
-        doLoadFilterStore().mapBoth(
-                success = {
-                    v("loaded FilterStore from persistence", it.url, it.cache.size)
-                    core.emit(Events.FILTERS_CHANGED, it.cache)
-                    store = it
-                },
-                failure = {
-                    e("failed loading FilterStore from persistence", it)
-                }
-        )
+        val it = doLoadFilterStore()
+        if (it != null) {
+            v("loaded FilterStore from persistence", it.url, it.cache.size)
+            core.emit(Events.FILTERS_CHANGED, it.cache)
+            store = it
+        } else {
+            e("failed loading FilterStore from persistence")
+        }
     }
 
     fun save() {
-        doSaveFilterStore(store).mapBoth(
-                success = { v("saved FilterStore to persistence", store.cache.size, store.url) },
-                failure = { e("failed saving FilterStore to persistence", it) }
+        doSaveFilterStore(store).fold(
+                onSuccess = { v("saved FilterStore to persistence", store.cache.size, store.url) },
+                onFailure = { e("failed saving FilterStore to persistence", it) }
         )
     }
 
@@ -130,8 +127,8 @@ internal class FilterManager(
         if (!doValidateFilterStoreCache(store)) {
             v("syncing filters", store.url)
             core.emit(Events.FILTERS_CHANGING)
-            doFetchFiltersFromRepo(store.url).mapBoth(
-                    success = { builtinFilters ->
+            doFetchFiltersFromRepo(store.url).fold(
+                    onSuccess = { builtinFilters ->
                         v("fetched. size:", builtinFilters.size)
 
                         val new = if (store.cache.isEmpty()) {
@@ -156,7 +153,7 @@ internal class FilterManager(
                         v("synced", store.cache.size)
                         core.emit(Events.FILTERS_CHANGED, store.cache)
                     },
-                    failure = {
+                    onFailure = {
                         e("failed syncing filters", it)
                     }
             )
@@ -172,13 +169,13 @@ internal class FilterManager(
             if (!doValidateRulesetCache(filter)) {
                 v("fetching ruleset", filter.id)
                 core.emit(Events.FILTERS_CHANGING)
-                doFetchRuleset(doResolveFilterSource(filter), doGetMemoryLimit()).mapBoth(
-                        success = {
+                doFetchRuleset(doResolveFilterSource(filter), doGetMemoryLimit()).fold(
+                        onSuccess = {
                             blockade.set(filter.id, it)
                             downloaded.add(filter.copy(lastFetch = System.currentTimeMillis()))
                             v("saved", filter.id, it.size)
                         },
-                        failure = {
+                        onFailure = {
                             e("failed fetching ruleset", filter.id, it)
                         }
                 )

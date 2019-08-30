@@ -11,8 +11,8 @@ class PersistenceRollTest {
         )
 
         val p = RequestPersistence(
-                load = { batch -> Result.of { inMemoryPersistence[batch] } },
-                saveBatch = { batch, list -> Result.of { inMemoryPersistence[batch] = list } }
+                load = { batch -> runCatching { inMemoryPersistence[batch] } },
+                saveBatch = { batch, list -> runCatching { inMemoryPersistence[batch] = list } }
         )
 
         repeat(p.batch_sizes[0]) {

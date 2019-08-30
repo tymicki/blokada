@@ -4,7 +4,6 @@ import android.view.ViewGroup
 import com.google.android.material.snackbar.Snackbar
 import core.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.blokada.R
 import java.util.*
@@ -86,9 +85,9 @@ class FilterSourceDescriptor(
 val TUNNEL_CONFIG = "TUNNEL_CONFIG".newEventOf<TunnelConfig>()
 
 fun registerTunnelConfigEvent() {
-    val config = runBlocking { TunnelConfig().loadFromPersistence() }
+    val config = get(TunnelConfig::class.java)
     core.emit(TUNNEL_CONFIG, config)
-    core.on(TUNNEL_CONFIG) { runBlocking { it.saveToPersistence() } }
+    core.on(TUNNEL_CONFIG) { it.update(TunnelConfig::class.java) }
 }
 
 suspend fun showSnack(msgResId: Int) = withContext(Dispatchers.Main.immediate) {

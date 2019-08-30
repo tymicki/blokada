@@ -14,7 +14,7 @@ class BlockadeTest {
         val allow2 = Ruleset().apply { addAll(listOf("f")) }
 
         Blockade(
-                doLoadRuleset = { it -> Result.of {
+                doLoadRuleset = { it -> runCatching {
                     when (it) {
                         "deny1" -> deny1
                         "deny2" -> deny2
@@ -23,8 +23,8 @@ class BlockadeTest {
                         else -> throw Exception("unknown ruleset")
                     }
                 }},
-                doSaveRuleset = { _, _ -> Result.of { true } },
-                doGetRulesetSize = { it -> Result.of {
+                doSaveRuleset = { _, _ -> runCatching { true } },
+                doGetRulesetSize = { it -> runCatching {
                     when (it) {
                         "deny1" -> deny1.size
                         "deny2" -> deny2.size

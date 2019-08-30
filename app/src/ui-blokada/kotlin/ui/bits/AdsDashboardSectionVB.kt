@@ -1,7 +1,6 @@
 package ui.bits
 
 import android.graphics.Point
-import com.github.michaelbull.result.onSuccess
 import core.*
 import kotlinx.coroutines.runBlocking
 import org.blokada.R

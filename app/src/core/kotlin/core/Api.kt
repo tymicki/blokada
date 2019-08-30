@@ -17,7 +17,6 @@ import java.util.zip.GZIPInputStream
 
 val COMMON = newFixedThreadPoolContext(Runtime.getRuntime().availableProcessors(), "common") + logCoroutineExceptions()
 
-typealias Result<T> = com.github.michaelbull.result.Result<T, Exception>
 typealias Time = Long
 typealias Url = String
 

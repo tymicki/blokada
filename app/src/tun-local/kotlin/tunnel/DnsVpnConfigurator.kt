@@ -1,7 +1,6 @@
 package tunnel
 
 import android.net.VpnService
-import core.Result
 import core.e
 import core.v
 import filter.FilterManager
@@ -72,7 +71,7 @@ internal class DnsVpnConfigurator(
         }
 
         // People kept asking why GPlay doesnt work
-        Result.of { builder.addDisallowedApplication("com.android.vending") }
+        runCatching { builder.addDisallowedApplication("com.android.vending") }
 
         builder.setBlocking(true)
     }
@@ -116,7 +115,7 @@ internal class PausedVpnConfigurator(
         }
 
         // People kept asking why GPlay doesnt work
-        Result.of { builder.addDisallowedApplication("com.android.vending") }
+        runCatching { builder.addDisallowedApplication("com.android.vending") }
 
         builder.addAddress("203.0.113.0", 32)
         builder.setBlocking(true)

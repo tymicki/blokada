@@ -2,7 +2,10 @@ package blocka
 
 import android.text.format.DateUtils
 import core.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
 import tunnel.BlockaConfig
 
 suspend fun initBlocka() = withContext(Dispatchers.Main.immediate) {
@@ -11,10 +14,10 @@ suspend fun initBlocka() = withContext(Dispatchers.Main.immediate) {
     v("boringtun loaded")
 
     // TODO
-    val config = BlockaConfig().loadFromPersistence()
+    val config = get(BlockaConfig::class.java)
     checkAccountInfo(config)
 
-    on(BLOCKA_CONFIG) { runBlocking { it.saveToPersistence() } }
+    on(BLOCKA_CONFIG) { it.update(BlockaConfig::class.java) }
 
     device.screenOn.doOnUiWhenChanged().then {
         if (device.screenOn()) GlobalScope.async {

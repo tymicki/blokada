@@ -52,15 +52,15 @@ class FilterManagerTest {
                 Filter("id3", FilterSourceDescriptor("fake", "c"), active = true, whitelist = true)
         )
         val manager = FilterManager(
-                doFetchFiltersFromRepo = { url -> Result.of { filters } },
+                doFetchFiltersFromRepo = { url -> runCatching { filters } },
                 doGetMemoryLimit = { 999 },
                 doResolveFilterSource = { FakeFiltersource(it.source.source) },
                 blockade = Blockade(
                         doLoadRuleset = { id ->
-                            Result.of { inMemoryPersistance.getOrElse(id, {throw Exception("cache miss")}) }
+                            runCatching { inMemoryPersistance.getOrElse(id, {throw Exception("cache miss")}) }
                         },
                         doSaveRuleset = { id, ruleset ->
-                            Result.of { inMemoryPersistance[id] = ruleset }
+                            runCatching { inMemoryPersistance[id] = ruleset }
                         }
                 )
         )
@@ -79,15 +79,15 @@ class FilterManagerTest {
         )
         val source = FakeDownloadingFilterSource("id1")
         val manager = FilterManager(
-                doFetchFiltersFromRepo = { url -> Result.of { filters } },
+                doFetchFiltersFromRepo = { url -> runCatching { filters } },
                 doGetMemoryLimit = { 999 },
                 doResolveFilterSource = { source },
                 blockade = Blockade(
                         doLoadRuleset = { id ->
-                            Result.of { inMemoryPersistance.getOrElse(id, {throw Exception("cache miss")}) }
+                            runCatching { inMemoryPersistance.getOrElse(id, {throw Exception("cache miss")}) }
                         },
                         doSaveRuleset = { id, ruleset ->
-                            Result.of { inMemoryPersistance[id] = ruleset }
+                            runCatching { inMemoryPersistance[id] = ruleset }
                         }
                 )
         )
@@ -104,7 +104,7 @@ class FilterManagerTest {
         val f2 = Filter("2", FilterSourceDescriptor("fake", "2"))
         val f3 = Filter("3", FilterSourceDescriptor("fake", "3"))
         val manager = FilterManager(
-                doLoadFilterStore = { _ -> Result.of { FilterStore(setOf(f1, f2, f3),
+                doLoadFilterStore = { _ -> runCatching { FilterStore(setOf(f1, f2, f3),
                         lastFetch = System.currentTimeMillis()) }},
                 doResolveFilterSource = { FakeDownloadingFilterSource(it.id) }
         )

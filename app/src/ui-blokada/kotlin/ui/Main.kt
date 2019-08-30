@@ -16,12 +16,13 @@ import core.*
 import dns.initDns
 import filter.initFilters
 import flavor.initFlavor
+import g11n.TranslationStore
 import io.paperdb.Paper
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import tunnel.initTunnel
-import tunnel.tunnelState
+import tunnel.*
+import ui.bits.SlotsSeenStatus
 import update.initUpdate
 
 
@@ -49,6 +50,34 @@ class MainApplication: Application() {
         v(blokadaUserAgent(this))
         setRestartAppOnCrash()
 
+        runBlocking {
+            Register.sourceFor("reports", SharedPreferencesSource("reports", default = false))
+            Register.sourceFor("watchdogOn", SharedPreferencesSource("watchdogOn", default = false))
+            Register.sourceFor("keepAlive", SharedPreferencesSource("keepAlive", default = false))
+            Register.sourceFor("repo_refresh", SharedPreferencesSource("repo_refresh", default = 0L))
+            Register.sourceFor("repo_url", SharedPreferencesSource("repo_url", default = ""))
+            Register.sourceFor("dnsEnabled", SharedPreferencesSource("dnsEnabled", default = false))
+            Register.sourceFor("locale", SharedPreferencesSource("locale", default = "en"))
+            Register.sourceFor("lastSeenUpdate", SharedPreferencesSource("lastSeenUpdate", default = 0L))
+            Register.sourceFor(BlockaConfig::class.java, PaperSource("blocka:config"),
+                    default = BlockaConfig())
+            Register.sourceFor(TunnelConfig::class.java, PaperSource("tunnel:config"),
+                    default = TunnelConfig())
+            Register.sourceFor(TunnelPause::class.java, PaperSource("tunnel:pause"),
+                    default = TunnelPause())
+            Register.sourceFor("rules:set", PaperSource("rules:set", template = "%s:%s"), default = Ruleset())
+            Register.sourceFor("rules:size", PaperSource("rules:size", template = "%s:%s"), default = 0)
+            Register.sourceFor(FilterStore::class.java, PaperSource("filters2"), default = FilterStore())
+            Register.sourceFor(FiltersCache::class.java, PaperSource("filters2"), default = FiltersCache())
+            Register.sourceFor("requests", PaperSource("requests", template = "%s:%s"), default = emptyList<Request>())
+            Register.sourceFor(SlotsSeenStatus::class.java, PaperSource("slots:status"),
+                    default = SlotsSeenStatus())
+            Register.sourceFor(LoggerConfig::class.java, PaperSource("logger:config"),
+                    default = LoggerConfig())
+            Register.sourceFor(TranslationStore::class.java, PaperSource("g11n:translation:store"),
+                    "g11n:translation:store", default = TranslationStore())
+        }
+
         GlobalScope.launch {
             initDevice()
             initUpdate()
@@ -59,6 +88,7 @@ class MainApplication: Application() {
             initUpdate()
             initApp()
             initBlocka()
+            initUiBlokada()
             initFlavor()
             initBuildType()
         }
@@ -135,3 +165,9 @@ class BootJobService : JobService() {
 
 }
 
+val conflictingBuilds = listOf(
+        "org.blokada.origin.alarm",
+        "org.blokada.alarm",
+        "org.blokada",
+        "org.blokada.dev"
+)

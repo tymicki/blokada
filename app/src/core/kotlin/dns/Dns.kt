@@ -131,7 +131,7 @@ class DnsImpl {
 
         dnsServers.doWhenChanged(withInit = true).then {
             val current = dnsServers()
-            val cfg = runBlocking { TunnelConfig().loadFromPersistence() }
+            val cfg = get(TunnelConfig::class.java)
             if (cfg.dnsFallback && isLocalServers(current)) {
                 dnsServers %= FALLBACK_DNS
                 w("local DNS detected, setting CloudFlare as workaround")

@@ -1,6 +1,5 @@
 package core
 
-import gs.presentation.ViewTypeGenerator
 import org.junit.Test
 
 class ViewBinderTest {

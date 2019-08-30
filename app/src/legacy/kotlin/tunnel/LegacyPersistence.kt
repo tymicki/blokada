@@ -1,9 +1,7 @@
 package tunnel
 
 import android.content.Context
-import com.github.michaelbull.result.*
 import core.*
-import core.Result
 import filter.FilterSerializer
 import kotlinx.coroutines.runBlocking
 
@@ -16,42 +14,34 @@ class Persistence {
 
 object RulesPersistence {
     val load = { id: FilterId ->
-        blockingResult { Register.get(Ruleset(), "rules:set", id) }
+        blockingResult { Register.get<Ruleset>("rules:set", id) }
     }
     val save = { id: FilterId, ruleset: Ruleset ->
         blockingResult {
-            Register.set(ruleset, "rules:set", id)
+            Register.set(ruleset, "rules:set", id, skipMemory = true)
             Register.set(ruleset.size, "rules:size", id)
         }
     }
     val size = { id: FilterId ->
-        blockingResult { Register.get(0, "rules:size", id) }
+        blockingResult { Register.get<Int>("rules:size", id) }
     }
 }
 
 class FiltersPersistence {
     val load = {
-        loadLegacy34()
-                .or { loadLegacy35() }
-                .or {
-                    Result.of { loadPersistence("filters2", { FilterStore() }) }
-                            .orElse { ex ->
-                                if (isCustomPersistencePath()) {
-                                    w("failed loading from a custom path, resetting")
-                                    setPersistencePath("")
-                                    Result.of { loadPersistence("filters2", { FilterStore() }) }
-                                } else Err(Exception("failed loading from default path", ex))
-                            }
-                }
+        val ok = runCatching { loadLegacy34() }
+            .recoverCatching { loadLegacy35() }
+            .recoverCatching { loadCurrent() }
+        ok.getOrNull()
     }
 
     val save = { filterStore: FilterStore ->
-        Result.of { savePersistence("filters2", filterStore) }
+        runCatching { filterStore.update(FilterStore::class.java) }
     }
 
     private fun loadLegacy34() = {
         if (isCustomPersistencePath())
-            Err(Exception("custom persistence path detected, skipping legacy import"))
+            throw Exception("custom persistence path detected, skipping legacy import")
         else {
             val ctx = runBlocking { getApplicationContext()!! }
             val prefs = ctx.getSharedPreferences("filters", Context.MODE_PRIVATE)
@@ -60,43 +50,52 @@ class FiltersPersistence {
             val old = FilterSerializer().deserialise(legacy)
             if (old.isNotEmpty()) {
                 v("loaded from legacy 3.4 persistence", old.size)
-                Result.of { FilterStore(old, lastFetch = 0) }
-            } else Err(Exception("no legacy found"))
+                FilterStore(old, lastFetch = 0)
+            } else throw Exception("no legacy found")
         }
     }()
 
     private fun loadLegacy35() = {
-        Result.of { loadPersistence("filters2", { FiltersCache() }) }
-                .andThen {
-                    if (it.cache.isEmpty()) Err(Exception("no 3.5 legacy persistence found"))
-                    else {
-                        v("loaded from legacy 3.5 persistence")
-                        Ok(FilterStore(
-                                cache = it.cache.map {
-                                    Filter(
-                                            id = it.id,
-                                            source = FilterSourceDescriptor(it.source.id, it.source.source),
-                                            whitelist = it.whitelist,
-                                            active = it.active,
-                                            hidden = it.hidden,
-                                            priority = it.priority,
-                                            credit = it.credit,
-                                            customName = it.customName,
-                                            customComment = it.customComment
-                                    )
-                                }.toSet()
-                        ))
-                    }
-                }
+        val it = get(FiltersCache::class.java)
+        if (it.cache.isEmpty()) throw Exception("no 3.5 legacy persistence found")
+        else {
+            v("loaded from legacy 3.5 persistence")
+            FilterStore(
+                    cache = it.cache.map {
+                        Filter(
+                                id = it.id,
+                                source = FilterSourceDescriptor(it.source.id, it.source.source),
+                                whitelist = it.whitelist,
+                                active = it.active,
+                                hidden = it.hidden,
+                                priority = it.priority,
+                                credit = it.credit,
+                                customName = it.customName,
+                                customComment = it.customComment
+                        )
+                    }.toSet()
+            )
+        }
+    }()
+
+    private fun loadCurrent() = {
+        try { get(FilterStore::class.java) }
+        catch (ex: Exception) {
+            if (isCustomPersistencePath()) {
+                w("failed loading from a custom path, resetting")
+                setPersistencePath("")
+                get(FilterStore::class.java)
+            } else throw Exception("failed loading from default path", ex)
+        }
     }()
 }
 
 class RequestPersistence(
         val load: (Int) -> Result<List<Request>> = { batch: Int ->
-            Result.of { loadPersistence("requests:$batch", { emptyList<Request>() }) }
+            blockingResult { Register.get<List<Request>>("requests", batch.toString()) }
         },
         val saveBatch: (Int, List<Request>) -> Any = { batch: Int, requests: List<Request> ->
-            Result.of { savePersistence("requests:$batch", requests) }
+            blockingResult { Register.set(requests, "requests", batch.toString()) }
         },
         val batch_sizes: List<Int> = listOf(10, 100, 1000)
 ) {
@@ -105,8 +104,8 @@ class RequestPersistence(
 
     val batches = listOf(
             { batch0 },
-            { load(1).getOr { emptyList() } },
-            { load(2).getOr { emptyList() } }
+            { load(1).getOrElse { emptyList() } },
+            { load(2).getOrElse { emptyList() } }
     )
 
     val save = { request: Request ->

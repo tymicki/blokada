@@ -9,8 +9,10 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
-import com.github.michaelbull.result.mapError
-import core.*
+import core.Time
+import core.e
+import core.getApplicationContext
+import core.v
 import kotlinx.coroutines.*
 import java.io.FileDescriptor
 
@@ -64,7 +66,7 @@ internal class ServiceConnector(
         }
     }
 
-    fun unbind() = Result.of {
+    fun unbind() = runCatching {
         val ctx = runBlocking { getApplicationContext()!! }
         ctx.unbindService(serviceConnection)
     }
@@ -144,10 +146,10 @@ class Service : VpnService() {
 
     fun turnOff() {
         if (tunDescriptor != null) {
-            Result.of { tunDescriptor?.close() ?: Unit }
-                    .mapError {
+            runCatching { tunDescriptor?.close() ?: Unit }
+                    .onFailure {
                         // I can't remember why we try it twice, but it probably matters
-                        Result.of { tunDescriptor?.close() ?: Unit }
+                        runCatching { tunDescriptor?.close() ?: Unit }
                     }
             lastReleasedMillis = SystemClock.uptimeMillis()
             tunDescriptor = null

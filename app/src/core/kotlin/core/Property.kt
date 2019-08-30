@@ -392,14 +392,14 @@ private class PersistedProperty2<T>(
         private val refresh: ((value: T) -> T)? = null,
         private val shouldRefresh: (value: T) -> Boolean = { false }
 ): BaseProperty<T>(
-        zeroValue = { runBlocking { zeroValue().loadFromPersistence(key) } },
-        refresh = refresh ?: { runBlocking { it.loadFromPersistence(key) } },
+        zeroValue = { runBlocking { Register.get<T>(key) } },
+        refresh = refresh ?: { runBlocking { Register.get<T>(key) } },
         shouldRefresh = shouldRefresh
 ) {
 
     init {
         doWhenSet().then {
-            runBlocking { value!!.saveToPersistence(key) }
+            runBlocking { Register.set(value!!, key) }
         }
         refresh()
     }

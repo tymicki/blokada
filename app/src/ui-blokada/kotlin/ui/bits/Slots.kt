@@ -245,14 +245,14 @@ class ConfigHelper {
         private fun idToString(id: Int) = i18n.getString(id)
 
         fun getFrequencyString() = {
-            val config = TunnelConfig().loadFromPersistence()
+            val config = get(TunnelConfig::class.java)
             idToString(ttlToId(config.cacheTTL))
         }()
 
         fun setFrequency(string: String) = {
             val config = get(TunnelConfig::class.java)
             val new = config.copy(cacheTTL = idToTtl(stringToId(string)))
-            new.save()
+            new.update(TunnelConfig::class.java)
         }()
     }
 }
@@ -299,7 +299,9 @@ class DownloadOnWifiVB(
                 switched = get(TunnelConfig::class.java).wifiOnly
         )
         view.onSwitch = { switched ->
-            get(TunnelConfig::class.java).copy(wifiOnly = switched).save()
+            get(TunnelConfig::class.java)
+                    .copy(wifiOnly = switched)
+                    .update(TunnelConfig::class.java)
             tunnelManager.reloadConfig(device.onWifi())
         }
     }
@@ -706,7 +708,7 @@ class PowersaveVB(
                 switched = get(TunnelConfig::class.java).powersave
         )
         view.onSwitch = {
-            get(TunnelConfig::class.java).copy(powersave = it).save()
+            get(TunnelConfig::class.java).copy(powersave = it).update(TunnelConfig::class.java)
         }
     }
 
@@ -726,7 +728,7 @@ class DnsFallbackVB(
                 switched = get(TunnelConfig::class.java).dnsFallback
         )
         view.onSwitch = {
-            get(TunnelConfig::class.java).copy(dnsFallback = it).save()
+            get(TunnelConfig::class.java).copy(dnsFallback = it).update(TunnelConfig::class.java)
         }
     }
 
@@ -746,7 +748,7 @@ class ReportVB(
                 switched = get(TunnelConfig::class.java).report
         )
         view.onSwitch = {
-            get(TunnelConfig::class.java).copy(report = it).save()
+            get(TunnelConfig::class.java).copy(report = it).update(TunnelConfig::class.java)
         }
     }
 
@@ -991,7 +993,7 @@ class CleanupVB : ByteVB() {
     }
 
     private fun getInstalledBuilds(): List<String> {
-        return welcome.conflictingBuilds().map {
+        return conflictingBuilds.map {
             if (isPackageInstalled(it)) it else null
         }.filterNotNull()
     }

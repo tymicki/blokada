@@ -1,6 +1,5 @@
 package ui.bits.menu.adblocking
 
-import com.github.michaelbull.result.getOr
 import core.*
 import org.blokada.R
 import tunnel.Events
@@ -85,7 +84,7 @@ class HostsLogVB(
         if (nextBatch < 3) addBatch(loadBatch(nextBatch++))
     }
 
-    private fun loadBatch(batch: Int) = Persistence.request.load(batch).getOr { emptyList() }.filter { r ->
+    private fun loadBatch(batch: Int) = Persistence.request.load(batch).getOrElse { emptyList() }.filter { r ->
         if (searchString.isEmpty()) true
         else r.domain.contains(searchString.toLowerCase())
     }

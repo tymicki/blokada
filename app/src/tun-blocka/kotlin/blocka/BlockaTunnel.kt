@@ -6,8 +6,6 @@ import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
 import com.cloudflare.app.boringtun.BoringTunJNI
-import com.github.michaelbull.result.mapError
-import core.Result
 import core.e
 import core.v
 import core.w
@@ -410,22 +408,22 @@ internal class BlockaTunnel(
             throw ex
         } finally {
             v("cleaning up resources", this)
-            Result.of { Os.close(error) }
-            Result.of { input.close() }
-            Result.of { output.close() }
+            runCatching { Os.close(error) }
+            runCatching { input.close() }
+            runCatching { output.close() }
         }
     }
 
     override fun runWithRetry(tun: FileDescriptor) {
         var interrupted = false
         do {
-            Result.of { run(tun) }.mapError {
+            runCatching { run(tun) }.onFailure {
                 if (it is InterruptedException || threadInterrupted()) interrupted = true
                 else {
                     core.emit(tunnel.Events.TUNNEL_RESTART)
                     val cooldown = min(cooldownTtl * cooldownCounter++, cooldownMax)
                     e("tunnel thread error, will restart after $cooldown ms", this, it.toString())
-                    Result.of { Thread.sleep(cooldown) }.mapError {
+                    runCatching { Thread.sleep(cooldown) }.onFailure {
                         if (it is InterruptedException || threadInterrupted()) interrupted = true
                     }
                 }
@@ -435,8 +433,8 @@ internal class BlockaTunnel(
     }
 
     override fun stop() {
-        Result.of { Os.close(error) }
-        Result.of {
+        runCatching { Os.close(error) }
+        runCatching {
             v("closing gateway socket on stop")
             gatewayParcelFileDescriptor?.close()
             gatewaySocket?.close()

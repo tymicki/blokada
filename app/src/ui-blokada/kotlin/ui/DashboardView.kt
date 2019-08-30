@@ -10,8 +10,6 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager.widget.ViewPager
-import com.github.michaelbull.result.onFailure
-import com.github.michaelbull.result.onSuccess
 import com.sothree.slidinguppanel.SlidingUpPanelLayout
 import core.*
 import g11n.i18n
@@ -433,7 +431,7 @@ class DashboardView(
     }
 
     private fun View.addToTopMargin(size: Int) {
-        Result.of {
+        runCatching {
             val lp = layoutParams as RelativeLayout.LayoutParams
             lp.topMargin += size
         }.onFailure {
@@ -443,7 +441,7 @@ class DashboardView(
     }
 
     private fun View.addToBottomMargin(size: Int) {
-        Result.of {
+        runCatching {
             val lp = layoutParams as RelativeLayout.LayoutParams
             lp.bottomMargin += size
         }.onFailure {

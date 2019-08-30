@@ -30,7 +30,7 @@ class RequestLogWriter {
 
     @Synchronized
     internal fun writer(line: String) {
-        Result.of { file!!.println(time() + ',' + line) }
+        runCatching { file!!.println(time() + ',' + line) }
     }
 
     private fun time() = Date().time.toString(10)
@@ -83,7 +83,7 @@ class RequestLogger : Service() {
                 }
             } else {
                 if (intent.getBooleanExtra("load_on_start", false)) {
-                    config = runBlocking { config.loadFromPersistence() }
+                    config = get(LoggerConfig::class.java)
                 }
             }
         }
@@ -104,7 +104,7 @@ class LoggerVB (
     override fun attach(view: SlotView) {
         view.type = Slot.Type.INFO
         view.enableAlternativeBackground()
-        val config = runBlocking { LoggerConfig().loadFromPersistence() }
+        val config = get(LoggerConfig::class.java)
         view.apply {
             content = Slot.Content(
                     label = i18n.getString(R.string.logger_slot_title),
@@ -121,7 +121,7 @@ class LoggerVB (
         view.onSelect = {
             askForExternalStoragePermissionsIfNeeded()
             val newConfig = modeToConfig(it)
-            runBlocking { newConfig.saveToPersistence() }
+            newConfig.update(LoggerConfig::class.java)
             sendConfigToService(newConfig)
         }
     }

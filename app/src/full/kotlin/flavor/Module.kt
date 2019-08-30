@@ -7,8 +7,8 @@ import android.content.Intent
 import android.os.Build
 import core.ForegroundStartService
 import core.LoggerConfig
+import core.get
 import core.getApplicationContext
-import core.loadFromPersistence
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -37,7 +37,7 @@ suspend fun initFlavor() = withContext(Dispatchers.Main.immediate) {
         hideNotification(ctx)
     }
 
-    val config = runBlocking { LoggerConfig().loadFromPersistence() }
+    val config = get(LoggerConfig::class.java)
     val wm: AppWidgetManager = AppWidgetManager.getInstance(ctx)
     val ids = wm.getAppWidgetIds(ComponentName(ctx, ActiveWidgetProvider::class.java))
     if(((ids != null) and (ids.isNotEmpty())) or config.active) {

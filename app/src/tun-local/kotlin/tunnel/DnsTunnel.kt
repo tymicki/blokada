@@ -5,9 +5,6 @@ import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
-import com.github.michaelbull.result.mapError
-import com.github.michaelbull.result.onFailure
-import core.Result
 import core.e
 import core.v
 import core.w
@@ -85,21 +82,21 @@ internal class DnsTunnel(
             throw ex
         } finally {
             v("cleaning up resources", this)
-            Result.of { Os.close(error) }
-            Result.of { input.close() }
-            Result.of { output.close() }
+            runCatching { Os.close(error) }
+            runCatching { input.close() }
+            runCatching { output.close() }
         }
     }
 
     override fun runWithRetry(tunnel: FileDescriptor) {
         var interrupted = false
         do {
-            Result.of { run(tunnel) }.mapError {
+            runCatching { run(tunnel) }.onFailure {
                 if (it is InterruptedException || threadInterrupted()) interrupted = true
                 else {
                     val cooldown = min(cooldownTtl * cooldownCounter++, cooldownMax)
                     e("tunnel thread error, will restart after $cooldown ms", this, it.toString())
-                    Result.of { Thread.sleep(cooldown) }.mapError {
+                    runCatching { Thread.sleep(cooldown) }.onFailure {
                         if (it is InterruptedException || threadInterrupted()) interrupted = true
                     }
                 }
@@ -110,7 +107,7 @@ internal class DnsTunnel(
 
     override fun stop() {
         v("stopping poll, if any")
-        Result.of { Os.close(error) }
+        runCatching { Os.close(error) }
         error = null
     }
 
@@ -166,11 +163,11 @@ internal class DnsTunnel(
             if (polls[2 + index++].isEvent(OsConstants.POLLIN)) {
                 iterator.remove()
                 val responsePacket = DatagramPacket(datagramBuffer, datagramBuffer.size)
-                Result.of {
+                runCatching {
                     rule.socket.receive(responsePacket)
                     proxy.toDevice(datagramBuffer, responsePacket.length, rule.originEnvelope)
                 }.onFailure { w("failed receiving socket", it) }
-                Result.of { rule.socket.close() }.onFailure { w("failed closing socket") }
+                runCatching { rule.socket.close() }.onFailure { w("failed closing socket") }
             }
         }
     }

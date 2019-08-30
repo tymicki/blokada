@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.VpnService
 import blocka.BLOCKA_CONFIG
 import blocka.BlockaTunnel
-import com.github.michaelbull.result.onFailure
 import core.*
 import dns.FALLBACK_DNS
 import dns.dnsManager
@@ -416,7 +415,7 @@ class Main(
     }
 
     fun reloadConfig(onWifi: Boolean) = GlobalScope.async(CTRL) {
-        v("reloading config")
+        v("reloading config", currentUrl)
         createComponents(onWifi)
         filters.setUrl(currentUrl)
         if (filters.sync()) {
@@ -429,13 +428,13 @@ class Main(
         if (url != currentUrl) {
             currentUrl = url
 
-            val cfg = config.loadFromPersistence()
+            val cfg = get(TunnelConfig::class.java)
             v("setting url, firstLoad: ${cfg.firstLoad}", url)
             createComponents(onWifi)
             filters.setUrl(url)
             if (filters.sync()) {
                 v("first fetch successful, unsetting firstLoad flag")
-                cfg.copy(firstLoad = false).saveToPersistence()
+                cfg.copy(firstLoad = false).update(TunnelConfig::class.java)
             }
             filters.save()
             restartTunnelThread()
@@ -515,8 +514,8 @@ class Main(
     }
 
     private fun createComponents(onWifi: Boolean) {
-        config = runBlocking { config.loadFromPersistence() }
-        blockaConfig = runBlocking { blockaConfig.loadFromPersistence() }
+        config = get(TunnelConfig::class.java)
+        blockaConfig = get(BlockaConfig::class.java)
         v("create components, onWifi: $onWifi, firstLoad: ${config.firstLoad}", config)
         filters = FilterManager(
                 blockade = blockade,
@@ -537,7 +536,7 @@ class Main(
     }
 
     private suspend fun startVpn() {
-        Result.of {
+        runCatching {
             v("vpn starting")
             val binding = connector.bind()
             runBlocking { binding.join() }
@@ -565,10 +564,10 @@ class Main(
     private fun stopTunnelThread() {
         v("stopping tunnel thread", tunnelThread!!)
         tunnel.stop()
-        Result.of { tunnelThread?.interrupt() }.onFailure { ex ->
+        runCatching { tunnelThread?.interrupt() }.onFailure { ex ->
             w("could not interrupt tunnel thread", ex)
         }
-        Result.of { tunnelThread?.join(5000); true }.onFailure { ex ->
+        runCatching { tunnelThread?.join(5000); true }.onFailure { ex ->
             w("could not join tunnel thread", ex)
         }
         tunnelThread = null

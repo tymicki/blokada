@@ -2,8 +2,6 @@ package tunnel
 
 import android.system.ErrnoException
 import android.system.OsConstants
-import com.github.michaelbull.result.mapError
-import core.Result
 import core.w
 import filter.Blockade
 import org.pcap4j.packet.*
@@ -108,13 +106,13 @@ internal class DnsProxy(
 
     private fun forward(udp: DatagramPacket, originEnvelope: IpPacket? = null) {
         val socket = doCreateSocket()
-        Result.of {
+        runCatching {
             socket.send(udp)
             if (originEnvelope != null) forwarder.add(socket, originEnvelope)
-            else Result.of { socket.close() }
-        }.mapError { ex ->
+            else runCatching { socket.close() }
+        }.onFailure { ex ->
             w("failed sending forwarded udp", ex.message ?: "")
-            Result.of { socket.close() }
+            runCatching { socket.close() }
             val cause = ex.cause
             if (cause is ErrnoException && cause.errno == OsConstants.EPERM) throw ex
         }
