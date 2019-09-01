@@ -1,18 +1,14 @@
 package ui.bits
 
+import blocka.BLOCKA_CONFIG
 import core.*
 import g11n.i18n
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R
-import blocka.BLOCKA_CONFIG
-import tunnel.BlockaConfig
-import tunnel.IEnabledStateActorListener
-import tunnel.tunnelState
+import tunnel.*
 import ui.bits.menu.MENU_CLICK_BY_NAME
-import tunnel.enabledStateActor
-import tunnel.tunnelStateManager
 
 class AdsBlockedVB() : ByteVB() {
 
@@ -20,7 +16,7 @@ class AdsBlockedVB() : ByteVB() {
     private var dropped: Int = 0
     private var active = false
     private var activating = false
-    private var config: BlockaConfig = BlockaConfig()
+    private var config: BlockaConfig? = null
 
     override fun attach(view: ByteView) {
         droppedCountListener = tunnelState.tunnelDropCount.doOnUiWhenSet().then {
@@ -42,6 +38,8 @@ class AdsBlockedVB() : ByteVB() {
     private val update = {
         GlobalScope.launch(Dispatchers.Main.immediate) {
             view?.run {
+                val config = this@AdsBlockedVB.config
+                if (config != null)
                 when {
                     !tunnelState.enabled() -> {
                         icon(R.drawable.ic_show.res())

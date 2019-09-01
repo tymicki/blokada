@@ -45,22 +45,25 @@ class HomeDashboardSectionVB(
 
     private val update = {
         view?.run {
-            val noSubscription = cfg.activeUntil.before(Date())
-            val (slot, name) = decideOnSlot(noSubscription)
-            if (slot != null && added == null) {
-                items = listOf(slot) + items
-                added = name
-                if (slot is SimpleByteVB) slot.onTapped = {
-                    // Remove this slot
-                    markAsSeen()
-                    items = items.subList(1, items.size)
+            val cfg = this@HomeDashboardSectionVB.cfg
+            if (cfg != null) {
+                val noSubscription = cfg.activeUntil.before(Date())
+                val (slot, name) = decideOnSlot(noSubscription)
+                if (slot != null && added == null) {
+                    items = listOf(slot) + items
+                    added = name
+                    if (slot is SimpleByteVB) slot.onTapped = {
+                        // Remove this slot
+                        markAsSeen()
+                        items = items.subList(1, items.size)
+                        set(items)
+                    }
+                }
+                set(items)
+                if (isLandscape(context)) {
+                    enableLandscapeMode(reversed = false)
                     set(items)
                 }
-            }
-            set(items)
-            if (isLandscape(context)) {
-                enableLandscapeMode(reversed = false)
-                set(items)
             }
         }
     }
@@ -79,7 +82,7 @@ class HomeDashboardSectionVB(
         Unit
     }
 
-    private var cfg: BlockaConfig = BlockaConfig()
+    private var cfg: BlockaConfig? = null
     private var added: OneTimeByte? = null
     private val oneTimeBytes = createOneTimeBytes()
 
@@ -131,7 +134,7 @@ class VpnVB() : BitVB() {
         core.cancel(BLOCKA_CONFIG, configListener)
     }
 
-    private var config: BlockaConfig = BlockaConfig()
+    private var config: BlockaConfig? = null
     private val configListener = { cfg: BlockaConfig ->
         config = cfg
         update()
@@ -140,16 +143,19 @@ class VpnVB() : BitVB() {
 
     private val update = {
         view?.apply {
-            if (config.blockaVpn) {
-                label(R.string.home_vpn_enabled.res())
-                icon(R.drawable.ic_verified.res(), color = R.color.switch_on.res())
-            } else {
-                label(R.string.home_vpn_disabled.res())
-                icon(R.drawable.ic_shield_outline.res())
-            }
-            switch(config.blockaVpn)
-            onSwitch { turnOn ->
-                tunnelStateManager.turnVpn(turnOn)
+            val config = this@VpnVB.config
+            if (config != null) {
+                if (config.blockaVpn) {
+                    label(R.string.home_vpn_enabled.res())
+                    icon(R.drawable.ic_verified.res(), color = R.color.switch_on.res())
+                } else {
+                    label(R.string.home_vpn_disabled.res())
+                    icon(R.drawable.ic_shield_outline.res())
+                }
+                switch(config.blockaVpn)
+                onSwitch { turnOn ->
+                    tunnelStateManager.turnVpn(turnOn)
+                }
             }
         }
         Unit
@@ -167,7 +173,7 @@ class Adblocking2VB() : BitVB() {
         core.cancel(BLOCKA_CONFIG, configListener)
     }
 
-    private var config: BlockaConfig = BlockaConfig()
+    private var config: BlockaConfig ? = null
     private val configListener = { cfg: BlockaConfig ->
         config = cfg
         update()
@@ -176,17 +182,20 @@ class Adblocking2VB() : BitVB() {
 
     private val update = {
         view?.apply {
-            if (config.adblocking) {
-                label(R.string.home_adblocking_enabled.res())
-                icon(R.drawable.ic_blocked.res(), color = R.color.switch_on.res())
-            } else {
-                label(R.string.home_adblocking_disabled.res())
-                icon(R.drawable.ic_show.res())
-            }
-            switch(config.adblocking)
-            onSwitch { adblocking ->
-                if (!adblocking && !config.blockaVpn) tunnelState.enabled %= false
-                core.emit(BLOCKA_CONFIG, config.copy(adblocking = adblocking))
+            val config = this@Adblocking2VB.config
+            if (config != null) {
+                if (config.adblocking) {
+                    label(R.string.home_adblocking_enabled.res())
+                    icon(R.drawable.ic_blocked.res(), color = R.color.switch_on.res())
+                } else {
+                    label(R.string.home_adblocking_disabled.res())
+                    icon(R.drawable.ic_show.res())
+                }
+                switch(config.adblocking)
+                onSwitch { adblocking ->
+                    if (!adblocking && !config.blockaVpn) tunnelState.enabled %= false
+                    //core.emit(BLOCKA_CONFIG, config.copy(adblocking = adblocking))
+                }
             }
         }
         Unit

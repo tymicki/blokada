@@ -18,7 +18,7 @@ val tunnelStateManager = TunnelStateManager()
 
 class TunnelStateManager {
 
-    private var latest: BlockaConfig = BlockaConfig()
+    private var latest: BlockaConfig? = null
         @Synchronized get
         @Synchronized set
 
@@ -29,10 +29,12 @@ class TunnelStateManager {
         }
 
         dnsManager.enabled.doWhenChanged(withInit = true).then {
-            check(latest)
+            if (latest != null) check(latest!!)
         }
 
        tunnelState.enabled.doWhenChanged(withInit = true).then {
+           val latest = this@TunnelStateManager.latest
+           if (latest != null)
             when {
                 !tunnelState.enabled() -> {
                     // Save state before pausing
@@ -98,11 +100,13 @@ class TunnelStateManager {
     }
 
     fun turnAdblocking(on: Boolean): Boolean {
-        emit(BLOCKA_CONFIG, latest.copy(adblocking = on))
+        if (latest != null) emit(BLOCKA_CONFIG, latest!!.copy(adblocking = on))
         return true
     }
 
     fun turnVpn(on: Boolean): Boolean {
+        val latest = this@TunnelStateManager.latest
+        if (latest == null) return false
         return when {
             !on -> {
                 emit(BLOCKA_CONFIG, latest.copy(blockaVpn = false))

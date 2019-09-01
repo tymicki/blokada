@@ -15,12 +15,15 @@ internal class CommonEmit(
     private val simpleCallbacks = mutableMapOf<EventType<Unit>, MutableList<() -> Unit>>()
 
     override fun <T> emit(event: EventType<T>, value: T) = GlobalScope.launch(context) {
-        v("event:emit", event, value.toString())
+        e("event:emit", event, value.toString())
         val e = TypedEvent(event, value)
         emits[event] = e
 
-        if (callbacks.containsKey(event)) for (callback in callbacks[event]!!)
-            (callback as Callback<T>)(e.value)
+        if (callbacks.containsKey(event)) {
+            for (callback in callbacks[event]!!) GlobalScope.launch(context) {
+                (callback as Callback<T>)(e.value)
+            }
+        }
     }
 
     override fun <T> on(event: EventType<T>, callback: Callback<T>) = on(event, callback, recentValue = true)

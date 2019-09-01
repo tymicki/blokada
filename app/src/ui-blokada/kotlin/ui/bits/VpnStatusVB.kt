@@ -1,17 +1,13 @@
 package ui.bits
 
+import blocka.BLOCKA_CONFIG
 import core.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.blokada.R
-import blocka.BLOCKA_CONFIG
-import tunnel.BlockaConfig
-import tunnel.IEnabledStateActorListener
-import tunnel.tunnelState
+import tunnel.*
 import ui.bits.menu.MENU_CLICK_BY_NAME
-import tunnel.enabledStateActor
-import tunnel.tunnelStateManager
 import java.util.*
 
 class VpnStatusVB(
@@ -35,7 +31,7 @@ class VpnStatusVB(
     private var wasActive = false
     private var active = false
     private var activating = false
-    private var config: BlockaConfig = BlockaConfig()
+    private var config: BlockaConfig? = null
     private val configListener = { cfg: BlockaConfig ->
         config = cfg
         update()
@@ -49,6 +45,8 @@ class VpnStatusVB(
     private val update = {
         GlobalScope.launch(Dispatchers.Main.immediate) {
             view?.run {
+                val config = this@VpnStatusVB.config
+                if (config != null)
                 when {
                     !tunnelState.enabled() -> {
                         icon(R.drawable.ic_shield_outline.res())
