@@ -78,10 +78,12 @@ object RestModel {
             @SerializedName("gateway_id")
             val gatewayId: String,
             val expires: Date,
+            val alias: String?,
             val vip4: String,
             val vip6: String
     ) {
         fun expiresSoon() = expires.before(Date(Date().time + EXPIRATION_OFFSET))
+        fun niceName() = if (alias?.isNotBlank() == true) alias else publicKey.take(5)
     }
     data class LeaseRequest(
             @SerializedName("account_id")
@@ -89,7 +91,8 @@ object RestModel {
             @SerializedName("public_key")
             val publicKey: String,
             @SerializedName("gateway_id")
-            val gatewayId: String
+            val gatewayId: String,
+            val alias: String
     )
 }
 

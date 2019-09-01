@@ -22,7 +22,9 @@ private fun createMenuVpn(): NamedViewBinder {
                 LabelVB(label = R.string.menu_vpn_account_label.res()),
                 createManageAccountMenuItem(),
                 LabelVB(label = R.string.menu_vpn_gateways_label.res()),
-                createGatewaysMenuItem()
+                createGatewaysMenuItem(),
+                LabelVB(label = R.string.slot_leases_info.res()),
+                createLeasesMenuItem()
             ),
             name = R.string.menu_vpn.res()
     )
@@ -49,6 +51,14 @@ fun createGatewaysMenuItem(): NamedViewBinder {
             label = R.string.menu_vpn_gateways.res(),
             icon = R.drawable.ic_server.res(),
             opens = GatewaysDashboardSectionVB()
+    )
+}
+
+fun createLeasesMenuItem(): NamedViewBinder {
+    return MenuItemVB(
+            label = R.string.menu_vpn_leases.res(),
+            icon = R.drawable.ic_device.res(),
+            opens = LeasesDashboardSectionVB()
     )
 }
 

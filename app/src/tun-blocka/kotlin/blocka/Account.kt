@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import com.cloudflare.app.boringtun.BoringTunJNI
 import core.*
 import kotlinx.coroutines.*
@@ -50,7 +51,9 @@ private fun scheduleRecheck(config: BlockaConfig) {
 private fun newLease(config: BlockaConfig, retry: Int = 0) {
     v("new lease api call")
 
-    restApi.newLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<RestModel.Lease> {
+    restApi.newLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId,
+            alias = "%s-%s".format(Build.MANUFACTURER, Build.DEVICE)))
+           .enqueue(object: retrofit2.Callback<RestModel.Lease> {
         override fun onFailure(call: Call<RestModel.Lease>?, t: Throwable?) {
             e("new lease api call error", t ?: "null")
             if (retry < MAX_RETRIES) newLease(config, retry + 1)
@@ -73,6 +76,11 @@ private fun newLease(config: BlockaConfig, retry: Int = 0) {
                             scheduleRecheck(newCfg)
                         }
                     }
+                    403 -> {
+                        e("new lease api call response 403 - too many devices")
+                        clearConnectedGateway(config, tooManyDevices = true, showError = true)
+                        Unit
+                    }
                     else -> {
                         e("new lease api call response ${code()}")
                         if (retry < MAX_RETRIES) newLease(config, retry + 1)
@@ -85,11 +93,11 @@ private fun newLease(config: BlockaConfig, retry: Int = 0) {
     })
 }
 
-private fun deleteLease(config: BlockaConfig, retry: Int = 0) {
+fun deleteLease(config: BlockaConfig, retry: Int = 0) {
     if (config.gatewayId.isBlank()) return
 
     // TODO: rewrite it to sync version, or use callback on finish
-    restApi.deleteLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId)).enqueue(object: retrofit2.Callback<Void> {
+    restApi.deleteLease(RestModel.LeaseRequest(config.accountId, config.publicKey, config.gatewayId, "")).enqueue(object: retrofit2.Callback<Void> {
 
         override fun onFailure(call: Call<Void>?, t: Throwable?) {
             e("delete lease api call error", t ?: "null")
@@ -117,15 +125,15 @@ private fun checkLease(config: BlockaConfig, retry: Int = 0) {
                 when (code()) {
                     200 -> {
                         body()?.run {
-                            // User might have a lease for old private key (if restoring account)
-                            val obsoleteLeases = leases.filter { it.publicKey != config.publicKey }
-                            obsoleteLeases.forEach {
-                                deleteLease(config.copy(
-                                        publicKey = it.publicKey,
-                                        gatewayId = it.gatewayId
-                                ))
-                            }
-                            if (obsoleteLeases.isNotEmpty()) GlobalScope.launch { showSnack(R.string.slot_lease_deleted_information) }
+//                            // User might have a lease for old private key (if restoring account)
+//                            val obsoleteLeases = leases.filter { it.publicKey != config.publicKey }
+//                            obsoleteLeases.forEach {
+//                                deleteLease(config.copy(
+//                                        publicKey = it.publicKey,
+//                                        gatewayId = it.gatewayId
+//                                ))
+//                            }
+//                            if (obsoleteLeases.isNotEmpty()) GlobalScope.launch { showSnack(R.string.slot_lease_deleted_information) }
 
                             val lease = leases.firstOrNull {
                                 it.publicKey == config.publicKey && it.gatewayId == config.gatewayId
@@ -208,12 +216,14 @@ fun checkGateways(config: BlockaConfig, retry: Int = 0) {
     })
 }
 
-fun clearConnectedGateway(config: BlockaConfig, showError: Boolean = true) {
+fun clearConnectedGateway(config: BlockaConfig, showError: Boolean = true, tooManyDevices: Boolean = false) {
     v("clearing connected gateway")
-    if (config.blockaVpn && showError) {
+    if (showError && tooManyDevices) {
+        GlobalScope.launch { showSnack(R.string.slot_too_many_leases) }
+    } else if (config.blockaVpn && showError) {
         displayLeaseExpiredNotification()
         GlobalScope.launch { showSnack(R.string.slot_lease_cant_connect) }
-    } else if (config.accountId.isBlank() && showError) {
+    }else if (config.accountId.isBlank() && showError) {
         GlobalScope.launch { showSnack(R.string.slot_account_cant_create) }
     }
 

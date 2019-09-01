@@ -1,6 +1,7 @@
 package tunnel
 
 import blocka.BLOCKA_CONFIG
+import blocka.checkAccountInfo
 import core.*
 import dns.dnsManager
 import kotlinx.coroutines.GlobalScope
@@ -123,7 +124,9 @@ class TunnelStateManager {
                 false
             }
             else -> {
-                emit(BLOCKA_CONFIG, latest.copy(blockaVpn = true))
+                val cfg = latest.copy(blockaVpn = true)
+                emit(BLOCKA_CONFIG, cfg)
+                checkAccountInfo(cfg)
                 true
             }
         }
