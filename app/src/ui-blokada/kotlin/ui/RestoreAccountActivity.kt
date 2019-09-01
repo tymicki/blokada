@@ -1,13 +1,13 @@
 package ui
 
 import android.app.Activity
+import blocka.BLOCKA_CONFIG
+import blocka.checkAccountInfo
 import core.*
 import g11n.i18n
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.blokada.R
-import blocka.BLOCKA_CONFIG
-import blocka.checkAccountInfo
 
 
 class RestoreAccountActivity : Activity() {
@@ -19,7 +19,7 @@ class RestoreAccountActivity : Activity() {
         setContentView(R.layout.vbstepview)
 
         val nameVB = EnterAccountVB(accepted = {
-            name = it
+            name = it.toLowerCase().trim()
             restoreAccountId()
         })
 

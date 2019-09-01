@@ -5,6 +5,7 @@ import android.content.Intent
 import blocka.BLOCKA_CONFIG
 import core.*
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.blokada.BuildConfig
@@ -12,6 +13,7 @@ import org.blokada.R
 import tunnel.BlockaConfig
 import tunnel.tunnelState
 import tunnel.tunnelStateManager
+import ui.SubscriptionActivity
 import ui.bits.menu.isLandscape
 import ui.conflictingBuilds
 import ui.modalManager
@@ -154,7 +156,13 @@ class VpnVB() : BitVB() {
                 }
                 switch(config.blockaVpn)
                 onSwitch { turnOn ->
-                    tunnelStateManager.turnVpn(turnOn)
+                    if (!tunnelStateManager.turnVpn(turnOn)) {
+                        GlobalScope.launch {
+                            delay(2000)
+                            modalManager.openModal()
+                            context.startActivity(Intent(context, SubscriptionActivity::class.java))
+                        }
+                    }
                 }
             }
         }

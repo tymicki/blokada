@@ -1,13 +1,17 @@
 package ui.bits
 
+import android.content.Intent
 import blocka.BLOCKA_CONFIG
 import core.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.blokada.R
 import tunnel.*
+import ui.SubscriptionActivity
 import ui.bits.menu.MENU_CLICK_BY_NAME
+import ui.modalManager
 import java.util.*
 
 class VpnStatusVB(
@@ -45,8 +49,8 @@ class VpnStatusVB(
     private val update = {
         GlobalScope.launch(Dispatchers.Main.immediate) {
             view?.run {
-                val config = this@VpnStatusVB.config
-                if (config != null)
+                var config = this@VpnStatusVB.config
+                if (config == null) config = BlockaConfig() // TODO
                 when {
                     !tunnelState.enabled() -> {
                         icon(R.drawable.ic_shield_outline.res())
@@ -94,11 +98,20 @@ class VpnStatusVB(
                         label(R.string.home_setup_vpn.res())
                         state(R.string.home_vpn_disabled.res())
                         onTap {
-                            core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+//                            if (config.activeUntil.before(Date())) {
+//                                GlobalScope.launch { modalManager.openModal() }
+//                                context.startActivity(Intent(context, SubscriptionActivity::class.java))
+//                            } else {
+                                core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+//                            }
                         }
                         onSwitch {
                             if (!tunnelStateManager.turnVpn(it)) {
-                                core.emit(MENU_CLICK_BY_NAME, R.string.menu_vpn.res())
+                                GlobalScope.launch {
+                                    delay(2000)
+                                    modalManager.openModal()
+                                    context.startActivity(Intent(context, SubscriptionActivity::class.java))
+                                }
                             }
                         }
                     }

@@ -38,8 +38,8 @@ class AdsBlockedVB() : ByteVB() {
     private val update = {
         GlobalScope.launch(Dispatchers.Main.immediate) {
             view?.run {
-                val config = this@AdsBlockedVB.config
-                if (config != null)
+                var config = this@AdsBlockedVB.config
+                if (config == null) config = BlockaConfig() // TODO
                 when {
                     !tunnelState.enabled() -> {
                         icon(R.drawable.ic_show.res())
