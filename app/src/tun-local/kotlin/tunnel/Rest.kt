@@ -137,7 +137,7 @@ fun newRestApiModule(ctx: Context): Kodein.Module {
                     .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_DASHES)
                     .create()
             val retrofit = Retrofit.Builder()
-                    .baseUrl("https://api.blocka.net")
+                    .baseUrl("https://blokada-staging.appspot.com")
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .client(client)
                     .build()
