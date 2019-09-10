@@ -16,12 +16,12 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
+        android:usesCleartextTraffic="true"
         android:name="core.MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:installLocation="internalOnly"
         android:label="@string/branding_app_name"
-        android:networkSecurityConfig="@xml/whitelist_blokada"
         android:supportsRtl="true"
         android:theme="@style/BlokadaColors.Main.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning"
@@ -72,7 +72,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https"
-                    android:host="app.blokada.org"
+                    android:host="blokada-staging.appspot.com"
                     android:pathPrefix="/success" />
             </intent-filter>
         </activity>

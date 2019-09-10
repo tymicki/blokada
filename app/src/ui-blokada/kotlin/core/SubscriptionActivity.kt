@@ -36,13 +36,13 @@ class SubscriptionActivity : Activity() {
 
     private val subscriptionUrl by lazy {
         val cfg = Persistence.blocka.load(ktx)
-        newProperty(w, { URL("https://app.blokada.org/activate/${cfg.accountId}") })
+        newProperty(w, { URL("https://blokada-staging.appspot.com/activate/${cfg.accountId}") })
     }
 
     private val dash by lazy {
         WebDash(LazyKodein(ktx.di), subscriptionUrl, reloadOnError = true,
                 javascript = true, forceEmbedded = true, big = true,
-                onLoadSpecificUrl = "app.blokada.org/success" to {
+                onLoadSpecificUrl = "blokada-staging.appspot.com/success" to {
                     this@SubscriptionActivity.finish()
                     showSnack(R.string.subscription_success)
                 })
