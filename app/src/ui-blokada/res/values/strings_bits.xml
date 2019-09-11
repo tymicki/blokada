@@ -44,6 +44,9 @@
     <!-- A short text for the button to change VPN settings -->
 
     <string name="home_connected_vpn">Connected to VPN</string>
+    <string name="home_boringtun_not_loaded">Sorry, your device is currently not supported by Blokada VPN</string>
+    <string name="home_blocka_vpn_error">Blokada VPN cannot be used at this moment. Please try again later.</string>
+    <string name="home_account_error">Could not verify account. Are you online?</string>
 
     <!-- Ads section header in menu (for configuring ad blocking) -->
     <string name="menu_ads">Ads</string>

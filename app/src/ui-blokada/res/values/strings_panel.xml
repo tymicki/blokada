@@ -154,6 +154,7 @@
     <string name="slot_account_action_change_id">Restore account</string>
     <string name="slot_account_show">Account ID</string>
     <string name="slot_account_action_copied">Account ID copied to the clipboard</string>
+    <string name="slot_account_action_unavailable">[not set]</string>
 
     <!-- A slot to connect to given gateway. Example: Connect to Stockholm. -->
     <string name="slot_gateway_label">Connect to %s</string>
